@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wylie's Football Play Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #090c12;
+  --bg-panel: #10151f;
+  --bg-card: #161d2b;
+  --bg-hover: #1e2840;
+  --accent: #f0a500;
+  --accent-dim: #a86f00;
+  --green-dark: #193d1c;
+  --green-mid: #245928;
+  --green-bright: #2d7a35;
+  --offense: #e63946;
+  --offense-light: #ff6b73;
+  --defense: #4a9eff;
+  --defense-light: #7fbcff;
+  --text-hi: #eef0f6;
+  --text-mid: #8899bb;
+  --text-lo: #445566;
+  --border: #1e2a3e;
+  --border-bright: #2e3f5a;
+  --route-gold: #ffcc00;
+  --rad: 7px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { height:100vh; overflow:hidden; }
+body {
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg-deep);
+  color:var(--text-hi);
+  display:flex; flex-direction:column;
+}
+
+/* ─── HEADER ─────────────────────────────────────────────── */
+#hdr {
+  background:linear-gradient(90deg,#0a0e17,#111827);
+  border-bottom:1px solid var(--border);
+  padding:0 14px;
+  height:50px;
+  display:flex; align-items:center; gap:10px;
+  flex-shrink:0;
+  box-shadow:0 3px 20px rgba(0,0,0,.6);
+  z-index:20;
+}
+#logo {
+  font-family:'Oswald',sans-serif;
+  font-size:20px; font-weight:700;
+  letter-spacing:3px; text-transform:uppercase;
+  white-space:nowrap;
+}
+#logo em { color:var(--accent); font-style:normal; }
+.hdiv { width:1px; height:28px; background:var(--border); flex-shrink:0; }
+
+.mode-toggle { display:flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; flex-shrink:0; }
+.mode-btn {
+  padding:5px 14px;
+  font-family:'Oswald',sans-serif; font-size:12px; font-weight:600; letter-spacing:1.5px;
+  cursor:pointer; border:none; background:transparent; color:var(--text-mid);
+  transition:all .18s;
+}
+.mode-btn:hover { color:var(--text-hi); }
+.mode-btn.on-off { background:var(--offense); color:#fff; }
+.mode-btn.on-def { background:var(--defense); color:#fff; }
+
+#play-name {
+  font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:600;
+  background:var(--bg-card); border:1px solid var(--border);
+  color:var(--text-hi); padding:5px 11px; border-radius:6px;
+  min-width:150px;
+}
+#play-name:focus { outline:none; border-color:var(--accent); }
+
+.hbtn {
+  padding:5px 13px;
+  font-family:'Oswald',sans-serif; font-size:11px; font-weight:600; letter-spacing:1px;
+  cursor:pointer; border:1px solid var(--border); background:var(--bg-card);
+  color:var(--text-mid); border-radius:6px; transition:all .18s; white-space:nowrap;
+  display:flex; align-items:center; gap:5px;
+}
+.hbtn:hover { border-color:var(--accent); color:var(--accent); }
+.hbtn.pri { background:var(--accent); border-color:var(--accent); color:#000; font-weight:700; }
+.hbtn.pri:hover { background:#ffc62e; }
+
+.spacer { flex:1; }
+#status-pill {
+  font-size:11px; color:var(--text-mid);
+  background:rgba(255,255,255,.04); border:1px solid var(--border);
+  padding:3px 12px; border-radius:20px; white-space:nowrap; max-width:280px;
+  overflow:hidden; text-overflow:ellipsis;
+}
+
+/* ─── MAIN LAYOUT ─────────────────────────────────────────── */
+#main { display:flex; flex:1; overflow:hidden; }
+
+/* ─── LEFT SIDEBAR ────────────────────────────────────────── */
+#sidebar {
+  width:200px; min-width:200px;
+  background:var(--bg-panel);
+  border-right:1px solid var(--border);
+  overflow-y:auto; overflow-x:hidden;
+  display:flex; flex-direction:column;
+}
+.sb-sec { border-bottom:1px solid var(--border); padding:10px; }
+.sb-title {
+  font-family:'Oswald',sans-serif; font-size:10px; font-weight:600;
+  letter-spacing:2.5px; color:var(--text-lo); text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+/* Tool buttons */
+.tool-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.tbtn {
+  padding:7px 4px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:6px;
+  color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:600;
+  cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
+  transition:all .15s;
+}
+.tbtn:hover { border-color:var(--accent); color:var(--text-hi); }
+.tbtn.act { background:var(--accent); border-color:var(--accent); color:#000; }
+.tbtn .ti { font-size:15px; line-height:1; }
+.tbtn.wide { grid-column:span 2; flex-direction:row; justify-content:center; gap:6px; }
+
+/* Formation list */
+.fbtn {
+  width:100%; padding:6px 9px; margin-bottom:3px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:5px;
+  color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:600;
+  cursor:pointer; text-align:left; transition:all .15s;
+  display:flex; align-items:center; gap:7px;
+}
+.fbtn:hover { border-color:var(--border-bright); color:var(--text-hi); background:var(--bg-hover); }
+.fbtn.act { border-color:var(--accent); color:var(--accent); background:rgba(240,165,0,.08); }
+.fbtn .fi { font-size:10px; }
+
+/* Player type list */
+.ptbtn {
+  width:100%; padding:5px 9px; margin-bottom:3px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:5px;
+  color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:600;
+  cursor:pointer; text-align:left; transition:all .15s;
+  display:flex; align-items:center; gap:8px;
+}
+.ptbtn:hover { background:var(--bg-hover); color:var(--text-hi); }
+.ptbtn.act { border-color:var(--accent); background:rgba(240,165,0,.08); color:var(--text-hi); }
+
+/* Route style */
+.rs-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.rsbtn {
+  padding:5px 4px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:4px;
+  color:var(--text-mid); font-size:11px; font-family:'Rajdhani',sans-serif; font-weight:600;
+  cursor:pointer; transition:all .15s; text-align:center;
+}
+.rsbtn:hover { color:var(--route-gold); border-color:var(--route-gold); }
+.rsbtn.act { background:rgba(255,204,0,.12); border-color:var(--route-gold); color:var(--route-gold); }
+
+.finish-btn {
+  width:100%; padding:7px; margin-top:7px;
+  background:rgba(255,204,0,.15); border:1px solid var(--route-gold); border-radius:5px;
+  color:var(--route-gold); font-family:'Oswald',sans-serif; font-size:12px; font-weight:600;
+  letter-spacing:1px; cursor:pointer; transition:all .15s;
+}
+.finish-btn:hover { background:rgba(255,204,0,.25); }
+
+/* ─── FIELD AREA ──────────────────────────────────────────── */
+#field-wrap {
+  flex:1; display:flex; align-items:center; justify-content:center;
+  background:#0b0f18;
+  background-image: radial-gradient(ellipse at 50% 45%, rgba(36,89,40,.12) 0%, transparent 65%);
+  position:relative; overflow:hidden;
+}
+#canvas-wrap {
+  position:relative;
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 0 80px rgba(0,0,0,.9), 0 0 0 1px rgba(240,165,0,.08);
+  border-radius:3px;
+}
+#field { display:block; cursor:crosshair; }
+#player-tip {
+  position:absolute; pointer-events:none;
+  background:rgba(5,8,14,.95); border:1px solid var(--accent);
+  border-radius:6px; padding:5px 10px; font-size:12px; font-weight:600; color:var(--text-hi);
+  display:none; z-index:15; white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+
+/* ─── RIGHT PANEL ─────────────────────────────────────────── */
+#rpanel {
+  width:272px; min-width:272px;
+  background:var(--bg-panel);
+  border-left:1px solid var(--border);
+  display:flex; flex-direction:column;
+}
+.tab-bar { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+.tabbtn {
+  flex:1; padding:9px 3px;
+  background:transparent; border:none; border-bottom:2px solid transparent;
+  color:var(--text-mid); font-family:'Oswald',sans-serif; font-size:10px;
+  font-weight:600; letter-spacing:1px; cursor:pointer; transition:all .18s;
+}
+.tabbtn:hover { color:var(--text-hi); }
+.tabbtn.act { color:var(--accent); border-bottom-color:var(--accent); }
+
+.tab-pane { display:none; flex:1; overflow-y:auto; flex-direction:column; padding:10px; gap:8px; }
+.tab-pane.act { display:flex; }
+
+/* Library */
+.pcard {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:8px;
+  overflow:hidden; cursor:pointer; transition:all .2s;
+}
+.pcard:hover { border-color:var(--border-bright); transform:translateY(-1px); box-shadow:0 4px 20px rgba(0,0,0,.4); }
+.pcard-thumb { width:100%; height:72px; display:block; background:var(--green-dark); object-fit:cover; }
+.pcard-body { padding:7px 9px 4px; }
+.pcard-name { font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; color:var(--text-hi); }
+.pcard-meta { display:flex; gap:6px; align-items:center; margin-top:3px; }
+.ptag {
+  padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; letter-spacing:1px;
+}
+.ptag-o { background:rgba(230,57,70,.18); color:var(--offense); border:1px solid rgba(230,57,70,.3); }
+.ptag-d { background:rgba(74,158,255,.18); color:var(--defense); border:1px solid rgba(74,158,255,.3); }
+.ptag-r { background:rgba(80,220,120,.18); color:#50dc78; border:1px solid rgba(80,220,120,.3); }
+.ptag-p { background:rgba(200,120,255,.18); color:#c878ff; border:1px solid rgba(200,120,255,.3); }
+.pcard-fmeta { font-size:10px; color:var(--text-lo); }
+.pcard-acts { display:flex; gap:4px; padding:4px 8px 8px; }
+.pcbtn {
+  flex:1; padding:4px; font-size:10px; font-family:'Rajdhani',sans-serif; font-weight:600;
+  background:var(--bg-hover); border:1px solid var(--border); color:var(--text-mid);
+  border-radius:4px; cursor:pointer; transition:all .15s;
+}
+.pcbtn:hover { color:var(--accent); border-color:var(--accent); }
+.pcbtn.red:hover { color:#ff4455; border-color:#ff4455; }
+
+.lib-empty { text-align:center; color:var(--text-mid); font-size:12px; padding:24px 12px; line-height:1.7; }
+
+/* Right panel form elements */
+.rp-label { font-family:'Oswald',sans-serif; font-size:10px; font-weight:600; letter-spacing:2px; color:var(--text-lo); margin-bottom:4px; display:block; }
+.rp-input, .rp-select, .rp-textarea {
+  width:100%; padding:6px 10px;
+  background:var(--bg-card); border:1px solid var(--border);
+  color:var(--text-hi); border-radius:6px;
+  font-family:'Rajdhani',sans-serif; font-size:13px;
+}
+.rp-input:focus, .rp-select:focus, .rp-textarea:focus { outline:none; border-color:var(--accent); }
+.rp-textarea { resize:vertical; min-height:55px; }
+.rp-group { display:flex; flex-direction:column; gap:4px; }
+
+.ai-btn {
+  width:100%; padding:10px;
+  background:linear-gradient(135deg,var(--accent),#b87c00);
+  border:none; border-radius:8px;
+  font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px;
+  color:#000; cursor:pointer; transition:all .2s;
+}
+.ai-btn:hover { transform:translateY(-1px); box-shadow:0 5px 20px rgba(240,165,0,.35); }
+.ai-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+
+.ai-result {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:8px;
+  padding:10px; font-size:12px; line-height:1.65; color:var(--text-hi);
+}
+.ai-result h4 { font-family:'Oswald',sans-serif; color:var(--accent); font-size:13px; margin-bottom:6px; }
+
+.upload-zone {
+  border:2px dashed var(--border); border-radius:7px; padding:10px;
+  text-align:center; cursor:pointer; transition:all .2s;
+  font-size:11px; color:var(--text-mid);
+}
+.upload-zone:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Wristband */
+.wb-item {
+  display:flex; align-items:center; gap:7px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:5px;
+  padding:5px 8px;
+}
+.wb-num {
+  width:20px; height:20px; border-radius:50%;
+  background:var(--accent); color:#000;
+  font-family:'Oswald',sans-serif; font-size:10px; font-weight:700;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.wb-name { flex:1; font-size:12px; font-weight:600; }
+.wb-del {
+  width:16px; height:16px; border-radius:50%; border:none;
+  background:rgba(255,68,68,.2); color:#ff4455; cursor:pointer; font-size:9px;
+  display:flex; align-items:center; justify-content:center;
+}
+.wb-print-btn {
+  width:100%; padding:10px;
+  background:linear-gradient(135deg,#2a6fd4,#1040a0);
+  border:none; border-radius:8px;
+  font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px;
+  color:#fff; cursor:pointer; transition:all .2s;
+}
+.wb-print-btn:hover { transform:translateY(-1px); box-shadow:0 5px 20px rgba(42,111,212,.4); }
+
+.add-dashed {
+  width:100%; padding:6px;
+  background:transparent; border:1px dashed var(--border); border-radius:5px;
+  color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:600;
+  cursor:pointer; transition:all .2s;
+}
+.add-dashed:hover { border-color:var(--accent); color:var(--accent); }
+
+/* ─── MODALS ──────────────────────────────────────────────── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.82); z-index:100;
+  display:none; align-items:center; justify-content:center;
+  backdrop-filter:blur(5px);
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:var(--bg-panel); border:1px solid var(--border-bright); border-radius:12px;
+  padding:24px; width:90%; max-width:400px;
+  box-shadow:0 24px 80px rgba(0,0,0,.8);
+  animation:modalIn .18s ease-out;
+}
+@keyframes modalIn { from { transform:scale(.95) translateY(8px); opacity:0; } }
+.modal h2 { font-family:'Oswald',sans-serif; font-size:18px; color:var(--accent); margin-bottom:14px; }
+.modal p { font-size:12px; color:var(--text-mid); margin-bottom:12px; line-height:1.6; }
+.modal-input {
+  width:100%; padding:8px 12px; margin-bottom:10px;
+  background:var(--bg-card); border:1px solid var(--border);
+  color:var(--text-hi); border-radius:6px;
+  font-family:'Rajdhani',sans-serif; font-size:14px;
+}
+.modal-input:focus { outline:none; border-color:var(--accent); }
+.modal-select {
+  width:100%; padding:8px 12px; margin-bottom:10px;
+  background:var(--bg-card); border:1px solid var(--border);
+  color:var(--text-hi); border-radius:6px;
+  font-family:'Rajdhani',sans-serif; font-size:13px;
+}
+.modal-actions { display:flex; gap:8px; margin-top:6px; }
+.mbtn {
+  flex:1; padding:9px;
+  font-family:'Oswald',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px;
+  border:1px solid var(--border); border-radius:6px; cursor:pointer; transition:all .18s;
+}
+.mbtn.ok { background:var(--accent); border-color:var(--accent); color:#000; }
+.mbtn.ok:hover { background:#ffc62e; }
+.mbtn.cancel { background:var(--bg-card); color:var(--text-mid); }
+.mbtn.cancel:hover { color:var(--text-hi); }
+
+/* ─── SCROLLBAR ──────────────────────────────────────────── */
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border-bright); border-radius:2px; }
+
+/* ─── SPINNER ─────────────────────────────────────────────── */
+.spin {
+  width:16px; height:16px; border:2px solid rgba(0,0,0,.3); border-top-color:#000;
+  border-radius:50%; animation:rot .7s linear infinite; display:inline-block;
+}
+@keyframes rot { to { transform:rotate(360deg); } }
+
+/* ─── PRINT WRISTBAND ────────────────────────────────────── */
+#wristband-print { display:none; }
+@media print {
+  body > *:not(#wristband-print) { display:none !important; }
+  #wristband-print { display:block !important; font-family:Arial,sans-serif; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<div id="hdr">
+  <div id="logo">🏈 <em>Wylie's</em> <span style="color:#fff">Football Play Maker</span></div>
+  <div class="hdiv"></div>
+  <div class="mode-toggle">
+    <button class="mode-btn on-off" id="btn-off" onclick="setMode('offense')">● OFFENSE</button>
+    <button class="mode-btn" id="btn-def" onclick="setMode('defense')">✕ DEFENSE</button>
+  </div>
+  <div class="hdiv"></div>
+  <input type="text" id="play-name" value="Untitled Play" placeholder="Play name...">
+  <button class="hbtn" onclick="undoLast()" title="Ctrl+Z">↩ UNDO</button>
+  <button class="hbtn" onclick="confirmClear()">⌫ CLEAR</button>
+  <button class="hbtn pri" onclick="openSaveModal()" title="Ctrl+S">💾 SAVE PLAY</button>
+  <div class="spacer"></div>
+  <div id="status-pill">Welcome — select a formation or place players</div>
+  <div class="hdiv"></div>
+  <button class="hbtn" onclick="openApiModal()">⚙ API KEY</button>
+</div>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div id="main">
+
+  <!-- ══ LEFT SIDEBAR ══ -->
+  <div id="sidebar">
+
+    <!-- Tools -->
+    <div class="sb-sec">
+      <div class="sb-title">Tools</div>
+      <div class="tool-grid">
+        <button class="tbtn act" id="t-select" onclick="setTool('select')" title="S">
+          <span class="ti">↖</span>Select
+        </button>
+        <button class="tbtn" id="t-place" onclick="setTool('place')" title="P">
+          <span class="ti">＋</span>Place
+        </button>
+        <button class="tbtn" id="t-route" onclick="setTool('route')" title="R">
+          <span class="ti">⤴</span>Route
+        </button>
+        <button class="tbtn" id="t-delete" onclick="setTool('delete')" title="X">
+          <span class="ti">✕</span>Delete
+        </button>
+        <button class="tbtn wide" id="t-label" onclick="setTool('label')" title="L">
+          <span class="ti">T</span>Add Label
+        </button>
+      </div>
+    </div>
+
+    <!-- Player Type (place mode) -->
+    <div class="sb-sec" id="sec-ptypes" style="display:none;">
+      <div class="sb-title">Player Type</div>
+      <div id="ptypes-list"></div>
+    </div>
+
+    <!-- Formations -->
+    <div class="sb-sec">
+      <div class="sb-title">Formations</div>
+      <div id="formations-list"></div>
+    </div>
+
+    <!-- Route Options (offense route mode) -->
+    <div class="sb-sec" id="sec-route" style="display:none;">
+      <div class="sb-title">Route Style</div>
+      <div class="rs-grid">
+        <button class="rsbtn act" id="rs-solid" onclick="setRouteStyle('solid')">Solid</button>
+        <button class="rsbtn" id="rs-dashed" onclick="setRouteStyle('dashed')">Dashed</button>
+        <button class="rsbtn" id="rs-motion" onclick="setRouteStyle('motion')">Motion</button>
+        <button class="rsbtn" id="rs-block" onclick="setRouteStyle('block')">Block</button>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="sb-title">Color</div>
+        <input type="color" id="route-color" value="#ffcc00"
+          style="width:100%;height:26px;border:none;border-radius:4px;cursor:pointer;background:none;">
+      </div>
+      <button class="finish-btn" onclick="finishRoute()">✓ FINISH ROUTE</button>
+    </div>
+
+    <!-- Defense Assignment (defense route mode) -->
+    <div class="sb-sec" id="sec-assign" style="display:none;">
+      <div class="sb-title">Assignment</div>
+      <div class="rs-grid">
+        <button class="rsbtn act" id="as-rush" onclick="setAssign('rush')">Rush</button>
+        <button class="rsbtn" id="as-cover" onclick="setAssign('cover')">Cover</button>
+        <button class="rsbtn" id="as-zone" onclick="setAssign('zone')">Zone</button>
+        <button class="rsbtn" id="as-blitz" onclick="setAssign('blitz')">Blitz</button>
+      </div>
+      <button class="finish-btn" onclick="finishRoute()">✓ FINISH</button>
+    </div>
+
+  </div>
+
+  <!-- ══ FIELD CANVAS ══ -->
+  <div id="field-wrap">
+    <div id="canvas-wrap">
+      <canvas id="field" width="700" height="570"></canvas>
+      <div id="player-tip"></div>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT PANEL ══ -->
+  <div id="rpanel">
+    <div class="tab-bar">
+      <button class="tabbtn act" onclick="switchTab('lib')">📚 LIBRARY</button>
+      <button class="tabbtn" onclick="switchTab('ai')">🤖 AI COACH</button>
+      <button class="tabbtn" onclick="switchTab('wb')">🏈 WRISTBAND</button>
+    </div>
+
+    <!-- LIBRARY TAB -->
+    <div class="tab-pane act" id="pane-lib">
+      <div style="display:flex;gap:6px;">
+        <input type="text" class="rp-input" placeholder="Search..." id="lib-search"
+          style="flex:1;" oninput="renderLibrary()">
+        <select class="rp-select" id="lib-filter" style="width:90px;" onchange="renderLibrary()">
+          <option value="all">All</option>
+          <option value="offense">Offense</option>
+          <option value="defense">Defense</option>
+        </select>
+      </div>
+      <div id="lib-cards"></div>
+    </div>
+
+    <!-- AI COACH TAB -->
+    <div class="tab-pane" id="pane-ai">
+      <div class="rp-group">
+        <label class="rp-label">Age Group</label>
+        <select class="rp-select" id="ai-age">
+          <option value="youth-6-8">Youth (6–8 yrs) — Flag</option>
+          <option value="youth-9-11">Youth (9–11 yrs)</option>
+          <option value="youth-12-14">Youth (12–14 yrs)</option>
+          <option value="hs-fresh">HS Freshman</option>
+          <option value="hs-jv">HS JV</option>
+          <option value="hs-varsity" selected>HS Varsity</option>
+          <option value="college">College</option>
+          <option value="adult">Adult / Semi-Pro</option>
+        </select>
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">Skill Level</label>
+        <select class="rp-select" id="ai-skill">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate" selected>Intermediate</option>
+          <option value="advanced">Advanced</option>
+          <option value="elite">Elite</option>
+        </select>
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">Focus / Play Type</label>
+        <select class="rp-select" id="ai-focus">
+          <option value="balanced">Balanced Mix</option>
+          <option value="run">Run Heavy</option>
+          <option value="pass">Pass Heavy</option>
+          <option value="redzone">Red Zone Package</option>
+          <option value="shortyard">Short Yardage</option>
+          <option value="2min">2-Minute Drill</option>
+          <option value="defense">Defensive Schemes</option>
+          <option value="special">Special Teams</option>
+        </select>
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">Team Notes</label>
+        <textarea class="rp-textarea" id="ai-notes"
+          placeholder="e.g. Strong OL, mobile QB, inexperienced WRs, need simple concepts..."></textarea>
+      </div>
+      <div class="upload-zone" onclick="document.getElementById('ai-upload').click()">
+        <input type="file" id="ai-upload" accept=".txt,.json,.pdf" multiple style="display:none" onchange="handleAiUpload(event)">
+        📂 Upload Prior Season Plays
+        <div style="font-size:10px;margin-top:2px;color:var(--text-lo)">TXT / JSON accepted</div>
+        <div id="ai-file-label" style="font-size:10px;color:var(--accent);margin-top:3px;"></div>
+      </div>
+      <button class="ai-btn" id="ai-btn" onclick="runAi()">⚡ GET AI SUGGESTIONS</button>
+      <div id="ai-output"></div>
+    </div>
+
+    <!-- WRISTBAND TAB -->
+    <div class="tab-pane" id="pane-wb">
+      <p style="font-size:11px;color:var(--text-mid);line-height:1.6;">
+        Build a QB wristband card from your library. Select plays, then print a standard-format card.
+      </p>
+      <div class="rp-group">
+        <label class="rp-label">Card Title</label>
+        <input type="text" class="rp-input" id="wb-title" value="Game Plan">
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">Columns</label>
+        <select class="rp-select" id="wb-cols">
+          <option value="3">3 columns</option>
+          <option value="4" selected>4 columns</option>
+          <option value="5">5 columns</option>
+        </select>
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">Add Play</label>
+        <select class="rp-select" id="wb-sel">
+          <option value="">— select a play —</option>
+        </select>
+        <button class="add-dashed" onclick="addToWb()" style="margin-top:4px;">+ Add to Wristband</button>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span class="rp-label" style="margin:0;">Plays (<span id="wb-count">0</span>/24)</span>
+          <button style="font-size:10px;color:var(--text-mid);background:none;border:none;cursor:pointer;" onclick="clearWb()">Clear All</button>
+        </div>
+        <div id="wb-list">
+          <div class="lib-empty" style="padding:12px;">No plays added yet</div>
+        </div>
+      </div>
+      <button class="wb-print-btn" onclick="printWb()">🖨 PRINT WRISTBAND CARD</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ SAVE PLAY MODAL ═══ -->
+<div class="modal-overlay" id="save-modal">
+  <div class="modal">
+    <h2>💾 Save Play</h2>
+    <input type="text" class="modal-input" id="sv-name" placeholder="Play name (e.g. 22 Power Right)">
+    <select class="modal-select" id="sv-formation">
+      <option value="">Formation...</option>
+    </select>
+    <select class="modal-select" id="sv-type">
+      <option value="run">Run</option>
+      <option value="pass">Pass</option>
+      <option value="screen">Screen</option>
+      <option value="trick">Trick Play</option>
+      <option value="redzone">Red Zone</option>
+      <option value="defense">Defense</option>
+      <option value="special">Special Teams</option>
+    </select>
+    <div class="modal-actions">
+      <button class="mbtn cancel" onclick="closeSaveModal()">Cancel</button>
+      <button class="mbtn ok" onclick="doSavePlay()">Save to Library</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ API KEY MODAL ═══ -->
+<div class="modal-overlay" id="api-modal">
+  <div class="modal">
+    <h2>⚙ Anthropic API Key</h2>
+    <p>Required for AI Coach suggestions. Your key is stored locally in this browser only and never sent anywhere except Anthropic's API.</p>
+    <input type="password" class="modal-input" id="api-key-input" placeholder="sk-ant-api03-...">
+    <div class="modal-actions">
+      <button class="mbtn cancel" onclick="closeApiModal()">Cancel</button>
+      <button class="mbtn ok" onclick="saveApiKey()">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LABEL MODAL ═══ -->
+<div class="modal-overlay" id="label-modal">
+  <div class="modal">
+    <h2>T Add Label</h2>
+    <input type="text" class="modal-input" id="label-text" placeholder="e.g. Inside Zone, Cover 2 Read...">
+    <div class="modal-actions">
+      <button class="mbtn cancel" onclick="closeLabelModal()">Cancel</button>
+      <button class="mbtn ok" onclick="confirmLabel()">Place Label</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WRISTBAND PRINT DIV ═══ -->
+<div id="wristband-print"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     J A V A S C R I P T
+═══════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ─── CONSTANTS ────────────────────────────────────────────────
+const CW = 700, CH = 570;
+const HPY = CW / 53.33;   // horizontal px per yard ≈ 13.13
+const VPY = 19;            // vertical px per yard
+const LOS = 300;           // LOS canvas Y
+const CX  = CW / 2;       // center X
+const PR   = 13;           // player radius
+
+function yd2c(xYd, yYd) {  // yard coords → canvas px
+  return { x: CX + xYd * HPY, y: LOS + yYd * VPY };
+}
+function c2yd(cx, cy) {
+  return { x: (cx - CX) / HPY, y: (cy - LOS) / VPY };
+}
+
+// ─── FORMATION DATA ───────────────────────────────────────────
+const FMTNS = {
+  offense: {
+    'Pro Set': [
+      {pos:'LT',lbl:'LT',x:-4,y:0},{pos:'LG',lbl:'LG',x:-2,y:0},{pos:'C',lbl:'C',x:0,y:0},
+      {pos:'RG',lbl:'RG',x:2,y:0},{pos:'RT',lbl:'RT',x:4,y:0},{pos:'TE',lbl:'TE',x:6.5,y:0},
+      {pos:'WR',lbl:'WR',x:-18,y:0},{pos:'WR',lbl:'WR',x:18,y:0},
+      {pos:'QB',lbl:'QB',x:0,y:1.5},{pos:'FB',lbl:'FB',x:0,y:5},{pos:'HB',lbl:'HB',x:0,y:8}
+    ],
+    'I-Formation': [
+      {pos:'LT',lbl:'LT',x:-4,y:0},{pos:'LG',lbl:'LG',x:-2,y:0},{pos:'C',lbl:'C',x:0,y:0},
+      {pos:'RG',lbl:'RG',x:2,y:0},{pos:'RT',lbl:'RT',x:4,y:0},{pos:'TE',lbl:'TE',x:6.5,y:0},
+      {pos:'FL',lbl:'FL',x:-18,y:0},{pos:'SE',lbl:'SE',x:18,y:0},
+      {pos:'QB',lbl:'QB',x:0,y:1.5},{pos:'FB',lbl:'FB',x:0,y:4},{pos:'TB',lbl:'TB',x:0,y:7}
+    ],
+    'Shotgun': [
+      {pos:'LT',lbl:'LT',x:-4,y:0},{pos:'LG',lbl:'LG',x:-2,y:0},{pos:'C',lbl:'C',x:0,y:0},
+      {pos:'RG',lbl:'RG',x:2,y:0},{pos:'RT',lbl:'RT',x:4,y:0},{pos:'TE',lbl:'TE',x:6.5,y:0},
+      {pos:'WR',lbl:'WR',x:-16,y:0},{pos:'WR',lbl:'WR',x:18,y:0},{pos:'SL',lbl:'SL',x:-8,y:0},
+      {pos:'QB',lbl:'QB',x:0,y:7},{pos:'RB',lbl:'RB',x:-3,y:7}
+    ],
+    'Spread / Trips': [
+      {pos:'LT',lbl:'LT',x:-4,y:0},{pos:'LG',lbl:'LG',x:-2,y:0},{pos:'C',lbl:'C',x:0,y:0},
+      {pos:'RG',lbl:'RG',x:2,y:0},{pos:'RT',lbl:'RT',x:4,y:0},
+      {pos:'WR',lbl:'WR',x:-18,y:0},{pos:'WR',lbl:'WR',x:8,y:0},
+      {pos:'WR',lbl:'WR',x:13,y:0},{pos:'WR',lbl:'WR',x:18,y:0},
+      {pos:'QB',lbl:'QB',x:0,y:7},{pos:'RB',lbl:'RB',x:-3,y:7}
+    ],
+    'Pistol': [
+      {pos:'LT',lbl:'LT',x:-4,y:0},{pos:'LG',lbl:'LG',x:-2,y:0},{pos:'C',lbl:'C',x:0,y:0},
+      {pos:'RG',lbl:'RG',x:2,y:0},{pos:'RT',lbl:'RT',x:4,y:0},{pos:'TE',lbl:'TE',x:6.5,y:0},
+      {pos:'WR',lbl:'WR',x:-18,y:0},{pos:'WR',lbl:'WR',x:18,y:0},{pos:'SL',lbl:'SL',x:-8,y:0},
+      {pos:'QB',lbl:'QB',x:0,y:4},{pos:'RB',lbl:'RB',x:0,y:8}
+    ],
+    'Singleback': [
+      {pos:'LT',lbl:'LT',x:-4,y:0},{pos:'LG',lbl:'LG',x:-2,y:0},{pos:'C',lbl:'C',x:0,y:0},
+      {pos:'RG',lbl:'RG',x:2,y:0},{pos:'RT',lbl:'RT',x:4,y:0},{pos:'TE',lbl:'TE',x:6.5,y:0},
+      {pos:'WR',lbl:'WR',x:-18,y:0},{pos:'WR',lbl:'WR',x:18,y:0},{pos:'SL',lbl:'SL',x:-8,y:0},
+      {pos:'QB',lbl:'QB',x:0,y:1.5},{pos:'RB',lbl:'RB',x:0,y:6}
+    ],
+    'Power I': [
+      {pos:'LT',lbl:'LT',x:-4,y:0},{pos:'LG',lbl:'LG',x:-2,y:0},{pos:'C',lbl:'C',x:0,y:0},
+      {pos:'RG',lbl:'RG',x:2,y:0},{pos:'RT',lbl:'RT',x:4,y:0},{pos:'TE',lbl:'TE',x:6.5,y:0},
+      {pos:'TE',lbl:'TE',x:-6.5,y:0},{pos:'WR',lbl:'WR',x:18,y:0},
+      {pos:'QB',lbl:'QB',x:0,y:1.5},{pos:'FB',lbl:'FB',x:0,y:4.5},{pos:'HB',lbl:'HB',x:0,y:8}
+    ],
+    'Wildcat': [
+      {pos:'LT',lbl:'LT',x:-4,y:0},{pos:'LG',lbl:'LG',x:-2,y:0},{pos:'C',lbl:'C',x:0,y:0},
+      {pos:'RG',lbl:'RG',x:2,y:0},{pos:'RT',lbl:'RT',x:4,y:0},{pos:'TE',lbl:'TE',x:6.5,y:0},
+      {pos:'WR',lbl:'WR',x:-18,y:0},{pos:'WR',lbl:'WR',x:18,y:0},{pos:'WR',lbl:'WR',x:-9,y:0},
+      {pos:'RB',lbl:'RB',x:-3,y:7},{pos:'QB',lbl:'HB',x:0,y:7}
+    ],
+  },
+  defense: {
+    '4-3': [
+      {pos:'DE',lbl:'DE',x:-6.5,y:-1},{pos:'DT',lbl:'DT',x:-2,y:-1},
+      {pos:'DT',lbl:'DT',x:2,y:-1},{pos:'DE',lbl:'DE',x:6.5,y:-1},
+      {pos:'OLB',lbl:'OLB',x:-9,y:-4},{pos:'MLB',lbl:'MLB',x:0,y:-4},{pos:'OLB',lbl:'OLB',x:9,y:-4},
+      {pos:'CB',lbl:'CB',x:-18,y:-2},{pos:'CB',lbl:'CB',x:18,y:-2},
+      {pos:'SS',lbl:'SS',x:-5,y:-9},{pos:'FS',lbl:'FS',x:5,y:-13}
+    ],
+    '3-4': [
+      {pos:'DE',lbl:'DE',x:-5,y:-1},{pos:'NT',lbl:'NT',x:0,y:-1},{pos:'DE',lbl:'DE',x:5,y:-1},
+      {pos:'OLB',lbl:'OLB',x:-8,y:-3},{pos:'ILB',lbl:'ILB',x:-2,y:-4.5},
+      {pos:'ILB',lbl:'ILB',x:2,y:-4.5},{pos:'OLB',lbl:'OLB',x:8,y:-3},
+      {pos:'CB',lbl:'CB',x:-18,y:-2},{pos:'CB',lbl:'CB',x:18,y:-2},
+      {pos:'SS',lbl:'SS',x:-4,y:-9},{pos:'FS',lbl:'FS',x:4,y:-13}
+    ],
+    'Nickel': [
+      {pos:'DE',lbl:'DE',x:-6.5,y:-1},{pos:'DT',lbl:'DT',x:-2,y:-1},
+      {pos:'DT',lbl:'DT',x:2,y:-1},{pos:'DE',lbl:'DE',x:6.5,y:-1},
+      {pos:'LB',lbl:'LB',x:-4,y:-4},{pos:'LB',lbl:'LB',x:4,y:-4},
+      {pos:'CB',lbl:'CB',x:-18,y:-2},{pos:'CB',lbl:'CB',x:18,y:-2},{pos:'NB',lbl:'NB',x:-10,y:-4},
+      {pos:'SS',lbl:'SS',x:-4,y:-9},{pos:'FS',lbl:'FS',x:4,y:-13}
+    ],
+    'Dime': [
+      {pos:'DE',lbl:'DE',x:-6.5,y:-1},{pos:'DT',lbl:'DT',x:-1.5,y:-1},
+      {pos:'DT',lbl:'DT',x:1.5,y:-1},{pos:'DE',lbl:'DE',x:6.5,y:-1},
+      {pos:'LB',lbl:'LB',x:0,y:-4},
+      {pos:'CB',lbl:'CB',x:-18,y:-2},{pos:'CB',lbl:'CB',x:18,y:-2},
+      {pos:'DB',lbl:'DB',x:-11,y:-4},{pos:'DB',lbl:'DB',x:11,y:-4},
+      {pos:'SS',lbl:'SS',x:-4,y:-9},{pos:'FS',lbl:'FS',x:4,y:-13}
+    ],
+    '46 Bear': [
+      {pos:'DE',lbl:'DE',x:-6.5,y:-1},{pos:'DT',lbl:'DT',x:-3,y:-1},
+      {pos:'NT',lbl:'NT',x:0,y:-1},{pos:'DT',lbl:'DT',x:3,y:-1},{pos:'DE',lbl:'DE',x:6.5,y:-1},
+      {pos:'OLB',lbl:'OLB',x:-9,y:-1},{pos:'OLB',lbl:'OLB',x:9,y:-1},
+      {pos:'MLB',lbl:'MLB',x:-2,y:-4.5},{pos:'SS',lbl:'SS',x:2,y:-4.5},
+      {pos:'CB',lbl:'CB',x:-18,y:-2},{pos:'FS',lbl:'FS',x:0,y:-11}
+    ],
+    'Cover 2': [
+      {pos:'DE',lbl:'DE',x:-6.5,y:-1},{pos:'DT',lbl:'DT',x:-2,y:-1},
+      {pos:'DT',lbl:'DT',x:2,y:-1},{pos:'DE',lbl:'DE',x:6.5,y:-1},
+      {pos:'OLB',lbl:'OLB',x:-9,y:-3.5},{pos:'MLB',lbl:'MLB',x:0,y:-4.5},{pos:'OLB',lbl:'OLB',x:9,y:-3.5},
+      {pos:'CB',lbl:'CB',x:-13,y:-2},{pos:'CB',lbl:'CB',x:13,y:-2},
+      {pos:'SS',lbl:'SS',x:-8,y:-10},{pos:'FS',lbl:'FS',x:8,y:-10}
+    ],
+    'Zero Blitz': [
+      {pos:'DE',lbl:'DE',x:-7,y:-1},{pos:'DT',lbl:'DT',x:-2,y:-1},
+      {pos:'DT',lbl:'DT',x:2,y:-1},{pos:'DE',lbl:'DE',x:7,y:-1},
+      {pos:'OLB',lbl:'OLB',x:-9,y:-2},{pos:'MLB',lbl:'MLB',x:-2,y:-4},
+      {pos:'ILB',lbl:'ILB',x:2,y:-4},{pos:'OLB',lbl:'OLB',x:9,y:-2},
+      {pos:'CB',lbl:'CB',x:-18,y:-1.5},{pos:'CB',lbl:'CB',x:18,y:-1.5},
+      {pos:'SS',lbl:'SS',x:0,y:-7}
+    ],
+    'Man Coverage': [
+      {pos:'DE',lbl:'DE',x:-6.5,y:-1},{pos:'DT',lbl:'DT',x:-2,y:-1},
+      {pos:'DT',lbl:'DT',x:2,y:-1},{pos:'DE',lbl:'DE',x:6.5,y:-1},
+      {pos:'OLB',lbl:'OLB',x:-9,y:-3.5},{pos:'MLB',lbl:'MLB',x:0,y:-4.5},{pos:'OLB',lbl:'OLB',x:9,y:-3.5},
+      {pos:'CB',lbl:'CB',x:-18,y:-1},{pos:'CB',lbl:'CB',x:18,y:-1},
+      {pos:'SS',lbl:'SS',x:-5,y:-8},{pos:'FS',lbl:'FS',x:5,y:-12}
+    ],
+  }
+};
+
+const OFF_TYPES = ['QB','WR','TE','RB','FB','HB','TB','LT','LG','C','RG','RT','FL','SE','SL'];
+const DEF_TYPES = ['DE','DT','NT','OLB','MLB','ILB','LB','CB','SS','FS','NB','DB'];
+
+// ─── APP STATE ────────────────────────────────────────────────
+let S = {
+  mode: 'offense',
+  tool: 'select',
+  formation: 'Pro Set',
+  placeType: 'WR',
+  routeStyle: 'solid',
+  routeColor: '#ffcc00',
+  assignType: 'rush',
+
+  players: [],
+  routes: [],
+  labels: [],
+  selectedId: null,
+
+  // drag
+  dragging: false,
+  dragOX: 0, dragOY: 0,
+
+  // route drawing
+  drawingRoute: false,
+  routeWpts: [],
+  routeForId: null,
+
+  // pending label click position
+  pendingLabelX: 0, pendingLabelY: 0,
+
+  mouseX: 0, mouseY: 0,
+  history: [],
+  wbPlays: [],
+};
+
+let aiFileContent = '';
+
+// ─── CANVAS SETUP ─────────────────────────────────────────────
+const canvas = document.getElementById('field');
+const ctx    = canvas.getContext('2d');
+
+// ─── FIELD RENDERING ──────────────────────────────────────────
+function drawField() {
+  // Base gradient
+  const bg = ctx.createLinearGradient(0, 0, 0, CH);
+  bg.addColorStop(0,   '#173f1c');
+  bg.addColorStop(0.45,'#1e5222');
+  bg.addColorStop(0.55,'#1e5222');
+  bg.addColorStop(1,   '#173f1c');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, CW, CH);
+
+  // Alternating 1-yard bands (very subtle)
+  for (let i = -16; i <= 16; i++) {
+    const yy = LOS + i * VPY;
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.015)';
+    ctx.fillRect(0, yy, CW, VPY);
+  }
+
+  // 5-yard lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 1;
+  for (let i = -15; i <= 15; i += 5) {
+    const yy = LOS + i * VPY;
+    ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(CW, yy); ctx.stroke();
+  }
+
+  // Sidelines
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(2, 0); ctx.lineTo(2, CH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CW - 2, 0); ctx.lineTo(CW - 2, CH); ctx.stroke();
+
+  // Hash marks — left & right  (~18.5 and ~31.3 yards from sideline = ~18.5 & 34.8 from center)
+  const lh = CX - 13.3 * HPY, rh = CX + 13.3 * HPY;
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1;
+  for (let i = -16; i <= 16; i++) {
+    const yy = LOS + i * VPY;
+    ctx.beginPath(); ctx.moveTo(lh - 5, yy); ctx.lineTo(lh + 5, yy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(rh - 5, yy); ctx.lineTo(rh + 5, yy); ctx.stroke();
+  }
+
+  // Yard numbers
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.font = 'bold 11px Oswald, sans-serif';
+  ctx.textAlign = 'center';
+  for (let i = -15; i <= 15; i += 5) {
+    if (i === 0) continue;
+    const yy = LOS + i * VPY;
+    const lbl = Math.abs(i) + '';
+    ctx.fillText(lbl, 16, yy + 4);
+    ctx.fillText(lbl, CW - 16, yy + 4);
+  }
+
+  // LOS glow
+  const losG = ctx.createLinearGradient(0, LOS - 2, 0, LOS + 4);
+  losG.addColorStop(0, 'rgba(255,215,0,0.85)');
+  losG.addColorStop(1, 'rgba(255,215,0,0)');
+  ctx.fillStyle = losG;
+  ctx.fillRect(0, LOS - 2, CW, 6);
+
+  ctx.fillStyle = 'rgba(255,215,0,0.6)';
+  ctx.font = 'bold 10px Oswald, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('LOS', 5, LOS - 5);
+
+  // Zone labels
+  ctx.textAlign = 'left';
+  ctx.font = 'bold 12px Oswald, sans-serif';
+  ctx.fillStyle = 'rgba(74,158,255,0.2)';
+  ctx.fillText('DEFENSE', 8, 18);
+  ctx.fillStyle = 'rgba(230,57,70,0.2)';
+  ctx.fillText('OFFENSE', 8, CH - 8);
+}
+
+function arrowHead(x, y, ang, sz, col) {
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(ang);
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.moveTo(sz, 0); ctx.lineTo(-sz * .65, -sz * .5); ctx.lineTo(-sz * .65, sz * .5);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawRoute(route, preview) {
+  const pts = route.waypoints;
+  if (!pts || pts.length < 2) return;
+  const col = route.color || '#ffcc00';
+  ctx.save();
+  ctx.strokeStyle = preview ? 'rgba(255,204,0,0.55)' : col;
+  ctx.lineWidth   = preview ? 1.8 : 2.5;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  if (route.style === 'dashed')       ctx.setLineDash([7,4]);
+  else if (route.style === 'motion')  ctx.setLineDash([2,5]);
+  else                                ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const mx2 = (pts[i].x + pts[i+1].x) / 2;
+    const my2 = (pts[i].y + pts[i+1].y) / 2;
+    ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx2, my2);
+  }
+  ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Arrowhead
+  const n = pts.length;
+  const ang = Math.atan2(pts[n-1].y - pts[n-2].y, pts[n-1].x - pts[n-2].x);
+  arrowHead(pts[n-1].x, pts[n-1].y, ang, preview ? 6 : 8, preview ? 'rgba(255,204,0,0.55)' : col);
+  // Block circle
+  if (route.style === 'block') {
+    ctx.strokeStyle = col; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(pts[n-1].x, pts[n-1].y, 8, 0, Math.PI*2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawPlayer(p, sel) {
+  const { x, y } = p;
+  const off = p.side === 'offense';
+  ctx.save();
+  // Selection glow
+  if (sel) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, PR + 10);
+    g.addColorStop(0, 'rgba(240,165,0,.45)'); g.addColorStop(1, 'rgba(240,165,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, PR + 10, 0, Math.PI*2); ctx.fill();
+  }
+  if (off) {
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath(); ctx.arc(x+1.5, y+1.5, PR, 0, Math.PI*2); ctx.fill();
+    // Gradient fill
+    const gr = ctx.createRadialGradient(x-3, y-3, 0, x, y, PR);
+    gr.addColorStop(0, sel ? '#ffe066' : '#ff7b81');
+    gr.addColorStop(1, sel ? '#f0a500' : '#b5101a');
+    ctx.fillStyle = gr;
+    ctx.beginPath(); ctx.arc(x, y, PR, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = sel ? '#ffd700' : 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = sel ? 2 : 1;
+    ctx.beginPath(); ctx.arc(x, y, PR, 0, Math.PI*2); ctx.stroke();
+  } else {
+    // Defense X
+    ctx.fillStyle = sel ? 'rgba(240,165,0,.15)' : 'rgba(74,158,255,.08)';
+    ctx.beginPath(); ctx.arc(x, y, PR, 0, Math.PI*2); ctx.fill();
+    const xc = sel ? '#ffd700' : '#4a9eff';
+    ctx.strokeStyle = xc; ctx.lineWidth = sel ? 3 : 2.5; ctx.lineCap = 'round';
+    const r2 = PR * 0.7;
+    ctx.beginPath(); ctx.moveTo(x-r2,y-r2); ctx.lineTo(x+r2,y+r2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+r2,y-r2); ctx.lineTo(x-r2,y+r2); ctx.stroke();
+  }
+  // Label
+  ctx.fillStyle = off ? (sel ? '#000' : '#fff') : (sel ? '#ffd700' : '#b8d8ff');
+  ctx.font = 'bold 9px Oswald, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(p.lbl, x, y + 0.5);
+  ctx.restore();
+}
+
+function render() {
+  ctx.clearRect(0, 0, CW, CH);
+  drawField();
+  // Routes
+  S.routes.forEach(r => drawRoute(r, false));
+  // Preview route
+  if (S.drawingRoute && S.routeWpts.length > 0) {
+    drawRoute({ waypoints: [...S.routeWpts, {x:S.mouseX, y:S.mouseY}], style:S.routeStyle, color:S.routeColor }, true);
+    S.routeWpts.forEach((pt,i) => {
+      ctx.fillStyle = i===0 ? 'rgba(255,204,0,.9)' : 'rgba(255,204,0,.5)';
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, 3, 0, Math.PI*2); ctx.fill();
+    });
+  }
+  // Players (selected on top)
+  const others = S.players.filter(p => p.id !== S.selectedId);
+  const selPlayer = S.players.find(p => p.id === S.selectedId);
+  others.forEach(p => drawPlayer(p, false));
+  if (selPlayer) drawPlayer(selPlayer, true);
+  // Labels
+  S.labels.forEach(l => {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,225,80,0.9)';
+    ctx.font = 'bold 12px Rajdhani, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(l.text, l.x, l.y);
+    ctx.restore();
+  });
+  // Place tool preview cursor
+  if (S.tool === 'place') {
+    const snap = snapGrid(S.mouseX, S.mouseY);
+    ctx.save(); ctx.globalAlpha = 0.45;
+    if (S.mode === 'offense') {
+      ctx.strokeStyle = '#ff7b81'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(snap.x, snap.y, PR, 0, Math.PI*2); ctx.stroke();
+    } else {
+      ctx.strokeStyle = '#4a9eff'; ctx.lineWidth = 2.5;
+      const r2 = PR * 0.7;
+      ctx.beginPath(); ctx.moveTo(snap.x-r2, snap.y-r2); ctx.lineTo(snap.x+r2, snap.y+r2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(snap.x+r2, snap.y-r2); ctx.lineTo(snap.x-r2, snap.y+r2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+// ─── SNAP ──────────────────────────────────────────────────────
+function snapGrid(mx, my) {
+  const yd = c2yd(mx, my);
+  return yd2c(Math.round(yd.x * 2) / 2, Math.round(yd.y * 2) / 2);
+}
+
+// ─── HIT TEST ─────────────────────────────────────────────────
+function playerAt(mx, my) {
+  let best = null, bestD = PR + 5;
+  S.players.forEach(p => {
+    const d = Math.hypot(mx-p.x, my-p.y);
+    if (d < bestD) { bestD = d; best = p; }
+  });
+  return best;
+}
+
+// ─── MOUSE EVENTS ─────────────────────────────────────────────
+let mdX = 0, mdY = 0, mIsDown = false;
+let lastRouteClick = 0;
+
+canvas.addEventListener('mousedown', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  mdX = mx; mdY = my; mIsDown = true;
+
+  if (S.tool === 'select') {
+    const p = playerAt(mx, my);
+    if (p) {
+      pushH();
+      S.selectedId = p.id;
+      S.dragging = true;
+      S.dragOX = mx - p.x; S.dragOY = my - p.y;
+    } else {
+      S.selectedId = null;
+    }
+    render();
+  } else if (S.tool === 'route') {
+    if (!S.drawingRoute) {
+      const p = playerAt(mx, my);
+      if (p) {
+        S.drawingRoute = true;
+        S.routeForId = p.id;
+        S.routeWpts = [{ x: p.x, y: p.y }];
+        S.selectedId = p.id;
+        setStatus('Click to add waypoints · Double-click or ✓ FINISH to complete');
+      }
+    }
+    render();
+  } else if (S.tool === 'delete') {
+    const p = playerAt(mx, my);
+    if (p) {
+      pushH();
+      S.players = S.players.filter(q => q.id !== p.id);
+      S.routes  = S.routes.filter(r2 => r2.pid !== p.id);
+      render();
+    }
+  } else if (S.tool === 'label') {
+    S.pendingLabelX = mx; S.pendingLabelY = my;
+    openLabelModal();
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  S.mouseX = mx; S.mouseY = my;
+  const tip = document.getElementById('player-tip');
+
+  if (mIsDown && S.dragging && S.selectedId) {
+    const p = S.players.find(q => q.id === S.selectedId);
+    if (p) {
+      const snap = snapGrid(mx - S.dragOX, my - S.dragOY);
+      p.x = snap.x; p.y = snap.y;
+      // Update route start point
+      const rt = S.routes.find(r2 => r2.pid === p.id);
+      if (rt && rt.waypoints.length) rt.waypoints[0] = { x:p.x, y:p.y };
+    }
+    render(); return;
+  }
+
+  if (S.tool === 'select') {
+    const p = playerAt(mx, my);
+    if (p) {
+      tip.style.display = 'block';
+      tip.style.left = (mx + 16) + 'px';
+      tip.style.top  = (my - 8) + 'px';
+      tip.textContent = p.pos + ' — ' + p.lbl;
+      canvas.style.cursor = 'grab';
+    } else {
+      tip.style.display = 'none';
+      canvas.style.cursor = 'default';
+    }
+  } else if (S.tool === 'place' || (S.tool === 'route' && S.drawingRoute)) {
+    tip.style.display = 'none';
+    canvas.style.cursor = 'crosshair';
+    render();
+  } else if (S.tool === 'delete') {
+    const p = playerAt(mx, my);
+    canvas.style.cursor = p ? 'not-allowed' : 'crosshair';
+    tip.style.display = 'none';
+  }
+});
+
+canvas.addEventListener('mouseup', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+
+  if (S.dragging) { S.dragging = false; mIsDown = false; render(); return; }
+  mIsDown = false;
+
+  const dist = Math.hypot(mx - mdX, my - mdY);
+  if (dist > 5) return; // was a drag, not a click
+
+  if (S.tool === 'place') {
+    const snap = snapGrid(mx, my);
+    if (!playerAt(snap.x, snap.y)) {
+      pushH();
+      S.players.push({
+        id: Date.now() + Math.random(),
+        pos: S.placeType, lbl: S.placeType,
+        x: snap.x, y: snap.y,
+        side: S.mode,
+      });
+      render();
+    }
+  } else if (S.tool === 'route' && S.drawingRoute) {
+    const now = Date.now();
+    if (now - lastRouteClick < 340 && S.routeWpts.length > 1) {
+      finishRoute(); // double-click finish
+    } else {
+      S.routeWpts.push({ x: mx, y: my });
+      render();
+    }
+    lastRouteClick = now;
+  }
+});
+
+canvas.addEventListener('dblclick', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  if (S.tool === 'route' && S.drawingRoute) {
+    finishRoute(); return;
+  }
+  if (S.tool === 'select') {
+    const p = playerAt(mx, my);
+    if (p) {
+      pushH();
+      S.players = S.players.filter(q => q.id !== p.id);
+      S.routes  = S.routes.filter(r2 => r2.pid !== p.id);
+      S.selectedId = null;
+      render();
+    }
+  }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  mIsDown = false; S.dragging = false;
+  document.getElementById('player-tip').style.display = 'none';
+  render();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (e.key === 'Escape') {
+    if (S.drawingRoute) { S.drawingRoute = false; S.routeWpts = []; render(); }
+    S.selectedId = null; render();
+  }
+  if (e.key === 'Enter' && S.drawingRoute) finishRoute();
+  if ((e.ctrlKey||e.metaKey) && e.key==='z') { undoLast(); e.preventDefault(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==='s') { openSaveModal(); e.preventDefault(); }
+  const k = e.key.toLowerCase();
+  const map = {s:'select',p:'place',r:'route',d:'delete',l:'label'};
+  if (!e.ctrlKey && !e.metaKey && map[k]) setTool(map[k]);
+});
+
+// ─── TOOLS ────────────────────────────────────────────────────
+function setTool(t) {
+  if (S.drawingRoute && t !== 'route') { S.drawingRoute=false; S.routeWpts=[]; }
+  S.tool = t;
+  ['select','place','route','delete','label'].forEach(tt => {
+    document.getElementById('t-'+tt)?.classList.toggle('act', tt===t);
+  });
+  const off = S.mode === 'offense';
+  document.getElementById('sec-ptypes').style.display = t==='place' ? 'block' : 'none';
+  document.getElementById('sec-route').style.display  = (t==='route'&&off) ? 'block' : 'none';
+  document.getElementById('sec-assign').style.display = (t==='route'&&!off) ? 'block' : 'none';
+  const hints = {
+    select:  'Click to select · Drag to move · Dbl-click to remove',
+    place:   `Click to place ${S.placeType}`,
+    route:   S.drawingRoute ? 'Click waypoints · Dbl-click or ✓ FINISH to end' : 'Click on a player to begin route',
+    delete:  'Click a player to remove',
+    label:   'Click on the field to place a text label',
+  };
+  setStatus(hints[t]||'');
+  render();
+}
+
+function setMode(m) {
+  if (S.drawingRoute) { S.drawingRoute=false; S.routeWpts=[]; }
+  S.mode = m; S.selectedId = null;
+  document.getElementById('btn-off').className = 'mode-btn' + (m==='offense' ? ' on-off' : '');
+  document.getElementById('btn-def').className = 'mode-btn' + (m==='defense' ? ' on-def' : '');
+  rebuildFormations();
+  rebuildPlayerTypes();
+  setTool('select');
+}
+
+function setRouteStyle(s) {
+  S.routeStyle = s;
+  ['solid','dashed','motion','block'].forEach(k => {
+    document.getElementById('rs-'+k)?.classList.toggle('act', k===s);
+  });
+}
+
+function setAssign(a) {
+  S.assignType = a;
+  ['rush','cover','zone','blitz'].forEach(k => {
+    document.getElementById('as-'+k)?.classList.toggle('act', k===a);
+  });
+}
+
+document.getElementById('route-color').addEventListener('input', e => {
+  S.routeColor = e.target.value;
+});
+
+// ─── FORMATIONS ───────────────────────────────────────────────
+function rebuildFormations() {
+  const list = document.getElementById('formations-list');
+  list.innerHTML = '';
+  const fmts = Object.keys(FMTNS[S.mode]);
+  fmts.forEach(name => {
+    const b = document.createElement('button');
+    b.className = 'fbtn' + (name === S.formation ? ' act' : '');
+    const col = S.mode==='offense' ? 'var(--offense)' : 'var(--defense)';
+    const icon = S.mode==='offense' ? '●' : '✕';
+    b.innerHTML = `<span class="fi" style="color:${col}">${icon}</span>${name}`;
+    b.onclick = () => applyFormation(name);
+    list.appendChild(b);
+  });
+}
+
+function applyFormation(name) {
+  pushH();
+  S.formation = name;
+  const data = FMTNS[S.mode]?.[name];
+  if (!data) return;
+  S.players = S.players.filter(p => p.side !== S.mode);
+  const lostIds = new Set(S.players.map(p=>p.id));
+  S.routes = S.routes.filter(r => lostIds.has(r.pid));
+  data.forEach(d => {
+    const cp = yd2c(d.x, d.y);
+    S.players.push({ id:Date.now()+Math.random(), pos:d.pos, lbl:d.lbl, x:cp.x, y:cp.y, side:S.mode });
+  });
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('act', b.textContent.trim().includes(name)));
+  render(); setStatus(`${name} applied`);
+}
+
+// ─── PLAYER TYPES ─────────────────────────────────────────────
+function rebuildPlayerTypes() {
+  const list = document.getElementById('ptypes-list');
+  list.innerHTML = '';
+  const types = S.mode==='offense' ? OFF_TYPES : DEF_TYPES;
+  S.placeType = types[0];
+  types.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'ptbtn' + (t===S.placeType ? ' act' : '');
+    const col = S.mode==='offense' ? 'var(--offense)' : 'var(--defense)';
+    const icon = S.mode==='offense'
+      ? `<span style="width:10px;height:10px;border-radius:50%;background:${col};border:1px solid rgba(255,255,255,.3);display:inline-block;flex-shrink:0;"></span>`
+      : `<span style="color:var(--defense);font-size:11px;font-weight:900;line-height:1;">✕</span>`;
+    b.innerHTML = icon + t;
+    b.onclick = () => {
+      S.placeType = t;
+      document.querySelectorAll('.ptbtn').forEach(q => q.classList.remove('act'));
+      b.classList.add('act');
+      setTool('place');
+      setStatus(`Click to place ${t}`);
+    };
+    list.appendChild(b);
+  });
+}
+
+// ─── ROUTE FINISH ─────────────────────────────────────────────
+function finishRoute() {
+  if (!S.drawingRoute) return;
+  if (S.routeWpts.length >= 2) {
+    pushH();
+    S.routes = S.routes.filter(r => r.pid !== S.routeForId);
+    S.routes.push({
+      id: Date.now(), pid: S.routeForId,
+      waypoints: [...S.routeWpts],
+      style: S.routeStyle, color: S.routeColor, assign: S.assignType,
+    });
+  }
+  S.drawingRoute = false; S.routeWpts = []; S.routeForId = null;
+  render(); setStatus('Route saved');
+}
+
+// ─── HISTORY ──────────────────────────────────────────────────
+function pushH() {
+  S.history.push({ p: JSON.parse(JSON.stringify(S.players)), r: JSON.parse(JSON.stringify(S.routes)), l: JSON.parse(JSON.stringify(S.labels)) });
+  if (S.history.length > 40) S.history.shift();
+}
+
+function undoLast() {
+  if (!S.history.length) return;
+  const h = S.history.pop();
+  S.players = h.p; S.routes = h.r; S.labels = h.l;
+  S.selectedId = null; render(); setStatus('Undone');
+}
+
+// ─── CLEAR ────────────────────────────────────────────────────
+function confirmClear() {
+  if (!confirm('Clear all players, routes, and labels?')) return;
+  pushH();
+  S.players=[]; S.routes=[]; S.labels=[]; S.selectedId=null;
+  S.drawingRoute=false; S.routeWpts=[];
+  render(); setStatus('Field cleared');
+}
+
+// ─── STATUS ───────────────────────────────────────────────────
+function setStatus(msg) {
+  document.getElementById('status-pill').textContent = msg;
+}
+
+// ─── SAVE MODAL ───────────────────────────────────────────────
+function openSaveModal() {
+  const n = document.getElementById('sv-name');
+  n.value = document.getElementById('play-name').value || 'Untitled Play';
+  const fSel = document.getElementById('sv-formation');
+  fSel.innerHTML = '';
+  Object.keys(FMTNS.offense).concat(Object.keys(FMTNS.defense)).forEach(f => {
+    const o = document.createElement('option');
+    o.value = o.textContent = f;
+    if (f === S.formation) o.selected = true;
+    fSel.appendChild(o);
+  });
+  document.getElementById('sv-type').value = S.mode === 'defense' ? 'defense' : 'run';
+  document.getElementById('save-modal').classList.add('show');
+  setTimeout(() => n.focus(), 60);
+}
+function closeSaveModal() { document.getElementById('save-modal').classList.remove('show'); }
+
+function doSavePlay() {
+  const name = document.getElementById('sv-name').value.trim();
+  if (!name) { alert('Please enter a play name'); return; }
+  const thumb = genThumb();
+  const play = {
+    id:      Date.now(),
+    name,
+    formation: document.getElementById('sv-formation').value,
+    type:    document.getElementById('sv-type').value,
+    mode:    S.mode,
+    players: JSON.parse(JSON.stringify(S.players)),
+    routes:  JSON.parse(JSON.stringify(S.routes)),
+    labels:  JSON.parse(JSON.stringify(S.labels)),
+    thumb,
+    ts: Date.now(),
+  };
+  const lib = getLib(); lib.unshift(play); saveLib(lib);
+  document.getElementById('play-name').value = name;
+  closeSaveModal(); renderLibrary(); updateWbSel(); setStatus(`"${name}" saved`);
+}
+
+// ─── THUMBNAIL ────────────────────────────────────────────────
+function genThumb() {
+  const tc = document.createElement('canvas');
+  tc.width = 248; tc.height = 76;
+  const tx = tc.getContext('2d');
+  const sx = 248/CW, sy = 76/CH;
+  tx.fillStyle = '#1e5222'; tx.fillRect(0,0,248,76);
+  const ly = LOS*sy;
+  tx.strokeStyle='rgba(255,215,0,.75)'; tx.lineWidth=1;
+  tx.beginPath(); tx.moveTo(0,ly); tx.lineTo(248,ly); tx.stroke();
+  S.routes.forEach(rt => {
+    if (!rt.waypoints||rt.waypoints.length<2) return;
+    tx.strokeStyle = rt.color||'#ffcc00'; tx.lineWidth=1.5;
+    tx.beginPath(); tx.moveTo(rt.waypoints[0].x*sx, rt.waypoints[0].y*sy);
+    for(let i=1;i<rt.waypoints.length;i++) tx.lineTo(rt.waypoints[i].x*sx, rt.waypoints[i].y*sy);
+    tx.stroke();
+  });
+  S.players.forEach(p => {
+    const px=p.x*sx, py=p.y*sy, r2=4;
+    if (p.side==='offense') {
+      tx.fillStyle='#e63946'; tx.beginPath(); tx.arc(px,py,r2,0,Math.PI*2); tx.fill();
+    } else {
+      tx.strokeStyle='#4a9eff'; tx.lineWidth=1.5;
+      tx.beginPath(); tx.moveTo(px-r2*.7,py-r2*.7); tx.lineTo(px+r2*.7,py+r2*.7); tx.stroke();
+      tx.beginPath(); tx.moveTo(px+r2*.7,py-r2*.7); tx.lineTo(px-r2*.7,py+r2*.7); tx.stroke();
+    }
+  });
+  return tc.toDataURL('image/png');
+}
+
+// ─── LIBRARY ─────────────────────────────────────────────────
+const LIB_KEY = 'gridiron_pro_v3_lib';
+function getLib() { try { return JSON.parse(localStorage.getItem(LIB_KEY)||'[]'); } catch { return []; } }
+function saveLib(l) { localStorage.setItem(LIB_KEY, JSON.stringify(l)); }
+
+function renderLibrary() {
+  const cards = document.getElementById('lib-cards');
+  const q = document.getElementById('lib-search').value.toLowerCase();
+  const f = document.getElementById('lib-filter').value;
+  const lib = getLib().filter(p => {
+    const ms = !q || p.name.toLowerCase().includes(q) || (p.formation||'').toLowerCase().includes(q);
+    const mf = f==='all' || p.mode===f;
+    return ms && mf;
+  });
+  if (!lib.length) {
+    cards.innerHTML = '<div class="lib-empty">No plays saved yet.<br>Design a play and hit 💾 SAVE PLAY.</div>';
+    return;
+  }
+  const typeColor = {run:'ptag-r',pass:'ptag-p',defense:'ptag-d',default:'ptag-o'};
+  cards.innerHTML = '';
+  lib.forEach(pl => {
+    const mTag  = pl.mode==='offense' ? '<span class="ptag ptag-o">OFF</span>' : '<span class="ptag ptag-d">DEF</span>';
+    const tyKey = typeColor[pl.type]||typeColor.default;
+    const tyTag = pl.type ? `<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>` : '';
+    const d = document.createElement('div');
+    d.className = 'pcard';
+    d.innerHTML = `
+      ${pl.thumb ? `<img class="pcard-thumb" src="${pl.thumb}" loading="lazy">` : `<div class="pcard-thumb"></div>`}
+      <div class="pcard-body">
+        <div class="pcard-name">${pl.name}</div>
+        <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta">${pl.formation||''}</span></div>
+      </div>
+      <div class="pcard-acts">
+        <button class="pcbtn" onclick="loadPlay(${pl.id})">📂 Load</button>
+        <button class="pcbtn" onclick="wbAddById(${pl.id})">+ WB</button>
+        <button class="pcbtn red" onclick="deletePlay(${pl.id})">🗑</button>
+      </div>`;
+    cards.appendChild(d);
+  });
+}
+
+function loadPlay(id) {
+  const p = getLib().find(x=>x.id===id); if(!p) return;
+  pushH();
+  S.players=p.players||[]; S.routes=p.routes||[]; S.labels=p.labels||[];
+  S.mode=p.mode||'offense'; S.selectedId=null;
+  document.getElementById('play-name').value = p.name;
+  setMode(p.mode||'offense');
+  render(); setStatus(`"${p.name}" loaded`);
+}
+
+function deletePlay(id) {
+  if (!confirm('Delete this play from library?')) return;
+  saveLib(getLib().filter(x=>x.id!==id));
+  renderLibrary(); updateWbSel();
+}
+
+// ─── WRISTBAND ────────────────────────────────────────────────
+function updateWbSel() {
+  const sel = document.getElementById('wb-sel');
+  sel.innerHTML = '<option value="">— select a play —</option>';
+  getLib().forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id;
+    o.textContent = `${p.name} (${p.mode==='offense'?'OFF':'DEF'})`;
+    sel.appendChild(o);
+  });
+}
+
+function addToWb() {
+  const v = parseInt(document.getElementById('wb-sel').value);
+  if (!v) return;
+  wbAddById(v);
+}
+
+function wbAddById(id) {
+  if (S.wbPlays.length >= 24) { alert('Maximum 24 plays per wristband card'); return; }
+  if (S.wbPlays.includes(id)) { alert('Already on wristband'); return; }
+  const p = getLib().find(x=>x.id===id); if(!p) return;
+  S.wbPlays.push(id);
+  renderWbList(); switchTab('wb');
+}
+
+function renderWbList() {
+  const el = document.getElementById('wb-list');
+  document.getElementById('wb-count').textContent = S.wbPlays.length;
+  if (!S.wbPlays.length) {
+    el.innerHTML = '<div class="lib-empty" style="padding:10px">No plays added yet</div>';
+    return;
+  }
+  const lib = getLib();
+  el.innerHTML = '';
+  S.wbPlays.forEach((id,i) => {
+    const p = lib.find(x=>x.id===id); if(!p) return;
+    const row = document.createElement('div');
+    row.className = 'wb-item';
+    row.style.marginBottom = '4px';
+    row.innerHTML = `<div class="wb-num">${i+1}</div><div class="wb-name">${p.name}</div><button class="wb-del" onclick="removeWb(${id})">✕</button>`;
+    el.appendChild(row);
+  });
+}
+
+function removeWb(id) { S.wbPlays=S.wbPlays.filter(x=>x!==id); renderWbList(); }
+function clearWb() { S.wbPlays=[]; renderWbList(); }
+
+function printWb() {
+  if (!S.wbPlays.length) { alert('Add plays first'); return; }
+  const lib = getLib();
+  const cols = parseInt(document.getElementById('wb-cols').value)||4;
+  const title = document.getElementById('wb-title').value||'Game Plan';
+  let plays = S.wbPlays.map((id,i)=>({i:i+1,p:lib.find(x=>x.id===id)})).filter(x=>x.p);
+  while(plays.length % cols !== 0) plays.push({i:null,p:null});
+  let html = `<style>
+    @page{margin:.2in;}
+    *{box-sizing:border-box;}
+    body{font-family:Arial,sans-serif;margin:0;}
+    .wh{text-align:center;font-size:13px;font-weight:700;margin-bottom:5px;}
+    .wg{display:grid;grid-template-columns:repeat(${cols},1fr);gap:3px;border:2px solid #222;}
+    .wc{border:1px solid #555;padding:3px;min-height:0.95in;background:white;overflow:hidden;}
+    .wn{font-size:8px;color:#888;font-weight:bold;}
+    .wname{font-size:12px;font-weight:bold;text-align:center;margin:1px 0;}
+    .wmeta{font-size:8px;text-align:center;color:#666;}
+    .wimg{width:100%;height:52px;object-fit:cover;display:block;margin:2px 0;}
+    .we{background:#f8f8f8;}
+  </style><div class="wh">🏈 ${title} — ${S.wbPlays.length} Play${S.wbPlays.length>1?'s':''}</div><div class="wg">`;
+  plays.forEach(({i,p})=>{
+    if(!p){html+='<div class="wc we"></div>';return;}
+    html+=`<div class="wc"><div class="wn">#${i}</div>${p.thumb?`<img class="wimg" src="${p.thumb}">`:''}
+      <div class="wname">${p.name}</div>
+      <div class="wmeta">${p.formation||''} ${p.type?'· '+p.type.toUpperCase():''}</div></div>`;
+  });
+  html+='</div>';
+  document.getElementById('wristband-print').innerHTML=html;
+  window.print();
+}
+
+// ─── API KEY ──────────────────────────────────────────────────
+function openApiModal() {
+  document.getElementById('api-key-input').value = localStorage.getItem('gip_key')||'';
+  document.getElementById('api-modal').classList.add('show');
+}
+function closeApiModal() { document.getElementById('api-modal').classList.remove('show'); }
+function saveApiKey() {
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k) { alert('Enter your API key'); return; }
+  localStorage.setItem('gip_key', k);
+  closeApiModal(); setStatus('API key saved ✓');
+}
+
+// ─── AI COACH ─────────────────────────────────────────────────
+function handleAiUpload(e) {
+  aiFileContent = '';
+  const names = [];
+  Array.from(e.target.files).forEach(f => {
+    names.push(f.name);
+    const reader = new FileReader();
+    reader.onload = ev => { aiFileContent += `\n\n=== ${f.name} ===\n${ev.target.result}`; };
+    reader.readAsText(f);
+  });
+  document.getElementById('ai-file-label').textContent = '📎 ' + names.join(', ');
+}
+
+async function runAi() {
+  const raw = localStorage.getItem('gip_key') || '';
+  const key = raw.trim().replace(/[^ -~]/g, '');
+  if (!key) { openApiModal(); return; }
+  const age   = document.getElementById('ai-age').value;
+  const skill = document.getElementById('ai-skill').value;
+  const focus = document.getElementById('ai-focus').value;
+  const notes = document.getElementById('ai-notes').value;
+  const lib   = getLib().slice(0,12).map(p=>`- ${p.name} (${p.formation}, ${p.mode}, ${p.type||''})`).join('\n') || 'Empty';
+
+  const prompt = `You are a highly experienced football coach and play designer. Provide detailed, practical play suggestions.
+
+TEAM PROFILE:
+• Age Group: ${age.replace(/-/g,' ')}
+• Skill Level: ${skill}
+• Requested Focus: ${focus}
+• Coach Notes: ${notes || 'none'}
+
+EXISTING PLAY LIBRARY:
+${lib}
+
+${aiFileContent ? '=== PRIOR SEASON DATA ===\n' + aiFileContent.slice(0,2500) : ''}
+
+Please suggest 4 specific plays appropriate for this team. For EACH play provide:
+**[Play Name]** (e.g. "26 Power Right" or "Cover 3 Buzz")
+- Formation: 
+- Type: Run/Pass/Defense/Special
+- Setup & Key Concept: (2 sentences)
+- Execution: (3–4 clear steps)  
+- Coaching Point for ${age.replace(/-/g,' ')} ${skill}: (1 focused tip)
+
+Keep language and complexity appropriate for the age and skill level. Separate each play with a --- divider.`;
+
+  const btn = document.getElementById('ai-btn');
+  const out = document.getElementById('ai-output');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>&nbsp;THINKING...';
+  out.innerHTML='<div class="ai-result"><h4>Consulting AI Coach...</h4></div>';
+
+  try {
+    let res;
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1800,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+    } catch(netErr) {
+      throw new Error('Network error — make sure you are connected and the API key is valid. Detail: ' + netErr.message);
+    }
+    if (!res.ok) {
+      let errMsg = 'HTTP ' + res.status;
+      try { const e = await res.json(); errMsg = e.error?.message || errMsg; } catch(x){}
+      throw new Error(errMsg);
+    }
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.content?.[0]?.text || 'No response.';
+    out.innerHTML='';
+    const d = document.createElement('div');
+    d.className='ai-result';
+    d.innerHTML='<h4>🤖 AI Coach Suggestions</h4>' + fmtAi(text);
+    out.appendChild(d);
+  } catch(err) {
+    out.innerHTML=`<div class="ai-result" style="border-color:#ff4455;"><h4 style="color:#ff4455">Error</h4><p>${err.message}</p><p style="font-size:11px;color:#aaa;margin-top:6px;">Tip: Make sure your API key starts with <strong>sk-ant-</strong> and has no extra spaces.</p></div>`;
+  } finally {
+    btn.disabled=false; btn.innerHTML='⚡ GET AI SUGGESTIONS';
+  }
+}
+
+function fmtAi(t) {
+  return t
+    .replace(/---/g,'<hr style="border-color:var(--border);margin:10px 0;">')
+    .replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--accent)">$1</strong>')
+    .replace(/^#{1,3}\s+(.+)$/gm,'<strong style="color:var(--accent);display:block;margin-top:10px;font-size:13px;">$1</strong>')
+    .replace(/^[-•]\s+(.+)$/gm,'<div style="margin:3px 0;padding-left:10px;color:var(--text-hi)">• $1</div>')
+    .replace(/\n\n/g,'<br>').replace(/\n/g,'<br>');
+}
+
+// ─── LABEL MODAL ──────────────────────────────────────────────
+function openLabelModal() { document.getElementById('label-modal').classList.add('show'); setTimeout(()=>document.getElementById('label-text').focus(),50); }
+function closeLabelModal() { document.getElementById('label-modal').classList.remove('show'); }
+function confirmLabel() {
+  const txt = document.getElementById('label-text').value.trim();
+  if (!txt) { closeLabelModal(); return; }
+  pushH();
+  S.labels.push({ x:S.pendingLabelX, y:S.pendingLabelY, text:txt });
+  closeLabelModal();
+  document.getElementById('label-text').value='';
+  render();
+}
+document.getElementById('label-text').addEventListener('keydown', e => { if(e.key==='Enter') confirmLabel(); });
+
+// ─── TABS ─────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('act'));
+  document.getElementById('pane-'+id).classList.add('act');
+  document.querySelectorAll('.tabbtn').forEach(b => {
+    if (b.getAttribute('onclick').includes("'"+id+"'")) b.classList.add('act');
+  });
+  if (id==='lib') renderLibrary();
+  if (id==='wb') { updateWbSel(); renderWbList(); }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+function init() {
+  rebuildFormations();
+  rebuildPlayerTypes();
+  setTool('select');
+  document.getElementById('sec-ptypes').style.display='none';
+  document.getElementById('sec-route').style.display='none';
+  document.getElementById('sec-assign').style.display='none';
+  applyFormation('Pro Set');
+  renderLibrary(); updateWbSel();
+  setStatus('Select a formation or use the Place tool to add players  ·  [S]elect [P]lace [R]oute [D]elete [L]abel');
+}
+
+init();
+</script>
+</body>
+</html>
