@@ -7,26 +7,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg-deep: #090c12;
-  --bg-panel: #10151f;
-  --bg-card: #161d2b;
-  --bg-hover: #1e2840;
+  --bg-deep: #07090f;
+  --bg-panel: #0d1119;
+  --bg-card: #131924;
+  --bg-hover: #1a2235;
   --accent: #f0a500;
   --accent-dim: #a86f00;
-  --green-dark: #193d1c;
-  --green-mid: #245928;
-  --green-bright: #2d7a35;
+  --accent-glow: rgba(240,165,0,.18);
+  --green-dark: #173a1a;
+  --green-mid: #1e4d22;
+  --green-bright: #2a7031;
   --offense: #e63946;
   --offense-light: #ff6b73;
   --defense: #4a9eff;
   --defense-light: #7fbcff;
   --text-hi: #eef0f6;
-  --text-mid: #8899bb;
-  --text-lo: #445566;
-  --border: #1e2a3e;
-  --border-bright: #2e3f5a;
+  --text-mid: #7a8eaa;
+  --text-lo: #3a4d63;
+  --border: #182030;
+  --border-bright: #263348;
   --route-gold: #ffcc00;
-  --rad: 7px;
+  --rad: 8px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.4);
+  --shadow-md: 0 6px 24px rgba(0,0,0,.6);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,.8);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 html,body { height:100vh; overflow:hidden; }
@@ -39,59 +43,68 @@ body {
 
 /* ─── HEADER ─────────────────────────────────────────────── */
 #hdr {
-  background:linear-gradient(90deg,#0a0e17,#111827);
+  background:linear-gradient(90deg,#060810 0%,#0e1420 40%,#0a1018 100%);
   border-bottom:1px solid var(--border);
-  padding:0 14px;
-  height:50px;
-  display:flex; align-items:center; gap:10px;
+  border-top:2px solid var(--accent);
+  padding:0 16px;
+  height:52px;
+  display:flex; align-items:center; gap:12px;
   flex-shrink:0;
-  box-shadow:0 3px 20px rgba(0,0,0,.6);
+  box-shadow:0 4px 24px rgba(0,0,0,.7);
   z-index:20;
 }
 #logo {
   font-family:'Oswald',sans-serif;
-  font-size:20px; font-weight:700;
-  letter-spacing:3px; text-transform:uppercase;
+  font-size:18px; font-weight:700;
+  letter-spacing:2.5px; text-transform:uppercase;
   white-space:nowrap;
 }
 #logo em { color:var(--accent); font-style:normal; }
-.hdiv { width:1px; height:28px; background:var(--border); flex-shrink:0; }
+#logo .logo-sub { color:var(--text-mid); font-size:14px; letter-spacing:2px; }
+.hdiv { width:1px; height:28px; background:var(--border-bright); flex-shrink:0; }
 
-.mode-toggle { display:flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; flex-shrink:0; }
-.mode-btn {
-  padding:5px 14px;
-  font-family:'Oswald',sans-serif; font-size:12px; font-weight:600; letter-spacing:1.5px;
-  cursor:pointer; border:none; background:transparent; color:var(--text-mid);
-  transition:all .18s;
+.mode-toggle {
+  display:flex; border:1px solid var(--border-bright); border-radius:7px;
+  overflow:hidden; flex-shrink:0; background:var(--bg-card);
 }
-.mode-btn:hover { color:var(--text-hi); }
-.mode-btn.on-off { background:var(--offense); color:#fff; }
-.mode-btn.on-def { background:var(--defense); color:#fff; }
+.mode-btn {
+  padding:5px 16px;
+  font-family:'Oswald',sans-serif; font-size:11px; font-weight:600; letter-spacing:1.5px;
+  cursor:pointer; border:none; background:transparent; color:var(--text-mid);
+  transition:all .2s;
+}
+.mode-btn:hover { color:var(--text-hi); background:var(--bg-hover); }
+.mode-btn.on-off { background:var(--offense); color:#fff; box-shadow:inset 0 -2px 0 rgba(0,0,0,.3); }
+.mode-btn.on-def { background:var(--defense); color:#fff; box-shadow:inset 0 -2px 0 rgba(0,0,0,.3); }
 
 #play-name {
   font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:600;
-  background:var(--bg-card); border:1px solid var(--border);
-  color:var(--text-hi); padding:5px 11px; border-radius:6px;
-  min-width:150px;
+  background:var(--bg-card); border:1px solid var(--border-bright);
+  color:var(--text-hi); padding:5px 12px; border-radius:7px;
+  min-width:160px; transition:border-color .18s;
 }
-#play-name:focus { outline:none; border-color:var(--accent); }
+#play-name:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
 
 .hbtn {
-  padding:5px 13px;
+  padding:5px 13px; height:30px;
   font-family:'Oswald',sans-serif; font-size:11px; font-weight:600; letter-spacing:1px;
-  cursor:pointer; border:1px solid var(--border); background:var(--bg-card);
-  color:var(--text-mid); border-radius:6px; transition:all .18s; white-space:nowrap;
+  cursor:pointer; border:1px solid var(--border-bright); background:var(--bg-card);
+  color:var(--text-mid); border-radius:7px; transition:all .18s; white-space:nowrap;
   display:flex; align-items:center; gap:5px;
 }
-.hbtn:hover { border-color:var(--accent); color:var(--accent); }
-.hbtn.pri { background:var(--accent); border-color:var(--accent); color:#000; font-weight:700; }
-.hbtn.pri:hover { background:#ffc62e; }
+.hbtn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-glow); }
+.hbtn.pri {
+  background:var(--accent); border-color:transparent; color:#000; font-weight:700;
+  box-shadow:0 2px 10px rgba(240,165,0,.3);
+}
+.hbtn.pri:hover { background:#ffc62e; box-shadow:0 4px 16px rgba(240,165,0,.45); }
 
 .spacer { flex:1; }
 #status-pill {
-  font-size:11px; color:var(--text-mid);
-  background:rgba(255,255,255,.04); border:1px solid var(--border);
-  padding:3px 12px; border-radius:20px; white-space:nowrap; max-width:280px;
+  font-size:10px; font-family:'Oswald',sans-serif; letter-spacing:.5px;
+  color:var(--text-mid);
+  background:rgba(255,255,255,.03); border:1px solid var(--border);
+  padding:3px 14px; border-radius:20px; white-space:nowrap; max-width:300px;
   overflow:hidden; text-overflow:ellipsis;
 }
 
@@ -100,265 +113,305 @@ body {
 
 /* ─── LEFT SIDEBAR ────────────────────────────────────────── */
 #sidebar {
-  width:200px; min-width:200px;
+  width:205px; min-width:205px;
   background:var(--bg-panel);
   border-right:1px solid var(--border);
   overflow-y:auto; overflow-x:hidden;
   display:flex; flex-direction:column;
 }
-.sb-sec { border-bottom:1px solid var(--border); padding:10px; }
+.sb-sec { border-bottom:1px solid var(--border); padding:11px 10px; }
 .sb-title {
-  font-family:'Oswald',sans-serif; font-size:10px; font-weight:600;
+  font-family:'Oswald',sans-serif; font-size:9px; font-weight:700;
   letter-spacing:2.5px; color:var(--text-lo); text-transform:uppercase;
-  margin-bottom:8px;
+  margin-bottom:8px; padding-left:2px;
 }
 
 /* Tool buttons */
-.tool-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.tool-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
 .tbtn {
-  padding:7px 4px;
-  background:var(--bg-card); border:1px solid var(--border); border-radius:6px;
+  padding:8px 4px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:7px;
   color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:600;
   cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
-  transition:all .15s;
+  transition:all .15s; letter-spacing:.3px;
 }
-.tbtn:hover { border-color:var(--accent); color:var(--text-hi); }
-.tbtn.act { background:var(--accent); border-color:var(--accent); color:#000; }
+.tbtn:hover { border-color:var(--border-bright); color:var(--text-hi); background:var(--bg-hover); }
+.tbtn.act {
+  background:var(--accent); border-color:transparent; color:#000;
+  box-shadow:0 2px 10px rgba(240,165,0,.3);
+}
 .tbtn .ti { font-size:15px; line-height:1; }
 .tbtn.wide { grid-column:span 2; flex-direction:row; justify-content:center; gap:6px; }
 
 /* Formation list */
 .fbtn {
-  width:100%; padding:6px 9px; margin-bottom:3px;
-  background:var(--bg-card); border:1px solid var(--border); border-radius:5px;
-  color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:600;
-  cursor:pointer; text-align:left; transition:all .15s;
-  display:flex; align-items:center; gap:7px;
-}
-.fbtn:hover { border-color:var(--border-bright); color:var(--text-hi); background:var(--bg-hover); }
-.fbtn.act { border-color:var(--accent); color:var(--accent); background:rgba(240,165,0,.08); }
-.fbtn .fi { font-size:10px; }
-
-/* Player type list */
-.ptbtn {
-  width:100%; padding:5px 9px; margin-bottom:3px;
-  background:var(--bg-card); border:1px solid var(--border); border-radius:5px;
+  width:100%; padding:6px 10px; margin-bottom:3px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:6px;
   color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:600;
   cursor:pointer; text-align:left; transition:all .15s;
   display:flex; align-items:center; gap:8px;
 }
-.ptbtn:hover { background:var(--bg-hover); color:var(--text-hi); }
-.ptbtn.act { border-color:var(--accent); background:rgba(240,165,0,.08); color:var(--text-hi); }
+.fbtn:hover { border-color:var(--border-bright); color:var(--text-hi); background:var(--bg-hover); }
+.fbtn.act {
+  border-color:var(--accent); color:var(--accent);
+  background:rgba(240,165,0,.07);
+}
+.fbtn .fi { font-size:10px; flex-shrink:0; }
+
+/* Player type list */
+.ptbtn {
+  width:100%; padding:5px 10px; margin-bottom:3px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:6px;
+  color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:600;
+  cursor:pointer; text-align:left; transition:all .15s;
+  display:flex; align-items:center; gap:8px;
+}
+.ptbtn:hover { background:var(--bg-hover); color:var(--text-hi); border-color:var(--border-bright); }
+.ptbtn.act { border-color:var(--accent); background:rgba(240,165,0,.07); color:var(--text-hi); }
 
 /* Route style */
-.rs-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.rs-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
 .rsbtn {
-  padding:5px 4px;
-  background:var(--bg-card); border:1px solid var(--border); border-radius:4px;
+  padding:6px 4px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:5px;
   color:var(--text-mid); font-size:11px; font-family:'Rajdhani',sans-serif; font-weight:600;
-  cursor:pointer; transition:all .15s; text-align:center;
+  cursor:pointer; transition:all .15s; text-align:center; letter-spacing:.3px;
 }
-.rsbtn:hover { color:var(--route-gold); border-color:var(--route-gold); }
-.rsbtn.act { background:rgba(255,204,0,.12); border-color:var(--route-gold); color:var(--route-gold); }
+.rsbtn:hover { color:var(--route-gold); border-color:var(--route-gold); background:rgba(255,204,0,.05); }
+.rsbtn.act { background:rgba(255,204,0,.1); border-color:var(--route-gold); color:var(--route-gold); }
 
 .finish-btn {
-  width:100%; padding:7px; margin-top:7px;
-  background:rgba(255,204,0,.15); border:1px solid var(--route-gold); border-radius:5px;
-  color:var(--route-gold); font-family:'Oswald',sans-serif; font-size:12px; font-weight:600;
-  letter-spacing:1px; cursor:pointer; transition:all .15s;
+  width:100%; padding:8px; margin-top:8px;
+  background:rgba(255,204,0,.1); border:1px solid var(--route-gold); border-radius:6px;
+  color:var(--route-gold); font-family:'Oswald',sans-serif; font-size:12px; font-weight:700;
+  letter-spacing:1.5px; cursor:pointer; transition:all .15s;
 }
-.finish-btn:hover { background:rgba(255,204,0,.25); }
+.finish-btn:hover { background:rgba(255,204,0,.22); box-shadow:0 0 12px rgba(255,204,0,.2); }
 
 /* ─── FIELD AREA ──────────────────────────────────────────── */
 #field-wrap {
   flex:1; display:flex; align-items:center; justify-content:center;
-  background:#0b0f18;
-  background-image: radial-gradient(ellipse at 50% 45%, rgba(36,89,40,.12) 0%, transparent 65%);
+  background:#080c14;
+  background-image:
+    radial-gradient(ellipse at 50% 45%, rgba(30,77,34,.14) 0%, transparent 62%),
+    radial-gradient(ellipse at 50% 100%, rgba(0,0,0,.4) 0%, transparent 50%);
   position:relative; overflow:hidden;
 }
 #canvas-wrap {
   position:relative;
-  border:1px solid rgba(255,255,255,.06);
-  box-shadow:0 0 80px rgba(0,0,0,.9), 0 0 0 1px rgba(240,165,0,.08);
-  border-radius:3px;
+  border:1px solid rgba(255,255,255,.05);
+  box-shadow:
+    0 0 100px rgba(0,0,0,.95),
+    0 0 0 1px rgba(240,165,0,.06),
+    0 0 40px rgba(36,89,40,.1);
+  border-radius:4px;
 }
 #field { display:block; cursor:crosshair; }
 #player-tip {
   position:absolute; pointer-events:none;
-  background:rgba(5,8,14,.95); border:1px solid var(--accent);
-  border-radius:6px; padding:5px 10px; font-size:12px; font-weight:600; color:var(--text-hi);
+  background:rgba(4,6,12,.97); border:1px solid var(--accent);
+  border-radius:7px; padding:5px 11px; font-size:12px; font-weight:600; color:var(--text-hi);
   display:none; z-index:15; white-space:nowrap;
-  box-shadow:0 4px 20px rgba(0,0,0,.5);
+  box-shadow:0 6px 24px rgba(0,0,0,.6), 0 0 0 1px rgba(240,165,0,.1);
 }
 
 /* ─── RIGHT PANEL ─────────────────────────────────────────── */
 #rpanel {
-  width:272px; min-width:272px;
+  width:278px; min-width:278px;
   background:var(--bg-panel);
   border-left:1px solid var(--border);
   display:flex; flex-direction:column;
 }
-.tab-bar { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
-.tabbtn {
-  flex:1; padding:9px 3px;
-  background:transparent; border:none; border-bottom:2px solid transparent;
-  color:var(--text-mid); font-family:'Oswald',sans-serif; font-size:10px;
-  font-weight:600; letter-spacing:1px; cursor:pointer; transition:all .18s;
+.tab-bar {
+  display:flex; border-bottom:1px solid var(--border);
+  flex-shrink:0; background:var(--bg-deep);
 }
-.tabbtn:hover { color:var(--text-hi); }
-.tabbtn.act { color:var(--accent); border-bottom-color:var(--accent); }
+.tabbtn {
+  flex:1; padding:10px 3px;
+  background:transparent; border:none; border-bottom:2px solid transparent;
+  color:var(--text-lo); font-family:'Oswald',sans-serif; font-size:10px;
+  font-weight:700; letter-spacing:1.2px; cursor:pointer; transition:all .2s;
+}
+.tabbtn:hover { color:var(--text-mid); background:rgba(255,255,255,.02); }
+.tabbtn.act { color:var(--accent); border-bottom-color:var(--accent); background:rgba(240,165,0,.04); }
 
-.tab-pane { display:none; flex:1; overflow-y:auto; flex-direction:column; padding:10px; gap:8px; }
+.tab-pane { display:none; flex:1; overflow-y:auto; flex-direction:column; padding:12px 10px; gap:9px; }
 .tab-pane.act { display:flex; }
 
 /* Library */
 .pcard {
-  background:var(--bg-card); border:1px solid var(--border); border-radius:8px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:9px;
   overflow:hidden; cursor:pointer; transition:all .2s;
+  box-shadow:var(--shadow-sm);
 }
-.pcard:hover { border-color:var(--border-bright); transform:translateY(-1px); box-shadow:0 4px 20px rgba(0,0,0,.4); }
-.pcard-thumb { width:100%; height:72px; display:block; background:var(--green-dark); object-fit:cover; }
-.pcard-body { padding:7px 9px 4px; }
-.pcard-name { font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; color:var(--text-hi); }
-.pcard-meta { display:flex; gap:6px; align-items:center; margin-top:3px; }
+.pcard:hover {
+  border-color:var(--border-bright); transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(0,0,0,.5);
+}
+.pcard-thumb { width:100%; height:74px; display:block; background:var(--green-dark); object-fit:cover; }
+.pcard-body { padding:8px 10px 4px; }
+.pcard-name { font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; color:var(--text-hi); letter-spacing:.3px; }
+.pcard-meta { display:flex; gap:5px; align-items:center; margin-top:4px; flex-wrap:wrap; }
 .ptag {
-  padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; letter-spacing:1px;
+  padding:2px 6px; border-radius:4px; font-size:9px; font-weight:700; letter-spacing:1px;
 }
-.ptag-o { background:rgba(230,57,70,.18); color:var(--offense); border:1px solid rgba(230,57,70,.3); }
-.ptag-d { background:rgba(74,158,255,.18); color:var(--defense); border:1px solid rgba(74,158,255,.3); }
-.ptag-r { background:rgba(80,220,120,.18); color:#50dc78; border:1px solid rgba(80,220,120,.3); }
-.ptag-p { background:rgba(200,120,255,.18); color:#c878ff; border:1px solid rgba(200,120,255,.3); }
-.pcard-fmeta { font-size:10px; color:var(--text-lo); }
-.pcard-acts { display:flex; gap:4px; padding:4px 8px 8px; }
+.ptag-o { background:rgba(230,57,70,.15); color:var(--offense); border:1px solid rgba(230,57,70,.25); }
+.ptag-d { background:rgba(74,158,255,.15); color:var(--defense); border:1px solid rgba(74,158,255,.25); }
+.ptag-r { background:rgba(80,220,120,.15); color:#50dc78; border:1px solid rgba(80,220,120,.25); }
+.ptag-p { background:rgba(200,120,255,.15); color:#c878ff; border:1px solid rgba(200,120,255,.25); }
+.ptag-s { background:rgba(255,165,0,.15); color:#ffa500; border:1px solid rgba(255,165,0,.25); }
+.pcard-fmeta { font-size:10px; color:var(--text-lo); margin-left:auto; }
+.pcard-acts { display:flex; gap:4px; padding:5px 8px 9px; }
 .pcbtn {
-  flex:1; padding:4px; font-size:10px; font-family:'Rajdhani',sans-serif; font-weight:600;
+  flex:1; padding:5px 4px; font-size:10px; font-family:'Rajdhani',sans-serif; font-weight:700;
   background:var(--bg-hover); border:1px solid var(--border); color:var(--text-mid);
-  border-radius:4px; cursor:pointer; transition:all .15s;
+  border-radius:5px; cursor:pointer; transition:all .15s; letter-spacing:.3px;
 }
-.pcbtn:hover { color:var(--accent); border-color:var(--accent); }
-.pcbtn.red:hover { color:#ff4455; border-color:#ff4455; }
+.pcbtn:hover { color:var(--accent); border-color:var(--accent); background:var(--accent-glow); }
+.pcbtn.red:hover { color:#ff4455; border-color:#ff4455; background:rgba(255,68,85,.08); }
 
-.lib-empty { text-align:center; color:var(--text-mid); font-size:12px; padding:24px 12px; line-height:1.7; }
+.lib-empty {
+  text-align:center; color:var(--text-lo); font-size:12px;
+  padding:32px 16px; line-height:1.8;
+}
+.lib-empty strong { color:var(--text-mid); display:block; margin-bottom:6px; font-family:'Oswald',sans-serif; font-size:14px; }
 
 /* Right panel form elements */
-.rp-label { font-family:'Oswald',sans-serif; font-size:10px; font-weight:600; letter-spacing:2px; color:var(--text-lo); margin-bottom:4px; display:block; }
-.rp-input, .rp-select, .rp-textarea {
-  width:100%; padding:6px 10px;
-  background:var(--bg-card); border:1px solid var(--border);
-  color:var(--text-hi); border-radius:6px;
-  font-family:'Rajdhani',sans-serif; font-size:13px;
+.rp-label {
+  font-family:'Oswald',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:2px; color:var(--text-lo); margin-bottom:4px; display:block;
+  text-transform:uppercase;
 }
-.rp-input:focus, .rp-select:focus, .rp-textarea:focus { outline:none; border-color:var(--accent); }
-.rp-textarea { resize:vertical; min-height:55px; }
-.rp-group { display:flex; flex-direction:column; gap:4px; }
+.rp-input, .rp-select, .rp-textarea {
+  width:100%; padding:7px 10px;
+  background:var(--bg-card); border:1px solid var(--border-bright);
+  color:var(--text-hi); border-radius:7px;
+  font-family:'Rajdhani',sans-serif; font-size:13px; transition:border-color .18s;
+}
+.rp-input:focus, .rp-select:focus, .rp-textarea:focus {
+  outline:none; border-color:var(--accent);
+  box-shadow:0 0 0 2px var(--accent-glow);
+}
+.rp-textarea { resize:vertical; min-height:58px; line-height:1.5; }
+.rp-group { display:flex; flex-direction:column; gap:5px; }
 
 .ai-btn {
-  width:100%; padding:10px;
-  background:linear-gradient(135deg,var(--accent),#b87c00);
+  width:100%; padding:11px;
+  background:linear-gradient(135deg,#f0a500 0%,#c47a00 100%);
   border:none; border-radius:8px;
   font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px;
   color:#000; cursor:pointer; transition:all .2s;
+  box-shadow:0 3px 14px rgba(240,165,0,.25);
 }
-.ai-btn:hover { transform:translateY(-1px); box-shadow:0 5px 20px rgba(240,165,0,.35); }
-.ai-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+.ai-btn:hover { transform:translateY(-2px); box-shadow:0 7px 24px rgba(240,165,0,.4); }
+.ai-btn:disabled { opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
 
 .ai-result {
-  background:var(--bg-card); border:1px solid var(--border); border-radius:8px;
-  padding:10px; font-size:12px; line-height:1.65; color:var(--text-hi);
+  background:var(--bg-card); border:1px solid var(--border-bright); border-radius:9px;
+  padding:12px; font-size:12px; line-height:1.7; color:var(--text-hi);
+  box-shadow:var(--shadow-sm);
 }
-.ai-result h4 { font-family:'Oswald',sans-serif; color:var(--accent); font-size:13px; margin-bottom:6px; }
+.ai-result h4 { font-family:'Oswald',sans-serif; color:var(--accent); font-size:13px; margin-bottom:8px; letter-spacing:.5px; }
 
 .upload-zone {
-  border:2px dashed var(--border); border-radius:7px; padding:10px;
+  border:1px dashed var(--border-bright); border-radius:8px; padding:11px;
   text-align:center; cursor:pointer; transition:all .2s;
-  font-size:11px; color:var(--text-mid);
+  font-size:11px; color:var(--text-mid); background:rgba(255,255,255,.01);
 }
-.upload-zone:hover { border-color:var(--accent); color:var(--accent); }
+.upload-zone:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-glow); }
 
 /* Wristband */
 .wb-item {
-  display:flex; align-items:center; gap:7px;
-  background:var(--bg-card); border:1px solid var(--border); border-radius:5px;
-  padding:5px 8px;
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:6px;
+  padding:6px 9px;
 }
 .wb-num {
-  width:20px; height:20px; border-radius:50%;
+  width:22px; height:22px; border-radius:50%;
   background:var(--accent); color:#000;
   font-family:'Oswald',sans-serif; font-size:10px; font-weight:700;
   display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
-.wb-name { flex:1; font-size:12px; font-weight:600; }
+.wb-name { flex:1; font-size:12px; font-weight:600; color:var(--text-hi); }
 .wb-del {
-  width:16px; height:16px; border-radius:50%; border:none;
-  background:rgba(255,68,68,.2); color:#ff4455; cursor:pointer; font-size:9px;
-  display:flex; align-items:center; justify-content:center;
+  width:18px; height:18px; border-radius:50%; border:none;
+  background:rgba(255,68,68,.15); color:#ff4455; cursor:pointer; font-size:9px;
+  display:flex; align-items:center; justify-content:center; transition:background .15s;
 }
+.wb-del:hover { background:rgba(255,68,68,.3); }
 .wb-print-btn {
-  width:100%; padding:10px;
-  background:linear-gradient(135deg,#2a6fd4,#1040a0);
+  width:100%; padding:11px;
+  background:linear-gradient(135deg,#2a6fd4 0%,#0d3a88 100%);
   border:none; border-radius:8px;
   font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px;
   color:#fff; cursor:pointer; transition:all .2s;
+  box-shadow:0 3px 14px rgba(42,111,212,.25);
 }
-.wb-print-btn:hover { transform:translateY(-1px); box-shadow:0 5px 20px rgba(42,111,212,.4); }
+.wb-print-btn:hover { transform:translateY(-2px); box-shadow:0 7px 24px rgba(42,111,212,.4); }
 
 .add-dashed {
-  width:100%; padding:6px;
-  background:transparent; border:1px dashed var(--border); border-radius:5px;
+  width:100%; padding:7px;
+  background:transparent; border:1px dashed var(--border-bright); border-radius:6px;
   color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:600;
-  cursor:pointer; transition:all .2s;
+  cursor:pointer; transition:all .2s; letter-spacing:.3px;
 }
-.add-dashed:hover { border-color:var(--accent); color:var(--accent); }
+.add-dashed:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-glow); }
 
 /* ─── MODALS ──────────────────────────────────────────────── */
 .modal-overlay {
-  position:fixed; inset:0; background:rgba(0,0,0,.82); z-index:100;
+  position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:100;
   display:none; align-items:center; justify-content:center;
-  backdrop-filter:blur(5px);
+  backdrop-filter:blur(6px);
 }
 .modal-overlay.show { display:flex; }
 .modal {
-  background:var(--bg-panel); border:1px solid var(--border-bright); border-radius:12px;
-  padding:24px; width:90%; max-width:400px;
-  box-shadow:0 24px 80px rgba(0,0,0,.8);
-  animation:modalIn .18s ease-out;
+  background:var(--bg-panel); border:1px solid var(--border-bright); border-radius:14px;
+  padding:26px; width:90%; max-width:410px;
+  box-shadow:0 30px 90px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.04);
+  animation:modalIn .2s cubic-bezier(.2,.8,.3,1);
 }
-@keyframes modalIn { from { transform:scale(.95) translateY(8px); opacity:0; } }
-.modal h2 { font-family:'Oswald',sans-serif; font-size:18px; color:var(--accent); margin-bottom:14px; }
-.modal p { font-size:12px; color:var(--text-mid); margin-bottom:12px; line-height:1.6; }
+@keyframes modalIn { from { transform:scale(.94) translateY(12px); opacity:0; } }
+.modal h2 {
+  font-family:'Oswald',sans-serif; font-size:18px; color:var(--accent);
+  margin-bottom:4px; letter-spacing:.5px;
+}
+.modal .modal-subtitle { font-size:11px; color:var(--text-mid); margin-bottom:16px; line-height:1.6; }
+.modal p { font-size:12px; color:var(--text-mid); margin-bottom:14px; line-height:1.65; }
 .modal-input {
-  width:100%; padding:8px 12px; margin-bottom:10px;
-  background:var(--bg-card); border:1px solid var(--border);
-  color:var(--text-hi); border-radius:6px;
-  font-family:'Rajdhani',sans-serif; font-size:14px;
+  width:100%; padding:9px 13px; margin-bottom:10px;
+  background:var(--bg-card); border:1px solid var(--border-bright);
+  color:var(--text-hi); border-radius:7px;
+  font-family:'Rajdhani',sans-serif; font-size:14px; transition:border-color .18s;
 }
-.modal-input:focus { outline:none; border-color:var(--accent); }
+.modal-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
 .modal-select {
-  width:100%; padding:8px 12px; margin-bottom:10px;
-  background:var(--bg-card); border:1px solid var(--border);
-  color:var(--text-hi); border-radius:6px;
+  width:100%; padding:9px 13px; margin-bottom:10px;
+  background:var(--bg-card); border:1px solid var(--border-bright);
+  color:var(--text-hi); border-radius:7px;
   font-family:'Rajdhani',sans-serif; font-size:13px;
 }
-.modal-actions { display:flex; gap:8px; margin-top:6px; }
+.modal-select:focus { outline:none; border-color:var(--accent); }
+.modal-actions { display:flex; gap:8px; margin-top:8px; }
 .mbtn {
-  flex:1; padding:9px;
+  flex:1; padding:10px;
   font-family:'Oswald',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px;
-  border:1px solid var(--border); border-radius:6px; cursor:pointer; transition:all .18s;
+  border:1px solid var(--border-bright); border-radius:7px; cursor:pointer; transition:all .18s;
 }
-.mbtn.ok { background:var(--accent); border-color:var(--accent); color:#000; }
-.mbtn.ok:hover { background:#ffc62e; }
+.mbtn.ok { background:var(--accent); border-color:transparent; color:#000; box-shadow:0 2px 10px rgba(240,165,0,.25); }
+.mbtn.ok:hover { background:#ffc62e; box-shadow:0 4px 16px rgba(240,165,0,.4); }
 .mbtn.cancel { background:var(--bg-card); color:var(--text-mid); }
-.mbtn.cancel:hover { color:var(--text-hi); }
+.mbtn.cancel:hover { color:var(--text-hi); border-color:var(--border-bright); }
 
 /* ─── SCROLLBAR ──────────────────────────────────────────── */
-::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar { width:4px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border-bright); border-radius:2px; }
+::-webkit-scrollbar-thumb:hover { background:var(--text-lo); }
 
 /* ─── SPINNER ─────────────────────────────────────────────── */
 .spin {
-  width:16px; height:16px; border:2px solid rgba(0,0,0,.3); border-top-color:#000;
-  border-radius:50%; animation:rot .7s linear infinite; display:inline-block;
+  width:16px; height:16px; border:2px solid rgba(0,0,0,.2); border-top-color:#000;
+  border-radius:50%; animation:rot .65s linear infinite; display:inline-block;
 }
 @keyframes rot { to { transform:rotate(360deg); } }
 
@@ -374,7 +427,7 @@ body {
 
 <!-- ═══════════════ HEADER ═══════════════ -->
 <div id="hdr">
-  <div id="logo">🏈 <em>Wylie's</em> <span style="color:#fff">Football Play Maker</span></div>
+  <div id="logo">🏈 <em>Wylie's</em> <span class="logo-sub">PLAY MAKER</span></div>
   <div class="hdiv"></div>
   <div class="mode-toggle">
     <button class="mode-btn on-off" id="btn-off" onclick="setMode('offense')">● OFFENSE</button>
@@ -386,9 +439,7 @@ body {
   <button class="hbtn" onclick="confirmClear()">⌫ CLEAR</button>
   <button class="hbtn pri" onclick="openSaveModal()" title="Ctrl+S">💾 SAVE PLAY</button>
   <div class="spacer"></div>
-  <div id="status-pill">Welcome — select a formation or place players</div>
-  <div class="hdiv"></div>
-  <button class="hbtn" onclick="openApiModal()">⚙ API KEY</button>
+  <div id="status-pill">Select a formation or use the Place tool to add players</div>
 </div>
 
 <!-- ═══════════════ MAIN ═══════════════ -->
@@ -473,9 +524,9 @@ body {
   <!-- ══ RIGHT PANEL ══ -->
   <div id="rpanel">
     <div class="tab-bar">
-      <button class="tabbtn act" onclick="switchTab('lib')">📚 LIBRARY</button>
-      <button class="tabbtn" onclick="switchTab('ai')">🤖 AI COACH</button>
-      <button class="tabbtn" onclick="switchTab('wb')">🏈 WRISTBAND</button>
+      <button class="tabbtn act" data-tab="lib" onclick="switchTab('lib')">📚 LIBRARY</button>
+      <button class="tabbtn" data-tab="ai" onclick="switchTab('ai')">🤖 AI COACH</button>
+      <button class="tabbtn" data-tab="wb" onclick="switchTab('wb')">🏈 WRISTBAND</button>
     </div>
 
     <!-- LIBRARY TAB -->
@@ -535,7 +586,7 @@ body {
           placeholder="e.g. Strong OL, mobile QB, inexperienced WRs, need simple concepts..."></textarea>
       </div>
       <div class="upload-zone" onclick="document.getElementById('ai-upload').click()">
-        <input type="file" id="ai-upload" accept=".txt,.json,.pdf" multiple style="display:none" onchange="handleAiUpload(event)">
+        <input type="file" id="ai-upload" accept=".txt,.json" multiple style="display:none" onchange="handleAiUpload(event)">
         📂 Upload Prior Season Plays
         <div style="font-size:10px;margin-top:2px;color:var(--text-lo)">TXT / JSON accepted</div>
         <div id="ai-file-label" style="font-size:10px;color:var(--accent);margin-top:3px;"></div>
@@ -574,7 +625,7 @@ body {
           <button style="font-size:10px;color:var(--text-mid);background:none;border:none;cursor:pointer;" onclick="clearWb()">Clear All</button>
         </div>
         <div id="wb-list">
-          <div class="lib-empty" style="padding:12px;">No plays added yet</div>
+          <div class="lib-empty" style="padding:12px;"><strong>No plays added</strong>Select a play above and click Add to Wristband.</div>
         </div>
       </div>
       <button class="wb-print-btn" onclick="printWb()">🖨 PRINT WRISTBAND CARD</button>
@@ -587,6 +638,7 @@ body {
 <div class="modal-overlay" id="save-modal">
   <div class="modal">
     <h2>💾 Save Play</h2>
+    <p class="modal-subtitle">Name your play and tag it for easy filtering in the library.</p>
     <input type="text" class="modal-input" id="sv-name" placeholder="Play name (e.g. 22 Power Right)">
     <select class="modal-select" id="sv-formation">
       <option value="">Formation...</option>
@@ -607,23 +659,12 @@ body {
   </div>
 </div>
 
-<!-- ═══ API KEY MODAL ═══ -->
-<div class="modal-overlay" id="api-modal">
-  <div class="modal">
-    <h2>⚙ Anthropic API Key</h2>
-    <p>Required for AI Coach suggestions. Your key is stored locally in this browser only and never sent anywhere except Anthropic's API.</p>
-    <input type="password" class="modal-input" id="api-key-input" placeholder="sk-ant-api03-...">
-    <div class="modal-actions">
-      <button class="mbtn cancel" onclick="closeApiModal()">Cancel</button>
-      <button class="mbtn ok" onclick="saveApiKey()">Save Key</button>
-    </div>
-  </div>
-</div>
 
 <!-- ═══ LABEL MODAL ═══ -->
 <div class="modal-overlay" id="label-modal">
   <div class="modal">
     <h2>T Add Label</h2>
+    <p class="modal-subtitle">Type a label to place at the clicked position on the field.</p>
     <input type="text" class="modal-input" id="label-text" placeholder="e.g. Inside Zone, Cover 2 Read...">
     <div class="modal-actions">
       <button class="mbtn cancel" onclick="closeLabelModal()">Cancel</button>
@@ -807,6 +848,7 @@ let S = {
 };
 
 let aiFileContent = '';
+let aiFilesLoading = 0;
 
 // ─── CANVAS SETUP ─────────────────────────────────────────────
 const canvas = document.getElementById('field');
@@ -1219,6 +1261,8 @@ function setTool(t) {
 function setMode(m) {
   if (S.drawingRoute) { S.drawingRoute=false; S.routeWpts=[]; }
   S.mode = m; S.selectedId = null;
+  // Reset formation to first of new mode unless already a valid formation for this mode
+  if (!FMTNS[m][S.formation]) S.formation = Object.keys(FMTNS[m])[0];
   document.getElementById('btn-off').className = 'mode-btn' + (m==='offense' ? ' on-off' : '');
   document.getElementById('btn-def').className = 'mode-btn' + (m==='defense' ? ' on-def' : '');
   rebuildFormations();
@@ -1252,6 +1296,7 @@ function rebuildFormations() {
   fmts.forEach(name => {
     const b = document.createElement('button');
     b.className = 'fbtn' + (name === S.formation ? ' act' : '');
+    b.dataset.name = name;
     const col = S.mode==='offense' ? 'var(--offense)' : 'var(--defense)';
     const icon = S.mode==='offense' ? '●' : '✕';
     b.innerHTML = `<span class="fi" style="color:${col}">${icon}</span>${name}`;
@@ -1272,7 +1317,7 @@ function applyFormation(name) {
     const cp = yd2c(d.x, d.y);
     S.players.push({ id:Date.now()+Math.random(), pos:d.pos, lbl:d.lbl, x:cp.x, y:cp.y, side:S.mode });
   });
-  document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('act', b.textContent.trim().includes(name)));
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('act', b.dataset.name === name));
   render(); setStatus(`${name} applied`);
 }
 
@@ -1428,10 +1473,10 @@ function renderLibrary() {
     return ms && mf;
   });
   if (!lib.length) {
-    cards.innerHTML = '<div class="lib-empty">No plays saved yet.<br>Design a play and hit 💾 SAVE PLAY.</div>';
+    cards.innerHTML = '<div class="lib-empty"><strong>No plays saved yet</strong>Design a play on the field, then hit 💾 SAVE PLAY to add it here.</div>';
     return;
   }
-  const typeColor = {run:'ptag-r',pass:'ptag-p',defense:'ptag-d',default:'ptag-o'};
+  const typeColor = {run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
   cards.innerHTML = '';
   lib.forEach(pl => {
     const mTag  = pl.mode==='offense' ? '<span class="ptag ptag-o">OFF</span>' : '<span class="ptag ptag-d">DEF</span>';
@@ -1439,17 +1484,20 @@ function renderLibrary() {
     const tyTag = pl.type ? `<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>` : '';
     const d = document.createElement('div');
     d.className = 'pcard';
+    // Build structure with DOM to safely set play name (prevents XSS)
     d.innerHTML = `
       ${pl.thumb ? `<img class="pcard-thumb" src="${pl.thumb}" loading="lazy">` : `<div class="pcard-thumb"></div>`}
       <div class="pcard-body">
-        <div class="pcard-name">${pl.name}</div>
-        <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta">${pl.formation||''}</span></div>
+        <div class="pcard-name"></div>
+        <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta"></span></div>
       </div>
       <div class="pcard-acts">
         <button class="pcbtn" onclick="loadPlay(${pl.id})">📂 Load</button>
         <button class="pcbtn" onclick="wbAddById(${pl.id})">+ WB</button>
-        <button class="pcbtn red" onclick="deletePlay(${pl.id})">🗑</button>
+        <button class="pcbtn red" onclick="deletePlay(${pl.id})">🗑 Delete</button>
       </div>`;
+    d.querySelector('.pcard-name').textContent = pl.name;
+    d.querySelector('.pcard-fmeta').textContent = pl.formation || '';
     cards.appendChild(d);
   });
 }
@@ -1458,7 +1506,7 @@ function loadPlay(id) {
   const p = getLib().find(x=>x.id===id); if(!p) return;
   pushH();
   S.players=p.players||[]; S.routes=p.routes||[]; S.labels=p.labels||[];
-  S.mode=p.mode||'offense'; S.selectedId=null;
+  S.mode=p.mode||'offense'; S.formation=p.formation||S.formation; S.selectedId=null;
   document.getElementById('play-name').value = p.name;
   setMode(p.mode||'offense');
   render(); setStatus(`"${p.name}" loaded`);
@@ -1483,7 +1531,7 @@ function updateWbSel() {
 }
 
 function addToWb() {
-  const v = parseInt(document.getElementById('wb-sel').value);
+  const v = parseFloat(document.getElementById('wb-sel').value);
   if (!v) return;
   wbAddById(v);
 }
@@ -1549,36 +1597,24 @@ function printWb() {
   window.print();
 }
 
-// ─── API KEY ──────────────────────────────────────────────────
-function openApiModal() {
-  document.getElementById('api-key-input').value = localStorage.getItem('gip_key')||'';
-  document.getElementById('api-modal').classList.add('show');
-}
-function closeApiModal() { document.getElementById('api-modal').classList.remove('show'); }
-function saveApiKey() {
-  const k = document.getElementById('api-key-input').value.trim();
-  if (!k) { alert('Enter your API key'); return; }
-  localStorage.setItem('gip_key', k);
-  closeApiModal(); setStatus('API key saved ✓');
-}
-
 // ─── AI COACH ─────────────────────────────────────────────────
 function handleAiUpload(e) {
   aiFileContent = '';
+  aiFilesLoading = 0;
   const names = [];
   Array.from(e.target.files).forEach(f => {
     names.push(f.name);
+    aiFilesLoading++;
     const reader = new FileReader();
-    reader.onload = ev => { aiFileContent += `\n\n=== ${f.name} ===\n${ev.target.result}`; };
+    reader.onload = ev => { aiFileContent += `\n\n=== ${f.name} ===\n${ev.target.result}`; aiFilesLoading--; };
+    reader.onerror = () => { aiFilesLoading--; };
     reader.readAsText(f);
   });
-  document.getElementById('ai-file-label').textContent = '📎 ' + names.join(', ');
+  document.getElementById('ai-file-label').textContent = names.length ? '📎 ' + names.join(', ') : '';
 }
 
 async function runAi() {
-  const raw = localStorage.getItem('gip_key') || '';
-  const key = raw.trim().replace(/[^ -~]/g, '');
-  if (!key) { openApiModal(); return; }
+  if (aiFilesLoading > 0) { setStatus('Still reading uploaded files — please wait…'); return; }
   const age   = document.getElementById('ai-age').value;
   const skill = document.getElementById('ai-skill').value;
   const focus = document.getElementById('ai-focus').value;
@@ -1600,10 +1636,10 @@ ${aiFileContent ? '=== PRIOR SEASON DATA ===\n' + aiFileContent.slice(0,2500) : 
 
 Please suggest 4 specific plays appropriate for this team. For EACH play provide:
 **[Play Name]** (e.g. "26 Power Right" or "Cover 3 Buzz")
-- Formation: 
+- Formation:
 - Type: Run/Pass/Defense/Special
 - Setup & Key Concept: (2 sentences)
-- Execution: (3–4 clear steps)  
+- Execution: (3–4 clear steps)
 - Coaching Point for ${age.replace(/-/g,' ')} ${skill}: (1 focused tip)
 
 Keep language and complexity appropriate for the age and skill level. Separate each play with a --- divider.`;
@@ -1614,32 +1650,18 @@ Keep language and complexity appropriate for the age and skill level. Separate e
   out.innerHTML='<div class="ai-result"><h4>Consulting AI Coach...</h4></div>';
 
   try {
-    let res;
-    try {
-      res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1800,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
-    } catch(netErr) {
-      throw new Error('Network error — make sure you are connected and the API key is valid. Detail: ' + netErr.message);
-    }
-    if (!res.ok) {
-      let errMsg = 'HTTP ' + res.status;
-      try { const e = await res.json(); errMsg = e.error?.message || errMsg; } catch(x){}
-      throw new Error(errMsg);
-    }
+    const res = await fetch('/api/coach', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1800,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
+    if (!res.ok) throw new Error(data.error || 'Server error ' + res.status);
+    if (data.error) throw new Error(data.error.message || data.error);
     const text = data.content?.[0]?.text || 'No response.';
     out.innerHTML='';
     const d = document.createElement('div');
@@ -1647,7 +1669,7 @@ Keep language and complexity appropriate for the age and skill level. Separate e
     d.innerHTML='<h4>🤖 AI Coach Suggestions</h4>' + fmtAi(text);
     out.appendChild(d);
   } catch(err) {
-    out.innerHTML=`<div class="ai-result" style="border-color:#ff4455;"><h4 style="color:#ff4455">Error</h4><p>${err.message}</p><p style="font-size:11px;color:#aaa;margin-top:6px;">Tip: Make sure your API key starts with <strong>sk-ant-</strong> and has no extra spaces.</p></div>`;
+    out.innerHTML=`<div class="ai-result" style="border-color:#ff4455;"><h4 style="color:#ff4455">Error</h4><p>${err.message}</p></div>`;
   } finally {
     btn.disabled=false; btn.innerHTML='⚡ GET AI SUGGESTIONS';
   }
@@ -1679,11 +1701,8 @@ document.getElementById('label-text').addEventListener('keydown', e => { if(e.ke
 // ─── TABS ─────────────────────────────────────────────────────
 function switchTab(id) {
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('act'));
-  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('act'));
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('act', b.dataset.tab===id));
   document.getElementById('pane-'+id).classList.add('act');
-  document.querySelectorAll('.tabbtn').forEach(b => {
-    if (b.getAttribute('onclick').includes("'"+id+"'")) b.classList.add('act');
-  });
   if (id==='lib') renderLibrary();
   if (id==='wb') { updateWbSel(); renderWbList(); }
 }
