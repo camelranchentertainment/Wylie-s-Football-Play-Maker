@@ -182,11 +182,21 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .wb-del:hover { background:rgba(255,68,68,.3); }
 .wb-print-btn { width:100%; padding:11px; background:linear-gradient(135deg,#2a6fd4 0%,#0d3a88 100%); border:none; border-radius:8px; font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px; color:#fff; cursor:pointer; transition:all .2s; box-shadow:0 3px 14px rgba(42,111,212,.25); }
 .wb-print-btn:hover { transform:translateY(-2px); box-shadow:0 7px 24px rgba(42,111,212,.4); }
-.wb-preview-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
-.wb-preview-card img { width:100%; height:70px; object-fit:cover; background:var(--green-dark); }
-.wb-preview-card-body { padding:6px 9px 8px; }
-.wb-preview-card-name { font-family:'Oswald',sans-serif; font-size:12px; font-weight:600; color:var(--text-hi); }
-.wb-preview-card-meta { font-size:10px; color:var(--text-lo); margin-top:2px; }
+
+/* ─── WRISTBAND CARD PREVIEW ────────────────────────────────── */
+#wb-preview-grid { padding:4px; }
+.wb-card { background:#fff; border-radius:6px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.5); max-width:760px; }
+.wb-card-hdr { background:#111; color:#fff; font-family:'Oswald',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-align:center; padding:5px 10px; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:8px; }
+.wb-card-hdr span { color:var(--accent); }
+.wb-card-grid { display:grid; border-left:1px solid #999; border-top:1px solid #999; }
+.wb-cell { border-right:1px solid #999; border-bottom:1px solid #999; background:#fff; overflow:hidden; }
+.wb-cell-num { font-size:7px; font-weight:700; color:#888; padding:2px 4px 0; font-family:Arial,sans-serif; }
+.wb-cell-img { width:100%; height:48px; object-fit:cover; display:block; }
+.wb-cell-img-ph { width:100%; height:48px; background:#e8e8e8; }
+.wb-cell-name { font-size:9px; font-weight:700; text-align:center; padding:2px 3px 0; color:#111; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:Arial,sans-serif; }
+.wb-cell-meta { font-size:7px; text-align:center; color:#666; padding:0 3px 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:Arial,sans-serif; }
+.wb-cell-empty { background:#f5f5f5; }
+.wb-empty-msg { text-align:center; color:var(--text-lo); font-size:12px; padding:30px; border:1px dashed var(--border-bright); border-radius:8px; }
 
 /* ─── MODALS ───────────────────────────────────────────────── */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:100; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
@@ -249,9 +259,9 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <div class="spacer"></div>
   <nav class="nav-pages">
     <button class="npbtn act" data-page="designer" onclick="switchPage('designer')">✏ DESIGNER</button>
-    <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 LIBRARY</button>
     <button class="npbtn" data-page="ai" onclick="switchPage('ai')">🤖 AI COACH</button>
     <button class="npbtn" data-page="wb" onclick="switchPage('wb')">🏈 WRISTBAND</button>
+    <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 LIBRARY</button>
   </nav>
 </div>
 
@@ -403,11 +413,11 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
       <h2>🏈 Wristband Builder</h2>
       <div class="rp-group">
         <label class="rp-label">Card Title</label>
-        <input type="text" class="rp-input" id="wb-title" value="Game Plan">
+        <input type="text" class="rp-input" id="wb-title" value="Game Plan" oninput="renderWbPreview()">
       </div>
       <div class="rp-group">
         <label class="rp-label">Columns</label>
-        <select class="rp-select" id="wb-cols">
+        <select class="rp-select" id="wb-cols" onchange="renderWbPreview()">
           <option value="3">3 columns</option>
           <option value="4" selected>4 columns</option>
           <option value="5">5 columns</option>
@@ -429,7 +439,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     </div>
     <div id="wb-preview-col">
       <h3>CARD PREVIEW</h3>
-      <div id="wb-preview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;"></div>
+      <div id="wb-preview-grid"></div>
     </div>
   </div>
 
@@ -1159,16 +1169,43 @@ function renderWbList(){
 }
 
 function renderWbPreview(){
-  const grid=document.getElementById('wb-preview-grid'); if(!grid) return;
-  const lib=getLib(); grid.innerHTML='';
-  S.wbPlays.forEach((id,i)=>{
-    const p=lib.find(x=>x.id===id); if(!p) return;
-    const card=document.createElement('div'); card.className='wb-preview-card';
-    card.innerHTML=`${p.thumb?`<img src="${p.thumb}">`:'<div style="height:70px;background:var(--green-dark);"></div>'}<div class="wb-preview-card-body"><div class="wb-preview-card-name"></div><div class="wb-preview-card-meta"></div></div>`;
-    card.querySelector('.wb-preview-card-name').textContent=`#${i+1} ${p.name}`;
-    card.querySelector('.wb-preview-card-meta').textContent=(p.formation||'')+(p.type?' · '+p.type.toUpperCase():'');
-    grid.appendChild(card);
+  const wrap=document.getElementById('wb-preview-grid'); if(!wrap) return;
+  const lib=getLib();
+  const cols=parseInt(document.getElementById('wb-cols')?.value)||4;
+  const title=(document.getElementById('wb-title')?.value||'Game Plan').trim();
+
+  if(!S.wbPlays.length){
+    wrap.innerHTML='<div class="wb-empty-msg">Add plays to see the wristband card preview</div>';
+    return;
+  }
+
+  // Pad plays to a full row
+  const plays=S.wbPlays.map((id,i)=>({i:i+1,p:lib.find(x=>x.id===id)}));
+  while(plays.length%cols!==0) plays.push({i:null,p:null});
+
+  const card=document.createElement('div'); card.className='wb-card';
+  const hdr=document.createElement('div'); hdr.className='wb-card-hdr';
+  hdr.innerHTML=`🏈 <span></span> · ${plays.filter(x=>x.p).length} Play${plays.filter(x=>x.p).length!==1?'s':''}`;
+  hdr.querySelector('span').textContent=title;
+
+  const g=document.createElement('div'); g.className='wb-card-grid';
+  g.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+
+  plays.forEach(({i,p})=>{
+    const cell=document.createElement('div');
+    if(!p){ cell.className='wb-cell wb-cell-empty'; g.appendChild(cell); return; }
+    cell.className='wb-cell';
+    const num=document.createElement('div'); num.className='wb-cell-num'; num.textContent='#'+i;
+    const imgEl=p.thumb ? Object.assign(document.createElement('img'),{className:'wb-cell-img',src:p.thumb}) : Object.assign(document.createElement('div'),{className:'wb-cell-img-ph'});
+    const nm=document.createElement('div'); nm.className='wb-cell-name'; nm.textContent=p.name;
+    const mt=document.createElement('div'); mt.className='wb-cell-meta'; mt.textContent=(p.formation||'')+(p.type?' · '+p.type.toUpperCase():'');
+    cell.append(num,imgEl,nm,mt);
+    g.appendChild(cell);
   });
+
+  card.append(hdr,g);
+  wrap.innerHTML='';
+  wrap.appendChild(card);
 }
 
 function removeWb(id){ S.wbPlays=S.wbPlays.filter(x=>x!==id); renderWbList(); }
