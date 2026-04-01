@@ -577,11 +577,13 @@ let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
 // Called on page load — restore session if one exists
 async function initAuth() {
   const { data: { session } } = await supa.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    await loadCloudLib();
-    updateAuthUI();
+  if (!session) {
+    window.location.replace('login.html');
+    return;
   }
+  currentUser = session.user;
+  await loadCloudLib();
+  updateAuthUI();
   // Listen for auth state changes (sign-in / sign-out in other tabs)
   supa.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
