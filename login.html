@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sign In — Wylie's Play Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#14202e;--panel:#1b2b3d;--card:#22304a;
+  --accent:#f0a500;--off:#e63946;--hi:#f5f7fb;
+  --mid:#c0d4e8;--lo:#7fa0bc;--border:#2a3d55;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg);
+  color:var(--hi);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 54px,rgba(255,255,255,.03) 54px,rgba(255,255,255,.03) 55px),
+    radial-gradient(ellipse at 50% 0%,rgba(240,165,0,.08) 0%,transparent 60%);
+}
+
+/* BRAND */
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:36px;}
+.brand svg{width:40px;height:40px;}
+.brand-text .top{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:3px;}
+.brand-text .top em{color:var(--accent);font-style:normal;}
+.brand-text .sub{font-size:8px;letter-spacing:3px;color:var(--lo);margin-top:1px;}
+
+/* CARD */
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-top:3px solid var(--accent);
+  border-radius:14px;
+  padding:36px 40px 32px;
+  width:100%;max-width:420px;
+  box-shadow:0 24px 60px rgba(0,0,0,.5);
+}
+.card-title{
+  font-family:'Oswald',sans-serif;
+  font-size:22px;font-weight:700;letter-spacing:1px;
+  color:#fff;margin-bottom:6px;
+}
+.card-sub{font-size:13px;color:var(--lo);margin-bottom:28px;line-height:1.5;}
+
+/* FORM */
+.field{margin-bottom:18px;}
+label{display:block;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--lo);margin-bottom:6px;}
+input[type=email],input[type=password]{
+  width:100%;padding:12px 14px;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;
+  outline:none;transition:border-color .2s,background .2s;
+}
+input[type=email]:focus,input[type=password]:focus{
+  border-color:var(--accent);background:rgba(255,255,255,.09);
+}
+input::placeholder{color:var(--lo);}
+
+.btn-gold{
+  width:100%;padding:13px;
+  background:var(--accent);color:#000;
+  font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;
+  border:none;border-radius:8px;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 22px rgba(240,165,0,.3);
+  margin-top:4px;
+}
+.btn-gold:hover{background:#ffc62e;box-shadow:0 8px 30px rgba(240,165,0,.45);transform:translateY(-1px);}
+.btn-gold:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* ERROR / SUCCESS */
+.msg{
+  display:none;
+  padding:10px 14px;border-radius:7px;
+  font-size:12.5px;font-family:'Oswald',sans-serif;letter-spacing:.5px;
+  margin-bottom:18px;line-height:1.45;
+}
+.msg.error{background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.25);color:#ff6b75;}
+.msg.success{background:rgba(80,220,120,.1);border:1px solid rgba(80,220,120,.25);color:#50dc78;}
+.msg.show{display:block;}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:12px;margin:22px 0;}
+.divider hr{flex:1;border:none;border-top:1px solid var(--border);}
+.divider span{font-family:'Oswald',sans-serif;font-size:9px;color:var(--lo);letter-spacing:2px;}
+
+/* SWITCH LINK */
+.switch{text-align:center;font-size:12px;color:var(--lo);}
+.switch a{color:var(--accent);font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-decoration:none;}
+.switch a:hover{color:#ffc62e;}
+
+/* SPINNER */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22 3L40 10.5V23C40 33.5 32 41 22 44C12 41 4 33.5 4 23V10.5L22 3Z" fill="#1b2b3d" stroke="#f0a500" stroke-width="1.4"/>
+    <ellipse cx="22" cy="20" rx="12" ry="7.5" fill="none" stroke="#f0a500" stroke-width="1.6" transform="rotate(-18 22 20)"/>
+    <line x1="22" y1="12" x2="22" y2="28" stroke="#f0a500" stroke-width=".9" opacity=".65"/>
+    <line x1="16.5" y1="17" x2="27.5" y2="17" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+    <line x1="16.5" y1="20" x2="27.5" y2="20" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+    <line x1="16.5" y1="23" x2="27.5" y2="23" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+  </svg>
+  <div class="brand-text">
+    <div class="top"><em>WYLIE'S</em> PLAY MAKER</div>
+    <div class="sub">FOOTBALL COACHING TOOLS</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">SIGN IN</div>
+  <div class="card-sub">Welcome back, Coach. Sign in to access your playbook.</div>
+
+  <div class="msg" id="msg"></div>
+
+  <form id="login-form" onsubmit="doLogin(event)">
+    <div class="field">
+      <label>EMAIL ADDRESS</label>
+      <input type="email" id="email" placeholder="coach@example.com" required autocomplete="email">
+    </div>
+    <div class="field">
+      <label>PASSWORD</label>
+      <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn-gold" id="submit-btn">SIGN IN TO MY PLAYBOOK</button>
+  </form>
+
+  <div class="divider"><hr><span>OR</span><hr></div>
+
+  <div class="switch">
+    Don't have an account? &nbsp;
+    <a href="signup.html">CREATE ACCOUNT →</a>
+  </div>
+</div>
+
+<script>
+const SUPA_URL = 'https://rvxanoqourdrfmbucvpz.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// If already signed in, skip to index
+supa.auth.getSession().then(({ data }) => {
+  if (data.session) window.location.replace('index.html');
+});
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg show ' + type;
+}
+
+function friendlyError(err) {
+  const m = (err.message || '').toLowerCase();
+  if (m.includes('invalid login credentials') || m.includes('invalid email or password'))
+    return 'Incorrect email or password. Please try again.';
+  if (m.includes('email not confirmed'))
+    return 'Please check your email and confirm your account first.';
+  if (m.includes('too many requests'))
+    return 'Too many attempts. Please wait a moment and try again.';
+  return err.message || 'An error occurred. Please try again.';
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('submit-btn');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>SIGNING IN…';
+
+  const { error } = await supa.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    showMsg(friendlyError(error), 'error');
+    btn.disabled = false;
+    btn.textContent = 'SIGN IN TO MY PLAYBOOK';
+  } else {
+    showMsg('Signed in! Redirecting…', 'success');
+    setTimeout(() => window.location.replace('index.html'), 800);
+  }
+}
+</script>
+</body>
+</html>
