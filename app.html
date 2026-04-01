@@ -54,7 +54,6 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .hbtn.pri { background:var(--accent); border-color:transparent; color:#000; font-weight:700; box-shadow:0 2px 10px rgba(240,165,0,.3); }
 .hbtn.pri:hover { background:#ffc62e; box-shadow:0 4px 16px rgba(240,165,0,.45); }
 .spacer { flex:1; }
-#status-pill { font-size:10px; font-family:'Oswald',sans-serif; letter-spacing:.5px; color:var(--text-mid); background:rgba(255,255,255,.03); border:1px solid var(--border); padding:3px 13px; border-radius:20px; white-space:nowrap; max-width:280px; overflow:hidden; text-overflow:ellipsis; }
 
 /* ─── DESIGNER HEADER CONTROLS ───────────────────────────── */
 #designer-ctrls { display:flex; align-items:center; gap:10px; }
@@ -257,8 +256,6 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     <button class="hbtn" onclick="undoLast()" title="Ctrl+Z">↩ UNDO</button>
     <button class="hbtn" onclick="confirmClear()">⌫ CLEAR</button>
     <button class="hbtn pri" onclick="openSaveModal()" title="Ctrl+S">💾 SAVE PLAY</button>
-    <div id="status-pill">Select a formation or use the Place tool</div>
-    <div class="hdiv"></div>
   </div>
   <div class="spacer"></div>
   <nav class="nav-pages">
@@ -981,7 +978,7 @@ function finishRoute(){
 function pushH(){ S.history.push({p:JSON.parse(JSON.stringify(S.players)),r:JSON.parse(JSON.stringify(S.routes)),l:JSON.parse(JSON.stringify(S.labels))}); if(S.history.length>40) S.history.shift(); }
 function undoLast(){ if(!S.history.length) return; const h=S.history.pop(); S.players=h.p; S.routes=h.r; S.labels=h.l; S.selectedId=null; render(); setStatus('Undone'); }
 function confirmClear(){ if(!confirm('Clear all players, routes, and labels?')) return; pushH(); S.players=[]; S.routes=[]; S.labels=[]; S.selectedId=null; S.drawingRoute=false; S.routeWpts=[]; render(); setStatus('Field cleared'); }
-function setStatus(msg){ document.getElementById('status-pill').textContent=msg; }
+function setStatus(msg){ /* status pill removed */ }
 
 // ─── SAVE MODAL ───────────────────────────────────────────────
 function openSaveModal(){
