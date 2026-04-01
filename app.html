@@ -382,9 +382,6 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
           <option value="2">2 plays</option>
           <option value="3">3 plays</option>
           <option value="4" selected>4 plays</option>
-          <option value="5">5 plays</option>
-          <option value="6">6 plays</option>
-          <option value="8">8 plays</option>
         </select>
       </div>
       <div class="rp-group">
@@ -647,6 +644,8 @@ let S = {
 let aiFileContent = '';
 let aiFilesLoading = 0;
 let currentPopupId = null;
+// Tracks the last 25 AI-suggested formations to prevent repeats
+let recentAiFmtns = (()=>{ try{return JSON.parse(localStorage.getItem('wpm_ai_fmtn_hist')||'[]');}catch{return[];} })();
 
 // ─── CANVAS ───────────────────────────────────────────────────
 const canvas = document.getElementById('field');
@@ -1247,6 +1246,10 @@ async function runAi(){
   const notes=document.getElementById('ai-notes').value;
   const lib=getLib().slice(0,12).map(p=>`- ${p.name} (${p.formation}, ${p.mode}, ${p.type||''})`).join('\n')||'Empty';
 
+  const avoidLine=recentAiFmtns.length
+    ? `\nFORMATION VARIETY RULE: Do NOT use any of these recently suggested formations (rotate for variety): ${recentAiFmtns.slice(0,25).join(', ')}.`
+    : '';
+
   const prompt=`You are a highly experienced football coach and play designer. Provide detailed, practical play suggestions.
 
 TEAM PROFILE:
@@ -1257,7 +1260,7 @@ TEAM PROFILE:
 
 EXISTING PLAY LIBRARY:
 ${lib}
-
+${avoidLine}
 ${aiFileContent?'=== PRIOR SEASON DATA ===\n'+aiFileContent.slice(0,2500):''}
 
 Please suggest exactly ${count} specific plays appropriate for this team. For EACH play provide:
@@ -1282,6 +1285,14 @@ Keep language and complexity appropriate for the age and skill level. Separate e
     if(!res.ok) throw new Error(data.error||'Server error '+res.status);
     if(data.error) throw new Error(data.error.message||data.error);
     const text=data.content?.[0]?.text||'No response.';
+    // Record formations in history (max 25) to avoid repeats next call
+    parseAiPlays(text).forEach(p=>{
+      if(!p.formation) return;
+      recentAiFmtns=recentAiFmtns.filter(f=>f.toLowerCase()!==p.formation.toLowerCase());
+      recentAiFmtns.unshift(p.formation);
+    });
+    recentAiFmtns=recentAiFmtns.slice(0,25);
+    try{localStorage.setItem('wpm_ai_fmtn_hist',JSON.stringify(recentAiFmtns));}catch{}
     renderAiPlays(text);
   }catch(err){
     out.innerHTML=`<div class="ai-play-card"><div class="ai-play-card-header"><h4 style="color:#ff4455">Error</h4></div><div class="ai-play-card-body"><p>${err.message}</p></div></div>`;
