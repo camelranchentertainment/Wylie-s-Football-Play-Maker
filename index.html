@@ -155,17 +155,17 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .lib-empty strong { color:var(--text-mid); display:block; margin-bottom:6px; font-family:'Oswald',sans-serif; font-size:15px; }
 
 /* ─── AI PLAY CARD ─────────────────────────────────────────── */
-.ai-play-card { background:var(--bg-card); border:1px solid var(--border-bright); border-radius:10px; overflow:hidden; box-shadow:var(--shadow-sm); }
-.ai-play-card-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px 8px; border-bottom:1px solid var(--border); }
-.ai-play-card-header h4 { font-family:'Oswald',sans-serif; font-size:15px; color:var(--accent); letter-spacing:.3px; }
-.ai-play-card-meta { display:flex; gap:5px; align-items:center; }
-.ai-play-card-body { padding:12px 14px; font-size:12px; line-height:1.75; color:var(--text-hi); }
-.ai-play-card-body p { margin-bottom:5px; }
-.ai-play-card-body strong { color:var(--accent); }
-.ai-play-card-footer { padding:8px 14px 12px; display:flex; gap:8px; }
-.save-play-btn { flex:1; padding:8px; background:linear-gradient(135deg,var(--accent),#b87c00); border:none; border-radius:7px; font-family:'Oswald',sans-serif; font-size:11px; font-weight:700; letter-spacing:1.5px; color:#000; cursor:pointer; transition:all .2s; }
-.save-play-btn:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(240,165,0,.35); }
-.save-play-btn:disabled { opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
+.ai-play-card { background:var(--bg-card); border:1px solid var(--border-bright); border-radius:10px; overflow:hidden; box-shadow:var(--shadow-sm); display:flex; flex-direction:row; min-height:230px; }
+.ai-play-card-info { flex:1; min-width:0; display:flex; flex-direction:column; padding:12px 14px; gap:7px; border-right:1px solid var(--border); }
+.ai-play-card-info h4 { font-family:'Oswald',sans-serif; font-size:15px; color:var(--accent); letter-spacing:.3px; line-height:1.2; }
+.ai-play-card-meta { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.ai-play-card-body { font-size:11px; line-height:1.65; color:var(--text-mid); flex:1; overflow-y:auto; }
+.ai-play-card-body strong { color:var(--text-hi); }
+.ai-play-card-canvas-col { width:260px; min-width:260px; display:flex; flex-direction:column; background:var(--green-dark); position:relative; }
+.ai-play-card-canvas-col canvas { display:block; width:100%; flex:1; }
+.save-play-btn { width:100%; padding:8px; background:linear-gradient(135deg,var(--accent),#b87c00); border:none; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; color:#000; cursor:pointer; transition:all .2s; flex-shrink:0; }
+.save-play-btn:hover { background:linear-gradient(135deg,#ffc62e,#c87e00); box-shadow:0 4px 14px rgba(240,165,0,.35); }
+.save-play-btn:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
 
 /* ─── AI CONTROLS ──────────────────────────────────────────── */
 .ai-btn { width:100%; padding:11px; background:linear-gradient(135deg,#f0a500 0%,#c47a00 100%); border:none; border-radius:8px; font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px; color:#000; cursor:pointer; transition:all .2s; box-shadow:0 3px 14px rgba(240,165,0,.25); }
@@ -1269,6 +1269,15 @@ function parseAiPlays(text){
   }).filter(Boolean);
 }
 
+function getFormationPlayers(formationName, mode){
+  const allFmtns={...FMTNS.offense,...FMTNS.defense};
+  const matchKey=Object.keys(allFmtns).find(k=>k.toLowerCase()===formationName.toLowerCase())
+    ||Object.keys(allFmtns).find(k=>k.toLowerCase().includes(formationName.toLowerCase())||formationName.toLowerCase().includes(k.toLowerCase()));
+  if(!matchKey) return [];
+  const fMode=FMTNS.offense[matchKey]?'offense':'defense';
+  return allFmtns[matchKey].map(d=>{ const cp=yd2c(d.x,d.y); return {pos:d.pos,lbl:d.lbl,x:cp.x,y:cp.y,side:fMode}; });
+}
+
 function renderAiPlays(text){
   const plays=parseAiPlays(text);
   const out=document.getElementById('ai-output');
@@ -1281,24 +1290,32 @@ function renderAiPlays(text){
     const mTag=modeGuess==='offense'?'<span class="ptag ptag-o">OFF</span>':'<span class="ptag ptag-d">DEF</span>';
     const tyTag=`<span class="ptag ${tyKey}">${play.type.toUpperCase()}</span>`;
     const fTag=`<span class="ptag" style="background:rgba(255,255,255,.05);color:var(--text-mid);border:1px solid var(--border-bright);">${play.formation}</span>`;
+
     const card=document.createElement('div'); card.className='ai-play-card';
-    card.innerHTML=`
-      <div class="ai-play-card-header">
-        <div>
-          <h4></h4>
-          <div style="display:flex;gap:5px;margin-top:5px;">${mTag}${tyTag}${fTag}</div>
-        </div>
-      </div>
-      <div class="ai-play-card-body"></div>
-      <div class="ai-play-card-footer">
-        <button class="save-play-btn" id="save-ai-${idx}">💾 SAVE TO LIBRARY</button>
-      </div>`;
-    card.querySelector('h4').textContent=play.name;
-    card.querySelector('.ai-play-card-body').innerHTML=fmtAi(play.description);
-    card.querySelector(`#save-ai-${idx}`).addEventListener('click',function(){
-      saveAiPlay(play,this);
-    });
+
+    // Left info column
+    const infoCol=document.createElement('div'); infoCol.className='ai-play-card-info';
+    const h4=document.createElement('h4'); h4.textContent=play.name;
+    const meta=document.createElement('div'); meta.className='ai-play-card-meta'; meta.innerHTML=mTag+tyTag+fTag;
+    const body=document.createElement('div'); body.className='ai-play-card-body'; body.innerHTML=fmtAi(play.description);
+    infoCol.append(h4,meta,body);
+
+    // Right canvas column
+    const canvasCol=document.createElement('div'); canvasCol.className='ai-play-card-canvas-col';
+    const cnv=document.createElement('canvas');
+    // Fixed internal resolution; CSS stretches to fill the 260px column
+    cnv.width=260; cnv.height=212;
+    canvasCol.appendChild(cnv);
+    const saveBtn=document.createElement('button'); saveBtn.className='save-play-btn'; saveBtn.id='save-ai-'+idx; saveBtn.textContent='💾 SAVE TO LIBRARY';
+    saveBtn.addEventListener('click',function(){ saveAiPlay(play,this); });
+    canvasCol.appendChild(saveBtn);
+
+    card.append(infoCol, canvasCol);
     out.appendChild(card);
+
+    // Draw formation into canvas
+    const players=getFormationPlayers(play.formation, modeGuess);
+    renderPlayToCanvas({players,routes:[],labels:[]}, cnv);
   });
 }
 
