@@ -158,15 +158,15 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .lib-empty strong { color:var(--text-mid); display:block; margin-bottom:6px; font-family:'Oswald',sans-serif; font-size:15px; }
 
 /* ─── AI PLAY CARD ─────────────────────────────────────────── */
-.ai-play-card { background:var(--bg-card); border:1px solid var(--border-bright); border-radius:10px; overflow:hidden; box-shadow:var(--shadow-sm); display:flex; flex-direction:row; min-height:230px; }
-.ai-play-card-info { width:240px; min-width:240px; display:flex; flex-direction:column; padding:12px 14px; gap:7px; border-left:1px solid var(--border); }
-.ai-play-card-info h4 { font-family:'Oswald',sans-serif; font-size:15px; color:var(--accent); letter-spacing:.3px; line-height:1.2; }
-.ai-play-card-meta { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
-.ai-play-card-body { font-size:11px; line-height:1.65; color:var(--text-mid); flex:1; overflow-y:auto; }
+.ai-play-card { background:var(--bg-card); border:1px solid var(--border-bright); border-radius:10px; overflow:hidden; box-shadow:var(--shadow-sm); display:flex; flex-direction:row; height:172px; }
+.ai-play-card-canvas-col { width:60%; flex-shrink:0; display:flex; flex-direction:column; background:var(--green-dark); position:relative; }
+.ai-play-card-canvas-col canvas { display:block; width:100%; height:100%; }
+.ai-play-card-info { flex:1; min-width:0; display:flex; flex-direction:column; padding:11px 13px 10px; gap:5px; border-left:1px solid var(--border); }
+.ai-play-card-info h4 { font-family:'Oswald',sans-serif; font-size:15px; color:var(--accent); letter-spacing:.3px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ai-play-card-meta { display:flex; gap:4px; align-items:center; flex-wrap:wrap; flex-shrink:0; }
+.ai-play-card-body { font-size:11.5px; line-height:1.55; color:var(--text-mid); flex:1; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; }
 .ai-play-card-body strong { color:var(--text-hi); }
-.ai-play-card-canvas-col { flex:1; min-width:0; display:flex; flex-direction:column; background:var(--green-dark); position:relative; }
-.ai-play-card-canvas-col canvas { display:block; width:100%; flex:1; }
-.save-play-btn { width:100%; padding:8px; background:linear-gradient(135deg,var(--accent),#b87c00); border:none; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; color:#000; cursor:pointer; transition:all .2s; flex-shrink:0; }
+.save-play-btn { width:100%; padding:6px 8px; background:linear-gradient(135deg,var(--accent),#b87c00); border:none; border-radius:5px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; color:#000; cursor:pointer; transition:all .2s; flex-shrink:0; margin-top:auto; }
 .save-play-btn:hover { background:linear-gradient(135deg,#ffc62e,#c87e00); box-shadow:0 4px 14px rgba(240,165,0,.35); }
 .save-play-btn:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
 
@@ -1278,7 +1278,36 @@ async function runAi(){
     ? `\nFORMATION VARIETY RULE: Do NOT use any of these recently suggested formations (rotate for variety): ${recentAiFmtns.slice(0,25).join(', ')}.`
     : '';
 
-  const prompt=`You are a highly experienced football coach and play designer. Provide detailed, practical play suggestions.
+  const isDefFocus = focus === 'defense';
+  const offFmtnList = Object.keys(FMTNS.offense).join(', ');
+  const defFmtnList = Object.keys(FMTNS.defense).join(', ');
+
+  const prompt = isDefFocus ? `You are a highly experienced defensive football coordinator. Provide detailed, practical defensive scheme suggestions.
+
+TEAM PROFILE:
+• Age Group: ${age.replace(/-/g,' ')}
+• Skill Level: ${skill}
+• Requested Focus: Defensive Schemes
+• Coach Notes: ${notes||'none'}
+
+EXISTING PLAY LIBRARY:
+${lib}
+${avoidLine}
+${aiFileContent?'=== PRIOR SEASON DATA ===\n'+aiFileContent.slice(0,2500):''}
+
+IMPORTANT — Formation names MUST be chosen EXACTLY from this list (spelling and capitalization must match):
+${defFmtnList}
+
+Please suggest exactly ${count} specific defensive schemes appropriate for this team. For EACH scheme provide:
+**[Scheme Name]** (e.g. "Cover 3 Buzz" or "4-3 Under Blitz")
+- Formation: [pick EXACTLY from the list above]
+- Type: Defense
+- Coverage/Front: (1 sentence describing the look)
+- Assignments: (3–4 clear assignment bullets)
+- Coaching Point for ${age.replace(/-/g,' ')} ${skill}: (1 focused tip)
+
+Keep language and complexity appropriate for the age and skill level. Separate each scheme with a line containing only three dashes: ---`
+  : `You are a highly experienced football coach and play designer. Provide detailed, practical play suggestions.
 
 TEAM PROFILE:
 • Age Group: ${age.replace(/-/g,' ')}
@@ -1291,10 +1320,13 @@ ${lib}
 ${avoidLine}
 ${aiFileContent?'=== PRIOR SEASON DATA ===\n'+aiFileContent.slice(0,2500):''}
 
+IMPORTANT — Formation names MUST be chosen EXACTLY from this list (spelling and capitalization must match):
+${offFmtnList}
+
 Please suggest exactly ${count} specific plays appropriate for this team. For EACH play provide:
-**[Play Name]** (e.g. "26 Power Right" or "Cover 3 Buzz")
-- Formation: [formation name]
-- Type: Run/Pass/Defense/Special/Screen
+**[Play Name]** (e.g. "26 Power Right" or "Deep Post Combo")
+- Formation: [pick EXACTLY from the list above]
+- Type: Run/Pass/Screen/Special
 - Setup & Key Concept: (2 sentences)
 - Execution: (3–4 clear steps)
 - Coaching Point for ${age.replace(/-/g,' ')} ${skill}: (1 focused tip)
@@ -1306,27 +1338,50 @@ Keep language and complexity appropriate for the age and skill level. Separate e
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>&nbsp;THINKING...';
   out.innerHTML='<div style="text-align:center;color:var(--text-mid);padding:30px 0;">Generating '+count+' play suggestions...</div>';
 
-  try{
-    const res=await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1800,messages:[{role:'user',content:prompt}]})});
-    const raw=await res.text();
-    let data; try{data=JSON.parse(raw);}catch{throw new Error('Server returned an unexpected response (status '+res.status+'). Check Vercel logs.');}
-    if(!res.ok) throw new Error(data.error||'Server error '+res.status);
-    if(data.error) throw new Error(data.error.message||data.error);
-    const text=data.content?.[0]?.text||'No response.';
-    // Record formations in history (max 25) to avoid repeats next call
-    parseAiPlays(text).forEach(p=>{
-      if(!p.formation) return;
-      recentAiFmtns=recentAiFmtns.filter(f=>f.toLowerCase()!==p.formation.toLowerCase());
-      recentAiFmtns.unshift(p.formation);
-    });
-    recentAiFmtns=recentAiFmtns.slice(0,25);
-    try{localStorage.setItem('wpm_ai_fmtn_hist',JSON.stringify(recentAiFmtns));}catch{}
-    renderAiPlays(text);
-  }catch(err){
-    out.innerHTML=`<div class="ai-play-card"><div class="ai-play-card-header"><h4 style="color:#ff4455">Error</h4></div><div class="ai-play-card-body"><p>${err.message}</p></div></div>`;
-  }finally{
-    btn.disabled=false; btn.innerHTML='⚡ GET AI SUGGESTIONS';
+  const MAX_RETRIES=3;
+  let lastErr=null;
+  for(let attempt=1; attempt<=MAX_RETRIES; attempt++){
+    try{
+      const res=await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1800,messages:[{role:'user',content:prompt}]})});
+      const raw=await res.text();
+      let data; try{data=JSON.parse(raw);}catch{throw new Error('Server returned an unexpected response (status '+res.status+'). Check Vercel logs.');}
+      // 529 = Anthropic overloaded — retryable
+      if(res.status===529 || (data.error&&typeof data.error==='string'&&data.error.toLowerCase().includes('overload'))){
+        lastErr=new Error(data.error||'Anthropic API is temporarily overloaded.');
+        if(attempt<MAX_RETRIES){
+          out.innerHTML='<div style="text-align:center;color:var(--text-mid);padding:30px 0;">API is busy — retrying ('+attempt+'/'+(MAX_RETRIES-1)+')…</div>';
+          await new Promise(r=>setTimeout(r,2500));
+          continue;
+        }
+        break;
+      }
+      if(!res.ok) throw new Error(data.error||'Server error '+res.status);
+      if(data.error) throw new Error(data.error.message||data.error);
+      const text=data.content?.[0]?.text||'No response.';
+      // Record formations in history (max 25) to avoid repeats next call
+      parseAiPlays(text).forEach(p=>{
+        if(!p.formation) return;
+        recentAiFmtns=recentAiFmtns.filter(f=>f.toLowerCase()!==p.formation.toLowerCase());
+        recentAiFmtns.unshift(p.formation);
+      });
+      recentAiFmtns=recentAiFmtns.slice(0,25);
+      try{localStorage.setItem('wpm_ai_fmtn_hist',JSON.stringify(recentAiFmtns));}catch{}
+      renderAiPlays(text);
+      lastErr=null;
+      break;
+    }catch(err){
+      lastErr=err;
+      break; // non-overload errors don't retry
+    }
   }
+  if(lastErr){
+    const isOverload=lastErr.message.toLowerCase().includes('overload');
+    const msg=isOverload
+      ? 'The AI service is temporarily busy. Please wait 10–15 seconds and try again.'
+      : lastErr.message;
+    out.innerHTML=`<div class="ai-play-card"><div class="ai-play-card-header"><h4 style="color:#ff4455">Error</h4></div><div class="ai-play-card-body"><p>${msg}</p></div></div>`;
+  }
+  btn.disabled=false; btn.innerHTML='⚡ GET AI SUGGESTIONS';
 }
 
 function parseAiPlays(text){
@@ -1354,6 +1409,146 @@ function getFormationPlayers(formationName, mode){
   return allFmtns[matchKey].map(d=>{ const cp=yd2c(d.x,d.y); return {pos:d.pos,lbl:d.lbl,x:cp.x,y:cp.y,side:fMode}; });
 }
 
+// Returns raw yard-coordinate formation data for AI card thumbnails
+function getFormationYards(formationName){
+  const allFmtns={...FMTNS.offense,...FMTNS.defense};
+  const matchKey=Object.keys(allFmtns).find(k=>k.toLowerCase()===formationName.toLowerCase())
+    ||Object.keys(allFmtns).find(k=>{ const a=k.toLowerCase(),b=formationName.toLowerCase(); return a.includes(b)||b.includes(a); });
+  if(!matchKey) return null;
+  const fMode=FMTNS.offense[matchKey]?'offense':'defense';
+  return {players:allFmtns[matchKey], mode:fMode};
+}
+
+// Dedicated AI card thumbnail renderer — works in yard space, auto-fits, draws schematic routes
+function renderFormationToAiCanvas(fmtnData, playType, cnv){
+  const W=cnv.width, H=cnv.height;
+  const tx=cnv.getContext('2d');
+
+  // Field background
+  const bg=tx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#173f1c'); bg.addColorStop(0.5,'#1e5222'); bg.addColorStop(1,'#173f1c');
+  tx.fillStyle=bg; tx.fillRect(0,0,W,H);
+
+  if(!fmtnData||!fmtnData.players||!fmtnData.players.length){
+    tx.fillStyle='rgba(255,255,255,0.18)';
+    tx.font='bold 24px Oswald,sans-serif';
+    tx.textAlign='center'; tx.textBaseline='middle';
+    tx.fillText('?', W/2, H/2);
+    return;
+  }
+
+  const {players, mode}=fmtnData;
+
+  // Bounding box in yard coordinates
+  const xs=players.map(p=>p.x), ys=players.map(p=>p.y);
+  let minX=Math.min(...xs)-3.5, maxX=Math.max(...xs)+3.5;
+  let minY=Math.min(...ys)-2,   maxY=Math.max(...ys)+2;
+  // Always show LOS with a bit of space on each side
+  minY=Math.min(minY,-1.5); maxY=Math.max(maxY,1.5);
+  const rX=maxX-minX, rY=maxY-minY;
+
+  // yard → canvas pixel (positive y = deeper into backfield = visually lower on canvas)
+  function yp(yx,yy){ return { x:(yx-minX)/rX*W, y:(yy-minY)/rY*H }; }
+
+  // Faint yard lines every 5 yds
+  tx.strokeStyle='rgba(255,255,255,0.10)'; tx.lineWidth=1;
+  for(let y=Math.ceil(minY/5)*5; y<=maxY; y+=5){
+    const py=yp(0,y).y;
+    tx.beginPath(); tx.moveTo(0,py); tx.lineTo(W,py); tx.stroke();
+  }
+
+  // Line of scrimmage (y=0)
+  const losY=yp(0,0).y;
+  tx.strokeStyle='rgba(255,215,0,0.75)'; tx.lineWidth=2;
+  tx.beginPath(); tx.moveTo(0,losY); tx.lineTo(W,losY); tx.stroke();
+
+  // Compute player radius based on canvas size and number of players
+  const pr=Math.max(4, Math.min(9, W*0.032));
+
+  // ── Schematic routes (drawn before players so circles appear on top) ──
+  if(mode==='offense'){
+    const isPass=['pass','screen','redzone','2min'].includes(playType);
+    const isRun=['run','shortyard'].includes(playType);
+    players.forEach(p=>{
+      const {x:px,y:py}=yp(p.x,p.y);
+      if(['WR','SE','FL','SL'].includes(p.pos)){
+        if(isPass){
+          // Out route: 5 yds up then break outside
+          const mid=yp(p.x, p.y-4);
+          const out=yp(p.x+(p.x<0?-4:4), p.y-4);
+          tx.strokeStyle='#ffcc00'; tx.lineWidth=1.5; tx.setLineDash([]);
+          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(mid.x,mid.y); tx.lineTo(out.x,out.y); tx.stroke();
+          const dir=p.x<0?-1:1;
+          tx.fillStyle='#ffcc00';
+          tx.beginPath(); tx.moveTo(out.x+dir*5,out.y); tx.lineTo(out.x-dir*3,out.y-3); tx.lineTo(out.x-dir*3,out.y+3); tx.closePath(); tx.fill();
+        } else {
+          // Downfield block (dashed)
+          const up=yp(p.x, p.y-5);
+          tx.strokeStyle='rgba(255,204,0,0.4)'; tx.lineWidth=1; tx.setLineDash([3,2]);
+          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(up.x,up.y); tx.stroke();
+          tx.setLineDash([]);
+        }
+      } else if(p.pos==='TE'){
+        if(isPass){
+          // Seam route straight up
+          const up=yp(p.x, p.y-5);
+          tx.strokeStyle='#ffcc00'; tx.lineWidth=1.5; tx.setLineDash([]);
+          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(up.x,up.y); tx.stroke();
+          tx.fillStyle='#ffcc00';
+          tx.beginPath(); tx.moveTo(up.x,up.y-5); tx.lineTo(up.x-3,up.y); tx.lineTo(up.x+3,up.y); tx.closePath(); tx.fill();
+        }
+      } else if(['RB','HB','TB','FB'].includes(p.pos)){
+        if(isRun){
+          // Run arrow — angle slightly right
+          const end=yp(p.x+1.5, p.y-3);
+          tx.strokeStyle='#ff9933'; tx.lineWidth=2; tx.setLineDash([]);
+          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(end.x,end.y); tx.stroke();
+          const ang=Math.atan2(end.y-py, end.x-px);
+          const as=6;
+          tx.fillStyle='#ff9933';
+          tx.beginPath(); tx.moveTo(end.x+Math.cos(ang)*as, end.y+Math.sin(ang)*as);
+          tx.lineTo(end.x+Math.cos(ang+2.4)*as*.7, end.y+Math.sin(ang+2.4)*as*.7);
+          tx.lineTo(end.x+Math.cos(ang-2.4)*as*.7, end.y+Math.sin(ang-2.4)*as*.7);
+          tx.closePath(); tx.fill();
+        } else if(isPass){
+          // Flat/checkdown route
+          const flat=yp(p.x+(p.x<=0?5:-5), p.y-1);
+          tx.strokeStyle='#ffcc00'; tx.lineWidth=1.5;
+          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(flat.x,flat.y); tx.stroke();
+          const dir=p.x<=0?1:-1;
+          tx.fillStyle='#ffcc00';
+          tx.beginPath(); tx.moveTo(flat.x+dir*5,flat.y); tx.lineTo(flat.x-dir*3,flat.y-3); tx.lineTo(flat.x-dir*3,flat.y+3); tx.closePath(); tx.fill();
+        }
+      }
+    });
+  }
+
+  // ── Draw players ──
+  const fontSize=Math.max(6, Math.round(pr*0.85));
+  players.forEach(p=>{
+    const {x:px,y:py}=yp(p.x,p.y);
+    if(mode==='offense'){
+      const gr=tx.createRadialGradient(px-pr*.3,py-pr*.3,0,px,py,pr);
+      gr.addColorStop(0,'#ff7b81'); gr.addColorStop(1,'#b5101a');
+      tx.fillStyle=gr;
+      tx.beginPath(); tx.arc(px,py,pr,0,Math.PI*2); tx.fill();
+      tx.strokeStyle='rgba(255,255,255,0.3)'; tx.lineWidth=0.8;
+      tx.beginPath(); tx.arc(px,py,pr,0,Math.PI*2); tx.stroke();
+      tx.fillStyle='#fff';
+    } else {
+      // Defense — X marker in blue
+      tx.strokeStyle='#4a9eff'; tx.lineWidth=Math.max(1.5,pr*0.38); tx.lineCap='round';
+      const r2=pr*0.72;
+      tx.beginPath(); tx.moveTo(px-r2,py-r2); tx.lineTo(px+r2,py+r2); tx.stroke();
+      tx.beginPath(); tx.moveTo(px+r2,py-r2); tx.lineTo(px-r2,py+r2); tx.stroke();
+      tx.fillStyle='#b8d8ff';
+    }
+    tx.font=`bold ${fontSize}px Oswald,sans-serif`;
+    tx.textAlign='center'; tx.textBaseline='middle';
+    tx.fillText(p.lbl, px, py+0.5);
+  });
+}
+
 function renderAiPlays(text){
   const plays=parseAiPlays(text);
   const out=document.getElementById('ai-output');
@@ -1369,29 +1564,27 @@ function renderAiPlays(text){
 
     const card=document.createElement('div'); card.className='ai-play-card';
 
-    // Left info column
+    // Left canvas column (42%)
+    const canvasCol=document.createElement('div'); canvasCol.className='ai-play-card-canvas-col';
+    const cnv=document.createElement('canvas');
+    cnv.width=300; cnv.height=172; // matches 42%-wide × 172px-tall card
+    canvasCol.appendChild(cnv);
+
+    // Right info column (58%)
     const infoCol=document.createElement('div'); infoCol.className='ai-play-card-info';
     const h4=document.createElement('h4'); h4.textContent=play.name;
     const meta=document.createElement('div'); meta.className='ai-play-card-meta'; meta.innerHTML=mTag+tyTag+fTag;
     const body=document.createElement('div'); body.className='ai-play-card-body'; body.innerHTML=fmtAi(play.description);
-    infoCol.append(h4,meta,body);
-
-    // Right canvas column
-    const canvasCol=document.createElement('div'); canvasCol.className='ai-play-card-canvas-col';
-    const cnv=document.createElement('canvas');
-    // Fixed internal resolution; CSS stretches to fill the 260px column
-    cnv.width=260; cnv.height=212;
-    canvasCol.appendChild(cnv);
     const saveBtn=document.createElement('button'); saveBtn.className='save-play-btn'; saveBtn.id='save-ai-'+idx; saveBtn.textContent='💾 SAVE TO LIBRARY';
     saveBtn.addEventListener('click',function(){ saveAiPlay(play,this); });
-    canvasCol.appendChild(saveBtn);
+    infoCol.append(h4,meta,body,saveBtn);
 
     card.append(canvasCol, infoCol);
     out.appendChild(card);
 
-    // Draw formation into canvas
-    const players=getFormationPlayers(play.formation, modeGuess);
-    renderPlayToCanvas({players,routes:[],labels:[]}, cnv);
+    // Draw formation thumbnail using dedicated auto-fit renderer
+    const fmtnData=getFormationYards(play.formation);
+    renderFormationToAiCanvas(fmtnData, play.type, cnv);
   });
 }
 
