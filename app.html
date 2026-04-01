@@ -158,7 +158,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .lib-empty strong { color:var(--text-mid); display:block; margin-bottom:6px; font-family:'Oswald',sans-serif; font-size:15px; }
 
 /* ─── AI PLAY CARD ─────────────────────────────────────────── */
-.ai-play-card { background:var(--bg-card); border:1px solid var(--border-bright); border-radius:10px; overflow:hidden; box-shadow:var(--shadow-sm); display:flex; flex-direction:row; height:172px; }
+.ai-play-card { background:var(--bg-card); border:1px solid var(--border-bright); border-radius:10px; overflow:hidden; box-shadow:var(--shadow-sm); display:flex; flex-direction:row; height:260px; }
 .ai-play-card-canvas-col { width:60%; flex-shrink:0; display:flex; flex-direction:column; background:var(--green-dark); position:relative; }
 .ai-play-card-canvas-col canvas { display:block; width:100%; height:100%; }
 .ai-play-card-info { flex:1; min-width:0; display:flex; flex-direction:column; padding:11px 13px 10px; gap:5px; border-left:1px solid var(--border); }
@@ -1567,7 +1567,7 @@ function renderAiPlays(text){
     // Left canvas column (42%)
     const canvasCol=document.createElement('div'); canvasCol.className='ai-play-card-canvas-col';
     const cnv=document.createElement('canvas');
-    cnv.width=300; cnv.height=172; // matches 42%-wide × 172px-tall card
+    cnv.width=360; cnv.height=260; // matches 60%-wide × 260px-tall card
     canvasCol.appendChild(cnv);
 
     // Right info column (58%)
