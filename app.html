@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wylie's Football Play Maker</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg-deep: #1e2d3d;
@@ -233,6 +234,18 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 ::-webkit-scrollbar-thumb { background:var(--border-bright); border-radius:2px; }
 .spin { width:16px; height:16px; border:2px solid rgba(0,0,0,.2); border-top-color:#000; border-radius:50%; animation:rot .65s linear infinite; display:inline-block; }
 @keyframes rot { to { transform:rotate(360deg); } }
+/* ── AUTH ── */
+.auth-btn { padding:5px 14px; height:30px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.2px; cursor:pointer; border:1px solid var(--border-bright); background:transparent; color:var(--text-mid); border-radius:7px; transition:all .18s; white-space:nowrap; }
+.auth-btn:hover { color:var(--accent); border-color:var(--accent); }
+.auth-btn.signed-in { color:var(--accent); border-color:var(--accent); background:var(--accent-glow); }
+#auth-modal .modal { max-width:360px; }
+.auth-tabs { display:flex; border-bottom:1px solid var(--border); margin-bottom:18px; }
+.auth-tab { flex:1; padding:8px; background:none; border:none; font-family:'Oswald',sans-serif; font-size:12px; font-weight:600; letter-spacing:1px; color:var(--text-lo); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .2s; }
+.auth-tab.act { color:var(--accent); border-bottom-color:var(--accent); }
+.auth-msg { font-size:11px; padding:8px 10px; border-radius:6px; margin-top:8px; display:none; }
+.auth-msg.err { background:rgba(255,68,85,.1); color:#ff4455; border:1px solid rgba(255,68,85,.25); display:block; }
+.auth-msg.ok { background:rgba(80,220,120,.1); color:#50dc78; border:1px solid rgba(80,220,120,.25); display:block; }
+.cloud-badge { font-size:9px; padding:1px 6px; border-radius:10px; background:rgba(80,220,120,.15); color:#50dc78; border:1px solid rgba(80,220,120,.25); font-family:'Oswald',sans-serif; letter-spacing:1px; margin-left:6px; }
 #wristband-print { display:none; }
 @media print {
   body > *:not(#wristband-print) { display:none !important; }
@@ -264,6 +277,8 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     <button class="npbtn" data-page="wb" onclick="switchPage('wb')">🏈 WRISTBAND</button>
     <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 LIBRARY</button>
   </nav>
+  <div class="hdiv"></div>
+  <button class="auth-btn" id="auth-nav-btn" onclick="openAuthModal()">👤 SIGN IN</button>
 </div>
 
 <!-- ═══ PAGES ═══ -->
@@ -332,7 +347,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <!-- ══ LIBRARY ══ -->
   <div id="page-library" class="page">
     <div class="page-topbar">
-      <h2>📚 Play Library</h2>
+      <h2>📚 Play Library <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">☁ CLOUD</span></h2>
       <input type="text" class="rp-input" placeholder="Search plays..." id="lib-search" oninput="renderLibrary()">
       <select class="rp-select" id="lib-filter" style="width:110px;" onchange="renderLibrary()">
         <option value="all">All Plays</option>
@@ -511,10 +526,217 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   </div>
 </div>
 
+<!-- ═══ AUTH MODAL ═══ -->
+<div class="modal-overlay" id="auth-modal" onclick="if(event.target===this)closeAuthModal()">
+  <div class="modal" style="max-width:360px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <h2 id="auth-modal-title">🔐 Account</h2>
+      <button onclick="closeAuthModal()" style="background:none;border:none;color:var(--text-mid);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;">✕</button>
+    </div>
+    <!-- Signed-out view -->
+    <div id="auth-signedout">
+      <div class="auth-tabs">
+        <button class="auth-tab act" id="tab-signin" onclick="authSwitchTab('signin')">SIGN IN</button>
+        <button class="auth-tab" id="tab-signup" onclick="authSwitchTab('signup')">CREATE ACCOUNT</button>
+      </div>
+      <p class="modal-subtitle" id="auth-subtitle">Sign in to save your plays to the cloud and access them from any device.</p>
+      <input type="email" class="modal-input" id="auth-email" placeholder="Email address" autocomplete="email">
+      <input type="password" class="modal-input" id="auth-password" placeholder="Password" autocomplete="current-password" style="margin-top:8px;">
+      <div class="modal-actions" style="margin-top:14px;">
+        <button class="mbtn cancel" onclick="closeAuthModal()">Cancel</button>
+        <button class="mbtn ok" id="auth-submit-btn" onclick="authSubmit()">SIGN IN</button>
+      </div>
+      <div id="auth-msg" class="auth-msg"></div>
+    </div>
+    <!-- Signed-in view -->
+    <div id="auth-signedin" style="display:none;">
+      <p style="color:var(--text-mid);font-size:13px;margin-bottom:6px;">Signed in as:</p>
+      <p id="auth-user-email" style="color:var(--accent);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.5px;margin-bottom:18px;word-break:break-all;"></p>
+      <p style="color:var(--text-lo);font-size:11px;margin-bottom:16px;">Your play library is synced to the cloud. You can access it from any device by signing in.</p>
+      <div class="modal-actions">
+        <button class="mbtn cancel" onclick="closeAuthModal()">Close</button>
+        <button class="mbtn" style="background:rgba(255,68,85,.15);color:#ff7788;border:1px solid rgba(255,68,85,.3);" onclick="authSignOut()">SIGN OUT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="wristband-print"></div>
 
 <script>
 'use strict';
+
+// ─── SUPABASE ─────────────────────────────────────────────────
+const SUPA_URL = 'https://rvxanoqourdrfmbucvpz.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;       // Supabase user object when signed in
+let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
+
+// Called on page load — restore session if one exists
+async function initAuth() {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadCloudLib();
+    updateAuthUI();
+  }
+  // Listen for auth state changes (sign-in / sign-out in other tabs)
+  supa.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      await loadCloudLib();
+      updateAuthUI();
+      renderLibrary();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      cloudLib = null;
+      updateAuthUI();
+      renderLibrary();
+    }
+  });
+}
+
+function updateAuthUI() {
+  const btn = document.getElementById('auth-nav-btn');
+  if (!btn) return;
+  if (currentUser) {
+    const short = currentUser.email.split('@')[0];
+    btn.textContent = '👤 ' + short.toUpperCase();
+    btn.classList.add('signed-in');
+  } else {
+    btn.textContent = '👤 SIGN IN';
+    btn.classList.remove('signed-in');
+  }
+  const badge = document.getElementById('lib-cloud-badge');
+  if (badge) badge.style.display = currentUser ? 'inline' : 'none';
+}
+
+// ─── CLOUD LIBRARY ────────────────────────────────────────────
+async function loadCloudLib() {
+  if (!currentUser) return;
+  const { data, error } = await supa.from('plays').select('*').order('ts', { ascending: false });
+  if (error) { console.error('Cloud load error:', error); return; }
+  cloudLib = (data || []).map(row => ({
+    id: row.play_id,
+    name: row.name,
+    formation: row.formation,
+    type: row.type,
+    mode: row.mode,
+    players: row.players || [],
+    routes: row.routes || [],
+    labels: row.labels || [],
+    thumb: row.thumb,
+    description: row.description,
+    ts: row.ts,
+  }));
+}
+
+async function savePlayToCloud(play) {
+  if (!currentUser) return;
+  const row = {
+    user_id: currentUser.id,
+    play_id: play.id,
+    name: play.name,
+    formation: play.formation || '',
+    type: play.type || '',
+    mode: play.mode || 'offense',
+    players: play.players || [],
+    routes: play.routes || [],
+    labels: play.labels || [],
+    thumb: play.thumb || null,
+    description: play.description || null,
+    ts: play.ts || Date.now(),
+  };
+  const { error } = await supa.from('plays').upsert(row, { onConflict: 'user_id,play_id' });
+  if (error) console.error('Cloud save error:', error);
+}
+
+async function deletePlayFromCloud(playId) {
+  if (!currentUser) return;
+  const { error } = await supa.from('plays').delete().eq('user_id', currentUser.id).eq('play_id', playId);
+  if (error) console.error('Cloud delete error:', error);
+}
+
+async function migrateLocalToCloud() {
+  const local = JSON.parse(localStorage.getItem('gridiron_pro_v3_lib') || '[]');
+  if (!local.length) return;
+  for (const play of local) {
+    await savePlayToCloud(play);
+  }
+  cloudLib = [...local];
+}
+
+// ─── AUTH UI ──────────────────────────────────────────────────
+let authMode = 'signin';
+
+function openAuthModal() {
+  document.getElementById('auth-modal').classList.add('show');
+  if (currentUser) {
+    document.getElementById('auth-signedin').style.display = 'block';
+    document.getElementById('auth-signedout').style.display = 'none';
+    document.getElementById('auth-user-email').textContent = currentUser.email;
+  } else {
+    document.getElementById('auth-signedin').style.display = 'none';
+    document.getElementById('auth-signedout').style.display = 'block';
+    authSwitchTab('signin');
+    setTimeout(() => document.getElementById('auth-email').focus(), 60);
+  }
+}
+function closeAuthModal() { document.getElementById('auth-modal').classList.remove('show'); }
+
+function authSwitchTab(tab) {
+  authMode = tab;
+  document.getElementById('tab-signin').classList.toggle('act', tab === 'signin');
+  document.getElementById('tab-signup').classList.toggle('act', tab === 'signup');
+  document.getElementById('auth-submit-btn').textContent = tab === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT';
+  document.getElementById('auth-subtitle').textContent = tab === 'signin'
+    ? 'Sign in to access your cloud play library from any device.'
+    : 'Create a free account to save your plays to the cloud.';
+  document.getElementById('auth-msg').className = 'auth-msg';
+  document.getElementById('auth-msg').textContent = '';
+  document.getElementById('auth-password').autocomplete = tab === 'signin' ? 'current-password' : 'new-password';
+}
+
+async function authSubmit() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const msg = document.getElementById('auth-msg');
+  const btn = document.getElementById('auth-submit-btn');
+  if (!email || !password) { showAuthMsg('Please enter your email and password.', 'err'); return; }
+  if (password.length < 6) { showAuthMsg('Password must be at least 6 characters.', 'err'); return; }
+  btn.disabled = true; btn.textContent = authMode === 'signin' ? 'SIGNING IN…' : 'CREATING…';
+  if (authMode === 'signin') {
+    const { error } = await supa.auth.signInWithPassword({ email, password });
+    if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; btn.textContent = 'SIGN IN'; return; }
+    closeAuthModal();
+  } else {
+    const { error } = await supa.auth.signUp({ email, password });
+    if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; btn.textContent = 'CREATE ACCOUNT'; return; }
+    // Migrate any existing localStorage plays to cloud for new users
+    showAuthMsg('Account created! Syncing your plays to the cloud…', 'ok');
+    setTimeout(async () => {
+      await migrateLocalToCloud();
+      closeAuthModal();
+      renderLibrary();
+    }, 1200);
+    btn.disabled = false; btn.textContent = 'CREATE ACCOUNT';
+    return;
+  }
+  btn.disabled = false;
+}
+
+async function authSignOut() {
+  await supa.auth.signOut();
+  closeAuthModal();
+}
+
+function showAuthMsg(text, type) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = text;
+  el.className = 'auth-msg ' + type;
+}
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const CW = 700, CH = 570;
@@ -1003,6 +1225,8 @@ function doSavePlay(){
   const thumb=genThumb();
   const play={id:Date.now()+Math.random(),name,formation:document.getElementById('sv-formation').value,type:document.getElementById('sv-type').value,mode:S.mode,players:JSON.parse(JSON.stringify(S.players)),routes:JSON.parse(JSON.stringify(S.routes)),labels:JSON.parse(JSON.stringify(S.labels)),thumb,ts:Date.now()};
   const lib=getLib(); lib.unshift(play); saveLib(lib);
+  if(currentUser) savePlayToCloud(play);
+  else localStorage.setItem(LIB_KEY,JSON.stringify(lib));
   document.getElementById('play-name').value=name;
   closeSaveModal(); renderLibrary(); updateWbSel(); setStatus(`"${name}" saved`);
 }
@@ -1032,8 +1256,14 @@ function genThumb(){ return genThumbFromPlay(S.players, S.routes); }
 
 // ─── LIBRARY ─────────────────────────────────────────────────
 const LIB_KEY='gridiron_pro_v3_lib';
-function getLib(){ try{return JSON.parse(localStorage.getItem(LIB_KEY)||'[]');}catch{return[];} }
-function saveLib(l){ localStorage.setItem(LIB_KEY,JSON.stringify(l)); }
+function getLib(){
+  if (currentUser && cloudLib !== null) return cloudLib;
+  try{return JSON.parse(localStorage.getItem(LIB_KEY)||'[]');}catch{return[];}
+}
+function saveLib(l){
+  if (currentUser && cloudLib !== null) { cloudLib = l; return; }
+  localStorage.setItem(LIB_KEY,JSON.stringify(l));
+}
 
 function renderLibrary(){
   const grid=document.getElementById('lib-grid');
@@ -1085,7 +1315,11 @@ function loadPlay(id){
 
 function deletePlay(id){
   if(!confirm('Delete this play from library?')) return;
-  saveLib(getLib().filter(x=>x.id!==id)); renderLibrary(); updateWbSel();
+  const newLib=getLib().filter(x=>x.id!==id);
+  saveLib(newLib);
+  if(currentUser) deletePlayFromCloud(id);
+  else localStorage.setItem(LIB_KEY,JSON.stringify(newLib));
+  renderLibrary(); updateWbSel();
 }
 
 // ─── PLAY POPUP ───────────────────────────────────────────────
@@ -1664,6 +1898,8 @@ function saveAiPlay(play, btn){
   const thumb=genThumbFromPlay(players,[]);
   const saved={id:Date.now()+Math.random(),name:play.name,formation:play.formation,type:play.type,mode,players,routes:[],labels:[],description:play.description,thumb,ts:Date.now()};
   const lib=getLib(); lib.unshift(saved); saveLib(lib);
+  if(currentUser) savePlayToCloud(saved);
+  else localStorage.setItem(LIB_KEY,JSON.stringify(lib));
   updateWbSel();
   btn.disabled=true; btn.textContent='✓ SAVED TO LIBRARY';
   btn.style.background='linear-gradient(135deg,#2a7031,#174d1c)';
@@ -1711,6 +1947,9 @@ function init(){
   setStatus('Select a formation or use the Place tool to add players  ·  [S]elect [P]lace [R]oute [D]elete [L]abel');
 }
 init();
+
+// Boot auth on page load
+initAuth();
 </script>
 </body>
 </html>
