@@ -164,7 +164,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .ai-play-card-info { flex:1; min-width:0; display:flex; flex-direction:column; padding:11px 13px 10px; gap:5px; border-left:1px solid var(--border); }
 .ai-play-card-info h4 { font-family:'Oswald',sans-serif; font-size:15px; color:var(--accent); letter-spacing:.3px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ai-play-card-meta { display:flex; gap:4px; align-items:center; flex-wrap:wrap; flex-shrink:0; }
-.ai-play-card-body { font-size:11.5px; line-height:1.55; color:var(--text-mid); flex:1; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; }
+.ai-play-card-body { font-size:11.5px; line-height:1.55; color:var(--text-mid); flex:1; overflow-y:auto; min-height:0; }
 .ai-play-card-body strong { color:var(--text-hi); }
 .save-play-btn { width:100%; padding:6px 8px; background:linear-gradient(135deg,var(--accent),#b87c00); border:none; border-radius:5px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; color:#000; cursor:pointer; transition:all .2s; flex-shrink:0; margin-top:auto; }
 .save-play-btn:hover { background:linear-gradient(135deg,#ffc62e,#c87e00); box-shadow:0 4px 14px rgba(240,165,0,.35); }
@@ -349,6 +349,14 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     <div id="ai-controls-col">
       <h2>🤖 AI Coach</h2>
       <div class="rp-group">
+        <label class="rp-label">Side</label>
+        <div class="mode-toggle" style="width:100%;">
+          <button class="mode-btn on-off" id="ai-side-off" onclick="setAiSide('offense')" style="flex:1;">● OFFENSE</button>
+          <button class="mode-btn" id="ai-side-def" onclick="setAiSide('defense')" style="flex:1;">✕ DEFENSE</button>
+        </div>
+        <input type="hidden" id="ai-side" value="offense">
+      </div>
+      <div class="rp-group">
         <label class="rp-label">Age Group</label>
         <select class="rp-select" id="ai-age">
           <option value="youth-6-8">Youth (6–8 yrs) — Flag</option>
@@ -371,7 +379,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
         </select>
       </div>
       <div class="rp-group">
-        <label class="rp-label">Focus / Play Type</label>
+        <label class="rp-label">Focus</label>
         <select class="rp-select" id="ai-focus">
           <option value="balanced">Balanced Mix</option>
           <option value="run">Run Heavy</option>
@@ -379,7 +387,6 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
           <option value="redzone">Red Zone Package</option>
           <option value="shortyard">Short Yardage</option>
           <option value="2min">2-Minute Drill</option>
-          <option value="defense">Defensive Schemes</option>
           <option value="special">Special Teams</option>
         </select>
       </div>
@@ -1265,11 +1272,39 @@ function handleAiUpload(e){
   document.getElementById('ai-file-label').textContent=names.length?'📎 '+names.join(', '):'';
 }
 
+const AI_FOCUS_OFF = [
+  {v:'balanced',  l:'Balanced Mix'},
+  {v:'run',       l:'Run Heavy'},
+  {v:'pass',      l:'Pass Heavy'},
+  {v:'redzone',   l:'Red Zone Package'},
+  {v:'shortyard', l:'Short Yardage'},
+  {v:'2min',      l:'2-Minute Drill'},
+  {v:'special',   l:'Special Teams'},
+];
+const AI_FOCUS_DEF = [
+  {v:'balanced',  l:'Balanced Schemes'},
+  {v:'zone',      l:'Zone Coverage'},
+  {v:'man',       l:'Man Coverage'},
+  {v:'blitz',     l:'Blitz Package'},
+  {v:'redzone',   l:'Red Zone Defense'},
+  {v:'shortyard', l:'Short Yardage Stop'},
+  {v:'goalline',  l:'Goal Line Defense'},
+];
+function setAiSide(side){
+  document.getElementById('ai-side').value = side;
+  document.getElementById('ai-side-off').className = 'mode-btn' + (side==='offense'?' on-off':'');
+  document.getElementById('ai-side-def').className = 'mode-btn' + (side==='defense'?' on-def':'');
+  const sel = document.getElementById('ai-focus');
+  const list = side==='defense' ? AI_FOCUS_DEF : AI_FOCUS_OFF;
+  sel.innerHTML = list.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');
+}
+
 async function runAi(){
   if(aiFilesLoading>0){setStatus('Still reading uploaded files — please wait…');return;}
   const age=document.getElementById('ai-age').value;
   const skill=document.getElementById('ai-skill').value;
   const focus=document.getElementById('ai-focus').value;
+  const isDefFocus=document.getElementById('ai-side').value==='defense';
   const count=document.getElementById('ai-count').value||'4';
   const notes=document.getElementById('ai-notes').value;
   const lib=getLib().slice(0,12).map(p=>`- ${p.name} (${p.formation}, ${p.mode}, ${p.type||''})`).join('\n')||'Empty';
@@ -1278,7 +1313,6 @@ async function runAi(){
     ? `\nFORMATION VARIETY RULE: Do NOT use any of these recently suggested formations (rotate for variety): ${recentAiFmtns.slice(0,25).join(', ')}.`
     : '';
 
-  const isDefFocus = focus === 'defense';
   const offFmtnList = Object.keys(FMTNS.offense).join(', ');
   const defFmtnList = Object.keys(FMTNS.defense).join(', ');
 
@@ -1419,7 +1453,7 @@ function getFormationYards(formationName){
   return {players:allFmtns[matchKey], mode:fMode};
 }
 
-// Dedicated AI card thumbnail renderer — works in yard space, auto-fits, draws schematic routes
+// Dedicated AI card thumbnail renderer — works in yard space, fixed ±22yd horizontal view
 function renderFormationToAiCanvas(fmtnData, playType, cnv){
   const W=cnv.width, H=cnv.height;
   const tx=cnv.getContext('2d');
@@ -1431,100 +1465,118 @@ function renderFormationToAiCanvas(fmtnData, playType, cnv){
 
   if(!fmtnData||!fmtnData.players||!fmtnData.players.length){
     tx.fillStyle='rgba(255,255,255,0.18)';
-    tx.font='bold 24px Oswald,sans-serif';
+    tx.font='bold 28px Oswald,sans-serif';
     tx.textAlign='center'; tx.textBaseline='middle';
     tx.fillText('?', W/2, H/2);
     return;
   }
 
-  const {players, mode}=fmtnData;
+  const {players,mode}=fmtnData;
+  const ys=players.map(p=>p.y);
 
-  // Bounding box in yard coordinates
-  const xs=players.map(p=>p.x), ys=players.map(p=>p.y);
-  let minX=Math.min(...xs)-3.5, maxX=Math.max(...xs)+3.5;
-  let minY=Math.min(...ys)-2,   maxY=Math.max(...ys)+2;
-  // Always show LOS with a bit of space on each side
-  minY=Math.min(minY,-1.5); maxY=Math.max(maxY,1.5);
-  const rX=maxX-minX, rY=maxY-minY;
+  // Fixed horizontal view ±22yds (hash-to-hash) — keeps linemen consistently spaced
+  const minX=-22, maxX=22, rX=44;
 
-  // yard → canvas pixel (positive y = deeper into backfield = visually lower on canvas)
+  // Vertical: offense needs upfield space for routes; defense needs space above safeties
+  let minY, maxY;
+  if(mode==='offense'){
+    minY=Math.min(-7, Math.min(...ys)-1); // ≥7 yds upfield for route arrows
+    maxY=Math.max(...ys)+2.5;
+  } else {
+    minY=Math.min(...ys)-3;
+    maxY=Math.max(2.5, Math.max(...ys)+1);
+  }
+  const rY=maxY-minY;
+
+  // yard → canvas pixel
   function yp(yx,yy){ return { x:(yx-minX)/rX*W, y:(yy-minY)/rY*H }; }
 
-  // Faint yard lines every 5 yds
-  tx.strokeStyle='rgba(255,255,255,0.10)'; tx.lineWidth=1;
+  // Faint 5-yard grid lines
+  tx.strokeStyle='rgba(255,255,255,0.09)'; tx.lineWidth=1;
   for(let y=Math.ceil(minY/5)*5; y<=maxY; y+=5){
     const py=yp(0,y).y;
     tx.beginPath(); tx.moveTo(0,py); tx.lineTo(W,py); tx.stroke();
   }
 
-  // Line of scrimmage (y=0)
+  // Line of scrimmage
   const losY=yp(0,0).y;
-  tx.strokeStyle='rgba(255,215,0,0.75)'; tx.lineWidth=2;
+  tx.strokeStyle='rgba(255,215,0,0.8)'; tx.lineWidth=2;
   tx.beginPath(); tx.moveTo(0,losY); tx.lineTo(W,losY); tx.stroke();
 
-  // Compute player radius based on canvas size and number of players
-  const pr=Math.max(4, Math.min(9, W*0.032));
+  // Fixed player radius — consistent across all formations
+  const pr=5;
+  const fontSize=Math.max(5, Math.round(pr*0.9));
 
-  // ── Schematic routes (drawn before players so circles appear on top) ──
+  // ── Schematic routes (offense only, drawn before players) ──
   if(mode==='offense'){
     const isPass=['pass','screen','redzone','2min'].includes(playType);
     const isRun=['run','shortyard'].includes(playType);
+    tx.setLineDash([]);
     players.forEach(p=>{
       const {x:px,y:py}=yp(p.x,p.y);
+
       if(['WR','SE','FL','SL'].includes(p.pos)){
         if(isPass){
-          // Out route: 5 yds up then break outside
-          const mid=yp(p.x, p.y-4);
-          const out=yp(p.x+(p.x<0?-4:4), p.y-4);
-          tx.strokeStyle='#ffcc00'; tx.lineWidth=1.5; tx.setLineDash([]);
-          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(mid.x,mid.y); tx.lineTo(out.x,out.y); tx.stroke();
-          const dir=p.x<0?-1:1;
+          // Straight go route — stays within horizontal bounds, no outward breaks
+          const top=yp(p.x, p.y-8);
+          tx.strokeStyle='#ffcc00'; tx.lineWidth=1.5;
+          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(top.x,top.y); tx.stroke();
           tx.fillStyle='#ffcc00';
-          tx.beginPath(); tx.moveTo(out.x+dir*5,out.y); tx.lineTo(out.x-dir*3,out.y-3); tx.lineTo(out.x-dir*3,out.y+3); tx.closePath(); tx.fill();
+          tx.beginPath(); tx.moveTo(top.x,top.y-5); tx.lineTo(top.x-4,top.y+2); tx.lineTo(top.x+4,top.y+2); tx.closePath(); tx.fill();
         } else {
-          // Downfield block (dashed)
-          const up=yp(p.x, p.y-5);
-          tx.strokeStyle='rgba(255,204,0,0.4)'; tx.lineWidth=1; tx.setLineDash([3,2]);
+          const up=yp(p.x,p.y-5);
+          tx.strokeStyle='rgba(255,204,0,0.35)'; tx.lineWidth=1; tx.setLineDash([3,2]);
           tx.beginPath(); tx.moveTo(px,py); tx.lineTo(up.x,up.y); tx.stroke();
           tx.setLineDash([]);
         }
       } else if(p.pos==='TE'){
         if(isPass){
           // Seam route straight up
-          const up=yp(p.x, p.y-5);
+          const up=yp(p.x,p.y-6);
           tx.strokeStyle='#ffcc00'; tx.lineWidth=1.5; tx.setLineDash([]);
           tx.beginPath(); tx.moveTo(px,py); tx.lineTo(up.x,up.y); tx.stroke();
           tx.fillStyle='#ffcc00';
-          tx.beginPath(); tx.moveTo(up.x,up.y-5); tx.lineTo(up.x-3,up.y); tx.lineTo(up.x+3,up.y); tx.closePath(); tx.fill();
+          tx.beginPath(); tx.moveTo(up.x,up.y-5); tx.lineTo(up.x-4,up.y+2); tx.lineTo(up.x+4,up.y+2); tx.closePath(); tx.fill();
+        } else {
+          // Crack block dashed
+          const up=yp(p.x,p.y-4);
+          tx.strokeStyle='rgba(255,204,0,0.35)'; tx.lineWidth=1; tx.setLineDash([3,2]);
+          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(up.x,up.y); tx.stroke();
+          tx.setLineDash([]);
         }
       } else if(['RB','HB','TB','FB'].includes(p.pos)){
         if(isRun){
-          // Run arrow — angle slightly right
-          const end=yp(p.x+1.5, p.y-3);
+          // Angled run arrow
+          const end=yp(p.x+1.5,p.y-4);
           tx.strokeStyle='#ff9933'; tx.lineWidth=2; tx.setLineDash([]);
           tx.beginPath(); tx.moveTo(px,py); tx.lineTo(end.x,end.y); tx.stroke();
-          const ang=Math.atan2(end.y-py, end.x-px);
-          const as=6;
+          const ang=Math.atan2(end.y-py,end.x-px), as=6;
           tx.fillStyle='#ff9933';
-          tx.beginPath(); tx.moveTo(end.x+Math.cos(ang)*as, end.y+Math.sin(ang)*as);
+          tx.beginPath();
+          tx.moveTo(end.x+Math.cos(ang)*as, end.y+Math.sin(ang)*as);
           tx.lineTo(end.x+Math.cos(ang+2.4)*as*.7, end.y+Math.sin(ang+2.4)*as*.7);
           tx.lineTo(end.x+Math.cos(ang-2.4)*as*.7, end.y+Math.sin(ang-2.4)*as*.7);
           tx.closePath(); tx.fill();
         } else if(isPass){
-          // Flat/checkdown route
-          const flat=yp(p.x+(p.x<=0?5:-5), p.y-1);
-          tx.strokeStyle='#ffcc00'; tx.lineWidth=1.5;
-          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(flat.x,flat.y); tx.stroke();
+          // Checkdown flat
           const dir=p.x<=0?1:-1;
+          const flat=yp(p.x+dir*5,p.y-1);
+          tx.strokeStyle='#ffcc00'; tx.lineWidth=1.5; tx.setLineDash([]);
+          tx.beginPath(); tx.moveTo(px,py); tx.lineTo(flat.x,flat.y); tx.stroke();
           tx.fillStyle='#ffcc00';
           tx.beginPath(); tx.moveTo(flat.x+dir*5,flat.y); tx.lineTo(flat.x-dir*3,flat.y-3); tx.lineTo(flat.x-dir*3,flat.y+3); tx.closePath(); tx.fill();
         }
+      } else if(p.pos==='QB' && isPass){
+        // QB drop-back indicator
+        const drop=yp(p.x,p.y+2.5);
+        tx.strokeStyle='rgba(255,204,0,0.4)'; tx.lineWidth=1; tx.setLineDash([2,2]);
+        tx.beginPath(); tx.moveTo(px,py); tx.lineTo(drop.x,drop.y); tx.stroke();
+        tx.setLineDash([]);
       }
     });
   }
 
   // ── Draw players ──
-  const fontSize=Math.max(6, Math.round(pr*0.85));
   players.forEach(p=>{
     const {x:px,y:py}=yp(p.x,p.y);
     if(mode==='offense'){
@@ -1536,8 +1588,7 @@ function renderFormationToAiCanvas(fmtnData, playType, cnv){
       tx.beginPath(); tx.arc(px,py,pr,0,Math.PI*2); tx.stroke();
       tx.fillStyle='#fff';
     } else {
-      // Defense — X marker in blue
-      tx.strokeStyle='#4a9eff'; tx.lineWidth=Math.max(1.5,pr*0.38); tx.lineCap='round';
+      tx.strokeStyle='#4a9eff'; tx.lineWidth=Math.max(1.5,pr*0.4); tx.lineCap='round';
       const r2=pr*0.72;
       tx.beginPath(); tx.moveTo(px-r2,py-r2); tx.lineTo(px+r2,py+r2); tx.stroke();
       tx.beginPath(); tx.moveTo(px+r2,py-r2); tx.lineTo(px-r2,py+r2); tx.stroke();
@@ -1545,7 +1596,7 @@ function renderFormationToAiCanvas(fmtnData, playType, cnv){
     }
     tx.font=`bold ${fontSize}px Oswald,sans-serif`;
     tx.textAlign='center'; tx.textBaseline='middle';
-    tx.fillText(p.lbl, px, py+0.5);
+    tx.fillText(p.lbl,px,py+0.5);
   });
 }
 
@@ -1574,7 +1625,12 @@ function renderAiPlays(text){
     const infoCol=document.createElement('div'); infoCol.className='ai-play-card-info';
     const h4=document.createElement('h4'); h4.textContent=play.name;
     const meta=document.createElement('div'); meta.className='ai-play-card-meta'; meta.innerHTML=mTag+tyTag+fTag;
-    const body=document.createElement('div'); body.className='ai-play-card-body'; body.innerHTML=fmtAi(play.description);
+    // Strip redundant header lines (play name, formation, type already shown in h4/meta)
+    const cleanDesc=play.description
+      .replace(/^\*\*[^*\n]+\*\*[^\n]*\n?/m,'')
+      .replace(/^[-•]\s*(Formation|Type|Coverage\/Front):.*\n?/gim,'')
+      .replace(/^\s*\n{2,}/gm,'\n').trim();
+    const body=document.createElement('div'); body.className='ai-play-card-body'; body.innerHTML=fmtAi(cleanDesc);
     const saveBtn=document.createElement('button'); saveBtn.className='save-play-btn'; saveBtn.id='save-ai-'+idx; saveBtn.textContent='💾 SAVE TO LIBRARY';
     saveBtn.addEventListener('click',function(){ saveAiPlay(play,this); });
     infoCol.append(h4,meta,body,saveBtn);
