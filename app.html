@@ -482,7 +482,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 <!-- ═══ LABEL MODAL ═══ -->
 <div class="modal-overlay" id="label-modal" onclick="if(event.target===this)closeLabelModal()">
   <div class="modal">
-    <h2>T Add Label</h2>
+    <h2>✏️ Add Label</h2>
     <p class="modal-subtitle">Type a label to place at the clicked position on the field.</p>
     <input type="text" class="modal-input" id="label-text" placeholder="e.g. Inside Zone, Cover 2 Read...">
     <div class="modal-actions">
@@ -880,11 +880,12 @@ canvas.addEventListener('mouseleave',()=>{ mIsDown=false; S.dragging=false; docu
 
 document.addEventListener('keydown',e=>{
   const tag=document.activeElement.tagName;
+  // Ctrl/Cmd shortcuts work from anywhere (including input/textarea)
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'){ undoLast(); e.preventDefault(); return; }
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){ openSaveModal(); e.preventDefault(); return; }
   if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
   if(e.key==='Escape'){ if(S.drawingRoute){S.drawingRoute=false;S.routeWpts=[];render();} S.selectedId=null; render(); }
   if(e.key==='Enter'&&S.drawingRoute) finishRoute();
-  if((e.ctrlKey||e.metaKey)&&e.key==='z'){ undoLast(); e.preventDefault(); }
-  if((e.ctrlKey||e.metaKey)&&e.key==='s'){ openSaveModal(); e.preventDefault(); }
   if(!e.ctrlKey&&!e.metaKey&&(e.key==='+'||e.key==='=')){ changeZoom(0.25); e.preventDefault(); }
   if(!e.ctrlKey&&!e.metaKey&&e.key==='-'){ changeZoom(-0.25); e.preventDefault(); }
   if(!e.ctrlKey&&!e.metaKey&&e.key==='0'){ resetZoom(); e.preventDefault(); }
@@ -1107,7 +1108,11 @@ function openPlayModal(id){
   const descEl=document.getElementById('pm-desc');
   if(p.description){
     descEl.style.display='block';
-    descEl.innerHTML=fmtAi(p.description);
+    const cleanDesc=p.description
+      .replace(/^\*\*[^*\n]+\*\*[^\n]*\n?/m,'')
+      .replace(/^[-•]\s*(Formation|Type|Coverage\/Front):.*\n?/gim,'')
+      .replace(/^\s*\n{2,}/gm,'\n').trim();
+    descEl.innerHTML=fmtAi(cleanDesc);
   } else {
     descEl.style.display='none';
   }
@@ -1245,16 +1250,18 @@ function renderWbPreview(){
 function removeWb(id){ S.wbPlays=S.wbPlays.filter(x=>x!==id); renderWbList(); }
 function clearWb(){ S.wbPlays=[]; renderWbList(); }
 
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 function printWb(){
   if(!S.wbPlays.length){alert('Add plays first');return;}
   const lib=getLib(), cols=parseInt(document.getElementById('wb-cols').value)||4;
-  const title=document.getElementById('wb-title').value||'Game Plan';
+  const title=escHtml(document.getElementById('wb-title').value||'Game Plan');
   let plays=S.wbPlays.map((id,i)=>({i:i+1,p:lib.find(x=>x.id===id)})).filter(x=>x.p);
   while(plays.length%cols!==0) plays.push({i:null,p:null});
   let html=`<style>@page{margin:.2in;}*{box-sizing:border-box;}body{font-family:Arial,sans-serif;margin:0;}.wh{text-align:center;font-size:13px;font-weight:700;margin-bottom:5px;}.wg{display:grid;grid-template-columns:repeat(${cols},1fr);gap:3px;border:2px solid #222;}.wc{border:1px solid #555;padding:3px;min-height:0.95in;background:white;overflow:hidden;}.wn{font-size:8px;color:#888;font-weight:bold;}.wname{font-size:12px;font-weight:bold;text-align:center;margin:1px 0;}.wmeta{font-size:8px;text-align:center;color:#666;}.wimg{width:100%;height:52px;object-fit:cover;display:block;margin:2px 0;}.we{background:#f8f8f8;}</style><div class="wh">🏈 ${title} — ${S.wbPlays.length} Play${S.wbPlays.length>1?'s':''}</div><div class="wg">`;
   plays.forEach(({i,p})=>{
     if(!p){html+='<div class="wc we"></div>';return;}
-    html+=`<div class="wc"><div class="wn">#${i}</div>${p.thumb?`<img class="wimg" src="${p.thumb}">`:'<div style="height:52px;background:#ddd;"></div>'}<div class="wname">${p.name}</div><div class="wmeta">${p.formation||''} ${p.type?'· '+p.type.toUpperCase():''}</div></div>`;
+    html+=`<div class="wc"><div class="wn">#${i}</div>${p.thumb?`<img class="wimg" src="${p.thumb}">`:'<div style="height:52px;background:#ddd;"></div>'}<div class="wname">${escHtml(p.name)}</div><div class="wmeta">${escHtml(p.formation||'')} ${p.type?'· '+escHtml(p.type.toUpperCase()):''}</div></div>`;
   });
   html+='</div>';
   document.getElementById('wristband-print').innerHTML=html; window.print();
@@ -1413,7 +1420,7 @@ Keep language and complexity appropriate for the age and skill level. Separate e
     const msg=isOverload
       ? 'The AI service is temporarily busy. Please wait 10–15 seconds and try again.'
       : lastErr.message;
-    out.innerHTML=`<div class="ai-play-card"><div class="ai-play-card-header"><h4 style="color:#ff4455">Error</h4></div><div class="ai-play-card-body"><p>${msg}</p></div></div>`;
+    out.innerHTML=`<div style="background:rgba(255,68,85,.08);border:1px solid rgba(255,68,85,.3);border-radius:10px;padding:18px 20px;"><h4 style="color:#ff4455;font-family:'Oswald',sans-serif;margin:0 0 8px;">⚠ Error</h4><p style="color:var(--text-mid);font-size:12px;margin:0;line-height:1.6;">${msg}</p></div>`;
   }
   btn.disabled=false; btn.innerHTML='⚡ GET AI SUGGESTIONS';
 }
