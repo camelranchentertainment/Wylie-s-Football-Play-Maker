@@ -1,26 +1,47 @@
-module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+export const config = { runtime: 'edge' };
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+export default async function handler(req) {
+  const cors = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 200, headers: cors });
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' });
+    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY is not set on the server' }), {
+      status: 500,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    });
   }
 
-  let body = req.body;
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch { return res.status(400).json({ error: 'Invalid JSON body' }); }
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+      status: 400,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    });
   }
 
   const { model, max_tokens, messages } = body || {};
   if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ error: 'Missing or invalid messages array' });
+    return new Response(JSON.stringify({ error: 'Missing or invalid messages array' }), {
+      status: 400,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -41,11 +62,20 @@ module.exports = async function handler(req, res) {
     const data = await upstream.json();
 
     if (!upstream.ok) {
-      return res.status(upstream.status).json({ error: data.error?.message || `Anthropic error ${upstream.status}` });
+      return new Response(JSON.stringify({ error: data.error?.message || `Anthropic error ${upstream.status}` }), {
+        status: upstream.status,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
     }
 
-    return res.status(200).json(data);
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    });
   } catch (err) {
-    return res.status(502).json({ error: 'Failed to reach Anthropic API: ' + err.message });
+    return new Response(JSON.stringify({ error: 'Failed to reach Anthropic API: ' + err.message }), {
+      status: 502,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    });
   }
-};
+}
