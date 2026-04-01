@@ -7,23 +7,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg-deep: #07090f;
-  --bg-panel: #0d1119;
-  --bg-card: #131924;
-  --bg-hover: #1a2235;
+  --bg-deep: #14202e;
+  --bg-panel: #1b2b3d;
+  --bg-card: #223348;
+  --bg-hover: #2c4260;
   --accent: #f0a500;
   --accent-glow: rgba(240,165,0,.18);
-  --green-dark: #173a1a;
+  --green-dark: #1a4020;
   --offense: #e63946;
   --defense: #4a9eff;
-  --text-hi: #eef0f6;
-  --text-mid: #7a8eaa;
-  --text-lo: #3a4d63;
-  --border: #182030;
-  --border-bright: #263348;
+  --text-hi: #f0f4fa;
+  --text-mid: #a8bfd4;
+  --text-lo: #5e7a96;
+  --border: #263d56;
+  --border-bright: #3a5878;
   --route-gold: #ffcc00;
-  --shadow-sm: 0 2px 8px rgba(0,0,0,.4);
-  --shadow-md: 0 6px 24px rgba(0,0,0,.6);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.35);
+  --shadow-md: 0 6px 24px rgba(0,0,0,.5);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 html,body { height:100vh; overflow:hidden; }
@@ -31,7 +31,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 
 /* ─── HEADER ─────────────────────────────────────────────── */
 #hdr {
-  background:linear-gradient(90deg,#060810 0%,#0e1420 50%,#0a1018 100%);
+  background:linear-gradient(90deg,#0f1a26 0%,#182538 50%,#0f1e2e 100%);
   border-bottom:1px solid var(--border);
   border-top:2px solid var(--accent);
   padding:0 14px; height:52px;
@@ -91,7 +91,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .rsbtn.act { background:rgba(255,204,0,.1); border-color:var(--route-gold); color:var(--route-gold); }
 .finish-btn { width:100%; padding:8px; margin-top:8px; background:rgba(255,204,0,.1); border:1px solid var(--route-gold); border-radius:6px; color:var(--route-gold); font-family:'Oswald',sans-serif; font-size:12px; font-weight:700; letter-spacing:1.5px; cursor:pointer; transition:all .15s; }
 .finish-btn:hover { background:rgba(255,204,0,.22); }
-#field-wrap { flex:1; display:flex; align-items:center; justify-content:center; background:#080c14; background-image:radial-gradient(ellipse at 50% 45%,rgba(30,77,34,.14) 0%,transparent 62%); position:relative; overflow:hidden; }
+#field-wrap { flex:1; display:flex; align-items:center; justify-content:center; background:#111d2b; background-image:radial-gradient(ellipse at 50% 45%,rgba(30,90,40,.18) 0%,transparent 62%); position:relative; overflow:hidden; }
 #canvas-wrap { position:relative; border:1px solid rgba(255,255,255,.05); box-shadow:0 0 100px rgba(0,0,0,.95),0 0 0 1px rgba(240,165,0,.06); border-radius:4px; }
 #field { display:block; cursor:crosshair; }
 #player-tip { position:absolute; pointer-events:none; background:rgba(4,6,12,.97); border:1px solid var(--accent); border-radius:7px; padding:5px 11px; font-size:12px; font-weight:600; color:var(--text-hi); display:none; z-index:15; white-space:nowrap; box-shadow:0 6px 24px rgba(0,0,0,.6); }
