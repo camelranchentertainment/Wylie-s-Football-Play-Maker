@@ -56,6 +56,9 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .spacer { flex:1; }
 #status-pill { font-size:10px; font-family:'Oswald',sans-serif; letter-spacing:.5px; color:var(--text-mid); background:rgba(255,255,255,.03); border:1px solid var(--border); padding:3px 13px; border-radius:20px; white-space:nowrap; max-width:280px; overflow:hidden; text-overflow:ellipsis; }
 
+/* ─── DESIGNER HEADER CONTROLS ───────────────────────────── */
+#designer-ctrls { display:flex; align-items:center; gap:10px; }
+
 /* ─── PAGE NAV ────────────────────────────────────────────── */
 .nav-pages { display:flex; gap:3px; flex-shrink:0; }
 .npbtn { padding:5px 13px; height:30px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.2px; cursor:pointer; border:1px solid var(--border-bright); background:transparent; color:var(--text-lo); border-radius:7px; transition:all .18s; white-space:nowrap; }
@@ -230,18 +233,20 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 <div id="hdr">
   <div id="logo">🏈 <em>Wylie's</em> <span class="logo-sub">PLAY MAKER</span></div>
   <div class="hdiv"></div>
-  <div class="mode-toggle">
-    <button class="mode-btn on-off" id="btn-off" onclick="setMode('offense')">● OFFENSE</button>
-    <button class="mode-btn" id="btn-def" onclick="setMode('defense')">✕ DEFENSE</button>
+  <div id="designer-ctrls">
+    <div class="mode-toggle">
+      <button class="mode-btn on-off" id="btn-off" onclick="setMode('offense')">● OFFENSE</button>
+      <button class="mode-btn" id="btn-def" onclick="setMode('defense')">✕ DEFENSE</button>
+    </div>
+    <div class="hdiv"></div>
+    <input type="text" id="play-name" value="Untitled Play" placeholder="Play name...">
+    <button class="hbtn" onclick="undoLast()" title="Ctrl+Z">↩ UNDO</button>
+    <button class="hbtn" onclick="confirmClear()">⌫ CLEAR</button>
+    <button class="hbtn pri" onclick="openSaveModal()" title="Ctrl+S">💾 SAVE PLAY</button>
+    <div id="status-pill">Select a formation or use the Place tool</div>
+    <div class="hdiv"></div>
   </div>
-  <div class="hdiv"></div>
-  <input type="text" id="play-name" value="Untitled Play" placeholder="Play name...">
-  <button class="hbtn" onclick="undoLast()" title="Ctrl+Z">↩ UNDO</button>
-  <button class="hbtn" onclick="confirmClear()">⌫ CLEAR</button>
-  <button class="hbtn pri" onclick="openSaveModal()" title="Ctrl+S">💾 SAVE PLAY</button>
   <div class="spacer"></div>
-  <div id="status-pill">Select a formation or use the Place tool</div>
-  <div class="hdiv"></div>
   <nav class="nav-pages">
     <button class="npbtn act" data-page="designer" onclick="switchPage('designer')">✏ DESIGNER</button>
     <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 LIBRARY</button>
@@ -431,7 +436,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 </div>
 
 <!-- ═══ SAVE PLAY MODAL ═══ -->
-<div class="modal-overlay" id="save-modal">
+<div class="modal-overlay" id="save-modal" onclick="if(event.target===this)closeSaveModal()">
   <div class="modal">
     <h2>💾 Save Play</h2>
     <p class="modal-subtitle">Name your play and tag it for easy filtering in the library.</p>
@@ -454,7 +459,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 </div>
 
 <!-- ═══ LABEL MODAL ═══ -->
-<div class="modal-overlay" id="label-modal">
+<div class="modal-overlay" id="label-modal" onclick="if(event.target===this)closeLabelModal()">
   <div class="modal">
     <h2>T Add Label</h2>
     <p class="modal-subtitle">Type a label to place at the clicked position on the field.</p>
@@ -467,7 +472,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 </div>
 
 <!-- ═══ PLAY POPUP MODAL ═══ -->
-<div class="modal-overlay" id="play-modal">
+<div class="modal-overlay" id="play-modal" onclick="if(event.target===this)closePlayModal()">
   <div class="modal wide">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
       <div>
@@ -1132,10 +1137,10 @@ function updateWbSel(){
 function addToWb(){ const v=parseFloat(document.getElementById('wb-sel').value); if(!v) return; wbAddById(v); }
 
 function wbAddById(id){
-  if(S.wbPlays.length>=24){alert('Maximum 24 plays per wristband card');return;}
-  if(S.wbPlays.includes(id)){alert('Already on wristband');return;}
+  if(S.wbPlays.length>=24){setStatus('Maximum 24 plays per wristband card');return;}
+  if(S.wbPlays.includes(id)){setStatus('"'+( getLib().find(x=>x.id===id)?.name||'Play' )+'" already on wristband');return;}
   const p=getLib().find(x=>x.id===id); if(!p) return;
-  S.wbPlays.push(id); renderWbList(); switchPage('wb');
+  S.wbPlays.push(id); renderWbList(); setStatus('"'+p.name+'" added to wristband'); switchPage('wb');
 }
 
 function renderWbList(){
@@ -1178,7 +1183,7 @@ function printWb(){
   let html=`<style>@page{margin:.2in;}*{box-sizing:border-box;}body{font-family:Arial,sans-serif;margin:0;}.wh{text-align:center;font-size:13px;font-weight:700;margin-bottom:5px;}.wg{display:grid;grid-template-columns:repeat(${cols},1fr);gap:3px;border:2px solid #222;}.wc{border:1px solid #555;padding:3px;min-height:0.95in;background:white;overflow:hidden;}.wn{font-size:8px;color:#888;font-weight:bold;}.wname{font-size:12px;font-weight:bold;text-align:center;margin:1px 0;}.wmeta{font-size:8px;text-align:center;color:#666;}.wimg{width:100%;height:52px;object-fit:cover;display:block;margin:2px 0;}.we{background:#f8f8f8;}</style><div class="wh">🏈 ${title} — ${S.wbPlays.length} Play${S.wbPlays.length>1?'s':''}</div><div class="wg">`;
   plays.forEach(({i,p})=>{
     if(!p){html+='<div class="wc we"></div>';return;}
-    html+=`<div class="wc"><div class="wn">#${i}</div>${p.thumb?`<img class="wimg" src="${p.thumb}">`:''}><div class="wname">${p.name}</div><div class="wmeta">${p.formation||''} ${p.type?'· '+p.type.toUpperCase():''}</div></div>`;
+    html+=`<div class="wc"><div class="wn">#${i}</div>${p.thumb?`<img class="wimg" src="${p.thumb}">`:'<div style="height:52px;background:#ddd;"></div>'}<div class="wname">${p.name}</div><div class="wmeta">${p.formation||''} ${p.type?'· '+p.type.toUpperCase():''}</div></div>`;
   });
   html+='</div>';
   document.getElementById('wristband-print').innerHTML=html; window.print();
@@ -1340,6 +1345,7 @@ function switchPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
   document.querySelectorAll('.npbtn').forEach(b=>b.classList.toggle('act',b.dataset.page===id));
   document.getElementById('page-'+id).classList.add('act');
+  document.getElementById('designer-ctrls').style.display=id==='designer'?'flex':'none';
   if(id==='library') renderLibrary();
   if(id==='wb'){updateWbSel();renderWbList();}
   if(id==='designer') render();
