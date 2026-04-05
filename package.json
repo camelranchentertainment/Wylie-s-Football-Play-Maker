@@ -1,0 +1,20 @@
+{
+  "name": "wylie-s-football-play-maker",
+  "version": "1.0.0",
+  "description": "A professional, browser-based football play designer built for coaches. Design offensive and defensive plays, manage a full play library, build QB wristband cards, and get AI-powered play suggestions — all in a single file, no installation required.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:44479/git/camelranchentertainment/Wylie-s-Football-Play-Maker"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "claude-flow": "file:../../../tmp/ruflo",
+    "ruflo": "^3.5.51"
+  }
+}
