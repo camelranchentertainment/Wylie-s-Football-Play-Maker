@@ -246,6 +246,20 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .auth-msg.err { background:rgba(255,68,85,.1); color:#ff4455; border:1px solid rgba(255,68,85,.25); display:block; }
 .auth-msg.ok { background:rgba(80,220,120,.1); color:#50dc78; border:1px solid rgba(80,220,120,.25); display:block; }
 .cloud-badge { font-size:9px; padding:1px 6px; border-radius:10px; background:rgba(80,220,120,.15); color:#50dc78; border:1px solid rgba(80,220,120,.25); font-family:'Oswald',sans-serif; letter-spacing:1px; margin-left:6px; }
+/* ── Guest banner ─────────────────────────────────── */
+#guest-banner{display:none;align-items:center;gap:10px;padding:7px 18px;background:rgba(240,165,0,.12);border-bottom:1px solid rgba(240,165,0,.25);font-family:'Rajdhani',sans-serif;font-size:12.5px;color:var(--text-mid);}
+#guest-banner.show{display:flex;}
+#guest-banner strong{color:var(--accent);font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;}
+#guest-banner .gb-sign{padding:4px 12px;background:var(--accent);color:#000;border:none;border-radius:5px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-left:4px;}
+#guest-banner .gb-sign:hover{background:#ffc62e;}
+#guest-banner .gb-x{margin-left:auto;background:none;border:none;color:var(--text-lo);font-size:14px;cursor:pointer;padding:0 2px;line-height:1;}
+/* ── Toast notifications ──────────────────────────── */
+#toast-container{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{padding:10px 16px;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.4);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;pointer-events:none;max-width:300px;line-height:1.4;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.err{background:#2a1418;border:1px solid rgba(255,68,85,.4);color:#ff7788;}
+.toast.ok{background:#12231a;border:1px solid rgba(80,220,120,.35);color:#50dc78;}
+.toast.warn{background:#231f10;border:1px solid rgba(240,165,0,.35);color:var(--accent);}
 #wristband-print { display:none; }
 @page { margin: .2in; }
 @media print {
@@ -289,6 +303,12 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   </nav>
   <div class="hdiv"></div>
   <button class="auth-btn" id="auth-nav-btn" onclick="openAuthModal()">👤 SIGN IN</button>
+</div>
+
+<div id="guest-banner">
+  ☁ <strong>GUEST MODE</strong>&nbsp;— plays save on this device only.
+  <button class="gb-sign" onclick="openAuthModal()">SIGN IN TO SYNC</button>
+  <button class="gb-x" onclick="dismissGuestBanner()" aria-label="Dismiss">✕</button>
 </div>
 
 <!-- ═══ PAGES ═══ -->
@@ -572,6 +592,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 </div>
 
 <div id="wristband-print"></div>
+<div id="toast-container"></div>
 
 <script>
 'use strict';
@@ -588,19 +609,22 @@ let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
 async function initAuth() {
   const { data: { session } } = await supa.auth.getSession();
   if (!session) {
-    window.location.replace('login.html');
-    return;
+    // Guest mode — allow local-only use without forcing a login
+    updateAuthUI();
+    renderLibrary();
+    updateWbSel();
+  } else {
+    currentUser = session.user;
+    await loadCloudLib();
+    // If new account with no cloud plays but has local plays, migrate them
+    if (cloudLib !== null && cloudLib.length === 0) {
+      const localPlays = JSON.parse(localStorage.getItem(LIB_KEY) || '[]');
+      if (localPlays.length > 0) await migrateLocalToCloud();
+    }
+    updateAuthUI();
+    renderLibrary();
+    updateWbSel();
   }
-  currentUser = session.user;
-  await loadCloudLib();
-  // If this is a new account with no cloud plays but has local plays, migrate them
-  if (cloudLib !== null && cloudLib.length === 0) {
-    const localPlays = JSON.parse(localStorage.getItem(LIB_KEY) || '[]');
-    if (localPlays.length > 0) await migrateLocalToCloud();
-  }
-  updateAuthUI();
-  renderLibrary();
-  updateWbSel();
   // Listen for auth state changes (sign-in / sign-out in other tabs)
   supa.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
@@ -620,6 +644,11 @@ async function initAuth() {
   });
 }
 
+function dismissGuestBanner() {
+  document.getElementById('guest-banner').classList.remove('show');
+  try { localStorage.setItem('wpm_guest_banner_dismissed', '1'); } catch {}
+}
+
 function updateAuthUI() {
   const btn = document.getElementById('auth-nav-btn');
   if (!btn) return;
@@ -633,13 +662,34 @@ function updateAuthUI() {
   }
   const badge = document.getElementById('lib-cloud-badge');
   if (badge) badge.style.display = currentUser ? 'inline' : 'none';
+  // Show guest banner when signed out (unless user dismissed it this session)
+  const banner = document.getElementById('guest-banner');
+  if (banner) {
+    const dismissed = localStorage.getItem('wpm_guest_banner_dismissed') === '1';
+    banner.classList.toggle('show', !currentUser && !dismissed);
+  }
+}
+
+// ─── TOAST ────────────────────────────────────────────────────
+function showToast(msg, type='ok', duration=3500) {
+  const c = document.getElementById('toast-container');
+  if (!c) return;
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => c.removeChild(t), 300);
+  }, duration);
 }
 
 // ─── CLOUD LIBRARY ────────────────────────────────────────────
 async function loadCloudLib() {
   if (!currentUser) return;
   const { data, error } = await supa.from('plays').select('*').order('ts', { ascending: false });
-  if (error) { console.error('Cloud load error:', error); return; }
+  if (error) { console.error('Cloud load error:', error); showToast('Could not load cloud library — showing local plays.', 'warn'); return; }
   cloudLib = (data || []).map(row => ({
     id: row.play_id,
     name: row.name,
@@ -672,13 +722,13 @@ async function savePlayToCloud(play) {
     ts: play.ts || Date.now(),
   };
   const { error } = await supa.from('plays').upsert(row, { onConflict: 'user_id,play_id' });
-  if (error) console.error('Cloud save error:', error);
+  if (error) { console.error('Cloud save error:', error); showToast('Play saved locally — cloud sync failed. Check your connection.', 'warn'); }
 }
 
 async function deletePlayFromCloud(playId) {
   if (!currentUser) return;
   const { error } = await supa.from('plays').delete().eq('user_id', currentUser.id).eq('play_id', playId);
-  if (error) console.error('Cloud delete error:', error);
+  if (error) { console.error('Cloud delete error:', error); showToast('Could not delete from cloud — check your connection.', 'err'); }
 }
 
 async function migrateLocalToCloud() {
@@ -1354,8 +1404,8 @@ function openPlayModal(id){
   const typeColor={run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
   const mTag=p.mode==='offense'?'<span class="ptag ptag-o">OFF</span>':'<span class="ptag ptag-d">DEF</span>';
   const tyKey=typeColor[p.type]||typeColor.default;
-  const tyTag=p.type?`<span class="ptag ${tyKey}">${p.type.toUpperCase()}</span>`:'';
-  const fTag=p.formation?`<span class="ptag" style="background:rgba(255,255,255,.05);color:var(--text-mid);border:1px solid var(--border-bright);">${p.formation}</span>`:'';
+  const tyTag=p.type?`<span class="ptag ${tyKey}">${escHtml(p.type.toUpperCase())}</span>`:'';
+  const fTag=p.formation?`<span class="ptag" style="background:rgba(255,255,255,.05);color:var(--text-mid);border:1px solid var(--border-bright);">${escHtml(p.formation)}</span>`:'';
   document.getElementById('pm-tags').innerHTML=mTag+tyTag+fTag;
   // Render play to popup canvas
   const pmCanvas=document.getElementById('pm-canvas');
@@ -1677,7 +1727,7 @@ Keep language and complexity appropriate for the age and skill level. Separate e
     const isOverload=lastErr.message.toLowerCase().includes('overload');
     const msg=isOverload
       ? 'The AI service is temporarily busy. Please wait 10–15 seconds and try again.'
-      : lastErr.message;
+      : escHtml(lastErr.message);
     out.innerHTML=`<div style="background:rgba(255,68,85,.08);border:1px solid rgba(255,68,85,.3);border-radius:10px;padding:18px 20px;"><h4 style="color:#ff4455;font-family:'Oswald',sans-serif;margin:0 0 8px;">⚠ Error</h4><p style="color:var(--text-mid);font-size:12px;margin:0;line-height:1.6;">${msg}</p></div>`;
   }
   btn.disabled=false; btn.innerHTML='⚡ GET AI SUGGESTIONS';
@@ -1932,7 +1982,8 @@ function saveAiPlay(play, btn){
 }
 
 function fmtAi(t){
-  return t
+  // Escape raw text first so user/AI content can't inject HTML, then apply safe markdown
+  return escHtml(t)
     .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
     .replace(/^#{1,3}\s+(.+)$/gm,'<strong style="color:var(--accent);display:block;margin-top:8px;">$1</strong>')
     .replace(/^[-•]\s+(.+)$/gm,'<div style="margin:3px 0;padding-left:10px;">• $1</div>')
