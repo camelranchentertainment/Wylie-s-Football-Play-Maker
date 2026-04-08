@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Shared Play — Wylie's Play Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#14202e;--panel:#1b2b3d;--card:#22304a;--accent:#f0a500;--hi:#f5f7fb;--mid:#c0d4e8;--lo:#7fa0bc;--border:#2a3d55;--offense:#e63946;--defense:#4a9eff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px 48px;}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+.brand svg{width:36px;height:36px;}
+.brand-text .top{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:3px;}
+.brand-text .top em{color:var(--accent);font-style:normal;}
+.brand-text .sub{font-size:8px;letter-spacing:3px;color:var(--lo);margin-top:1px;}
+.card{background:var(--panel);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:14px;padding:28px 32px;width:100%;max-width:680px;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.play-header{margin-bottom:16px;}
+.play-name{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:8px;}
+.tags{display:flex;gap:6px;flex-wrap:wrap;}
+.ptag{font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:4px;}
+.ptag-o{background:rgba(230,57,70,.15);color:#ff6b75;border:1px solid rgba(230,57,70,.3);}
+.ptag-d{background:rgba(74,158,255,.12);color:#7ab8ff;border:1px solid rgba(74,158,255,.25);}
+.ptag-r{background:rgba(230,57,70,.12);color:#ff8c95;border:1px solid rgba(230,57,70,.2);}
+.ptag-p{background:rgba(74,158,255,.1);color:#90c8ff;border:1px solid rgba(74,158,255,.2);}
+.ptag-s{background:rgba(240,165,0,.1);color:var(--accent);border:1px solid rgba(240,165,0,.2);}
+canvas{display:block;width:100%;border-radius:8px;margin:16px 0;border:1px solid rgba(255,255,255,.06);box-shadow:0 0 40px rgba(0,0,0,.8);}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.btn{padding:10px 20px;border-radius:8px;font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;cursor:pointer;border:none;transition:all .2s;}
+.btn-gold{background:var(--accent);color:#000;box-shadow:0 4px 18px rgba(240,165,0,.3);}
+.btn-gold:hover{background:#ffc62e;}
+.btn-outline{background:rgba(255,255,255,.05);color:var(--mid);border:1px solid var(--border);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.err{text-align:center;padding:40px 20px;color:var(--lo);font-size:14px;}
+.err strong{display:block;font-family:'Oswald',sans-serif;font-size:18px;color:#ff6b75;margin-bottom:8px;}
+.desc{font-size:12.5px;color:var(--mid);line-height:1.7;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;white-space:pre-wrap;}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22 3L40 10.5V23C40 33.5 32 41 22 44C12 41 4 33.5 4 23V10.5L22 3Z" fill="#1b2b3d" stroke="#f0a500" stroke-width="1.4"/>
+    <ellipse cx="22" cy="20" rx="12" ry="7.5" fill="none" stroke="#f0a500" stroke-width="1.6" transform="rotate(-18 22 20)"/>
+    <line x1="22" y1="12" x2="22" y2="28" stroke="#f0a500" stroke-width=".9" opacity=".65"/>
+    <line x1="16.5" y1="17" x2="27.5" y2="17" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+    <line x1="16.5" y1="20" x2="27.5" y2="20" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+    <line x1="16.5" y1="23" x2="27.5" y2="23" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+  </svg>
+  <div class="brand-text">
+    <div class="top"><em>WYLIE'S</em> PLAY MAKER</div>
+    <div class="sub">FOOTBALL COACHING TOOLS</div>
+  </div>
+</div>
+
+<div class="card" id="main-card">
+  <div id="content"></div>
+</div>
+
+<script>
+// ── Canvas constants (must match app.html) ──────────────────────
+const CW=700, CH=570, HPY=CW/53.33, VPY=19, LOS=300, CX=CW/2, PR=13;
+function yd2c(x,y){return{x:CX+x*HPY,y:LOS+y*VPY};}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function drawField(ctx){
+  const g=ctx.createLinearGradient(0,0,0,CH);
+  g.addColorStop(0,'#173f1c'); g.addColorStop(.5,'#1e5222'); g.addColorStop(1,'#173f1c');
+  ctx.fillStyle=g; ctx.fillRect(0,0,CW,CH);
+  // Yard lines
+  for(let y=-10;y<=10;y++){
+    const cy=LOS+y*VPY;
+    ctx.strokeStyle=y===0?'rgba(255,215,0,.75)':'rgba(255,255,255,.07)';
+    ctx.lineWidth=y===0?1.5:.5;
+    ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(CW,cy); ctx.stroke();
+  }
+  // Hash marks
+  ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.lineWidth=.7;
+  for(let y=-10;y<=10;y+=1){
+    const cy=LOS+y*VPY;
+    [-7,-3,3,7].forEach(xyd=>{const cx=CX+xyd*HPY; ctx.beginPath(); ctx.moveTo(cx-4,cy); ctx.lineTo(cx+4,cy); ctx.stroke();});
+  }
+}
+
+function drawRoute(ctx,route){
+  if(!route.waypoints||route.waypoints.length<2) return;
+  ctx.strokeStyle=route.color||'#ffcc00'; ctx.lineWidth=2.5;
+  if(route.style==='dashed'){ctx.setLineDash([8,5]);}
+  else{ctx.setLineDash([]);}
+  ctx.beginPath();
+  ctx.moveTo(route.waypoints[0].x,route.waypoints[0].y);
+  for(let i=1;i<route.waypoints.length;i++) ctx.lineTo(route.waypoints[i].x,route.waypoints[i].y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Arrow at end
+  const n=route.waypoints.length, last=route.waypoints[n-1], prev=route.waypoints[n-2];
+  const ang=Math.atan2(last.y-prev.y,last.x-prev.x);
+  const al=10;
+  ctx.strokeStyle=route.color||'#ffcc00'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(last.x-al*Math.cos(ang-Math.PI/6),last.y-al*Math.sin(ang-Math.PI/6)); ctx.lineTo(last.x,last.y); ctx.lineTo(last.x-al*Math.cos(ang+Math.PI/6),last.y-al*Math.sin(ang+Math.PI/6)); ctx.stroke();
+}
+
+function drawPlayer(ctx,p){
+  const r=PR;
+  if(p.side==='offense'){
+    ctx.fillStyle='#e63946'; ctx.strokeStyle='#ff8c95'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font=`bold ${r*.9}px Oswald,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(p.lbl||p.pos||'',p.x,p.y+.5);
+  } else {
+    ctx.strokeStyle='#4a9eff'; ctx.lineWidth=2;
+    const s=r*.72;
+    ctx.beginPath(); ctx.moveTo(p.x-s,p.y-s); ctx.lineTo(p.x+s,p.y+s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.x+s,p.y-s); ctx.lineTo(p.x-s,p.y+s); ctx.stroke();
+    ctx.fillStyle='#4a9eff'; ctx.font=`bold ${r*.75}px Oswald,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(p.lbl||p.pos||'',p.x,p.y+r*1.6);
+  }
+}
+
+function renderPlay(play, cnv){
+  const ctx=cnv.getContext('2d');
+  drawField(ctx);
+  (play.routes||[]).forEach(r=>drawRoute(ctx,r));
+  (play.players||[]).forEach(p=>drawPlayer(ctx,p));
+  (play.labels||[]).forEach(l=>{
+    ctx.fillStyle='#f0a500'; ctx.font='bold 12px Rajdhani,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText(l.text,l.x,l.y);
+  });
+}
+
+function load(){
+  const hash=location.hash.slice(1);
+  const content=document.getElementById('content');
+  if(!hash){
+    content.innerHTML='<div class="err"><strong>No play data</strong>This link does not contain a play. Ask the coach to share it again.</div>';
+    return;
+  }
+  let play;
+  try{
+    play=JSON.parse(decodeURIComponent(escape(atob(hash))));
+    if(!play.name||!Array.isArray(play.players)) throw new Error();
+  }catch{
+    content.innerHTML='<div class="err"><strong>Invalid link</strong>Could not decode the play. The link may be corrupted.</div>';
+    return;
+  }
+
+  const typeColor={run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-s',special:'ptag-s'};
+  const mTag=play.mode==='offense'?'<span class="ptag ptag-o">OFFENSE</span>':'<span class="ptag ptag-d">DEFENSE</span>';
+  const tyKey=typeColor[play.type]||'ptag-s';
+  const tyTag=play.type?`<span class="ptag ${tyKey}">${escHtml(play.type.toUpperCase())}</span>`:'';
+  const fTag=play.formation?`<span class="ptag" style="background:rgba(255,255,255,.06);color:var(--mid);border:1px solid var(--border);">${escHtml(play.formation)}</span>`:'';
+
+  const cnv=document.createElement('canvas');
+  cnv.width=CW; cnv.height=CH;
+  renderPlay(play, cnv);
+
+  const descHtml=play.description
+    ? `<div class="desc">${escHtml(play.description.replace(/^\*\*[^*\n]+\*\*[^\n]*\n?/m,'').replace(/^[-•]\s*(Formation|Type|Coverage\/Front):.*\n?/gim,'').trim())}</div>`
+    : '';
+
+  content.innerHTML=`
+    <div class="play-header">
+      <div class="play-name">${escHtml(play.name)}</div>
+      <div class="tags">${mTag}${tyTag}${fTag}</div>
+    </div>`;
+  content.appendChild(cnv);
+  content.insertAdjacentHTML('beforeend', descHtml);
+  content.insertAdjacentHTML('beforeend',`
+    <div class="actions">
+      <button class="btn btn-gold" onclick="saveToLibrary()">⬇ Save to My Library</button>
+      <button class="btn btn-outline" onclick="copyLink()">🔗 Copy Link</button>
+      <a href="app.html" class="btn btn-outline" style="text-decoration:none;">Open Play Maker</a>
+    </div>`);
+
+  // Store play for saveToLibrary
+  window._sharedPlay = play;
+
+  document.title = escHtml(play.name) + ' — Wylie\'s Play Maker';
+}
+
+function copyLink(){
+  if(navigator.clipboard) navigator.clipboard.writeText(location.href).then(()=>alert('Link copied!'));
+  else prompt('Copy this link:',location.href);
+}
+
+function saveToLibrary(){
+  const play=window._sharedPlay; if(!play) return;
+  const LIB_KEY='gridiron_pro_v3_lib';
+  try{
+    const lib=JSON.parse(localStorage.getItem(LIB_KEY)||'[]');
+    // Give it a new unique id so it doesn't conflict
+    const newPlay={...play, id:Date.now()+Math.random(), ts:Date.now()};
+    lib.unshift(newPlay);
+    localStorage.setItem(LIB_KEY, JSON.stringify(lib));
+    alert('Play saved to your local library! Open the Play Maker to view it.');
+  }catch{
+    alert('Could not save — try opening the Play Maker and importing manually.');
+  }
+}
+
+load();
+</script>
+</body>
+</html>

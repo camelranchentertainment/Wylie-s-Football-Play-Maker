@@ -275,12 +275,54 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   .wimg { width:100%; height:52px; object-fit:cover; display:block; margin:2px 0; }
   .we  { background:#f8f8f8; }
 }
+
+/* ── Mobile responsive ────────────────────────────────────── */
+#mob-sidebar-btn { display:none; }
+@media (max-width:768px) {
+  html,body { height:auto; overflow:auto; }
+  #hdr { padding:0 10px; gap:6px; height:48px; flex-wrap:nowrap; }
+  #logo .logo-sub { display:none; }
+  #designer-ctrls { gap:5px; }
+  #designer-ctrls .hdiv { display:none; }
+  #play-name { width:90px; font-size:12px; padding:4px 7px; }
+  .mode-btn { font-size:9px; padding:4px 7px; }
+  .hbtn { font-size:9px; padding:4px 8px; letter-spacing:.5px; }
+  .npbtn { font-size:9px; padding:4px 7px; letter-spacing:.5px; }
+  .nav-pages { gap:2px; }
+  .spacer { display:none; }
+  #mob-sidebar-btn { display:flex; align-items:center; justify-content:center; width:32px; height:32px; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; color:var(--text-mid); font-size:16px; cursor:pointer; flex-shrink:0; }
+  /* Pages fill screen height minus header */
+  #pages { height:calc(100vh - 48px); overflow:hidden; position:relative; }
+  /* Designer layout: sidebar overlays canvas on mobile */
+  #page-designer { position:relative; }
+  #sidebar {
+    position:absolute; left:0; top:0; bottom:0; z-index:30;
+    transform:translateX(-100%); transition:transform .2s ease;
+    width:220px; box-shadow:4px 0 20px rgba(0,0,0,.6);
+  }
+  #sidebar.mob-open { transform:translateX(0); }
+  #sidebar-overlay { display:none; position:absolute; inset:0; z-index:29; background:rgba(0,0,0,.5); }
+  #sidebar.mob-open ~ #field-wrap #sidebar-overlay,
+  #sidebar-overlay.show { display:block; }
+  /* Canvas auto-fit on mobile */
+  #field-wrap { align-items:flex-start; justify-content:flex-start; overflow:auto; padding:8px; }
+  /* Library topbar wraps on mobile */
+  .page-topbar { flex-wrap:wrap; gap:8px; }
+  .page-topbar .rp-input { width:100%; }
+  /* Wristband: stack columns */
+  #page-wb { flex-direction:column; }
+  #wb-controls-col { width:100%; min-width:unset; max-height:none; border-right:none; border-bottom:1px solid var(--border); }
+  #wb-preview-col { padding:14px; }
+  /* Guest banner compact */
+  #guest-banner { font-size:11px; padding:6px 12px; }
+}
 </style>
 </head>
 <body>
 
 <!-- ═══ HEADER ═══ -->
 <div id="hdr">
+  <button id="mob-sidebar-btn" onclick="toggleMobSidebar()" aria-label="Toggle sidebar">☰</button>
   <div id="logo">🏈 <em>Wylie's</em> <span class="logo-sub">PLAY MAKER</span></div>
   <div class="hdiv"></div>
   <div id="designer-ctrls">
@@ -360,6 +402,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
         <button class="finish-btn" onclick="finishRoute()">✓ FINISH</button>
       </div>
     </div>
+    <div id="sidebar-overlay" onclick="toggleMobSidebar()"></div>
     <div id="field-wrap">
       <div id="canvas-wrap">
         <canvas id="field" width="700" height="570" role="application" aria-label="Football play designer canvas"></canvas>
@@ -369,7 +412,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
         <button onclick="changeZoom(-0.25)" title="Zoom Out (-)">−</button>
         <span id="zoom-lbl">100%</span>
         <button onclick="changeZoom(0.25)" title="Zoom In (+)">+</button>
-        <button onclick="resetZoom()" title="Reset Zoom (0)" style="font-size:10px;font-family:'Oswald',sans-serif;letter-spacing:.5px;width:auto;padding:0 7px;">FIT</button>
+        <button onclick="fitZoom()" title="Fit canvas to window (0)" style="font-size:10px;font-family:'Oswald',sans-serif;letter-spacing:.5px;width:auto;padding:0 7px;">FIT</button>
       </div>
     </div>
   </div>
@@ -385,6 +428,10 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
         <option value="defense">Defense</option>
       </select>
       <span id="lib-count" aria-live="polite" aria-atomic="true"></span>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="hbtn" onclick="exportLib()" title="Export plays as JSON file">⬇ Export</button>
+        <label class="hbtn" style="cursor:pointer;" title="Import plays from JSON file">⬆ Import<input type="file" accept=".json" style="display:none;" onchange="importLib(event)"></label>
+      </div>
     </div>
     <div id="lib-grid"></div>
   </div>
@@ -551,6 +598,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     <div id="pm-desc"></div>
     <div class="modal-actions">
       <button class="mbtn cancel" onclick="closePlayModal()">Close</button>
+      <button class="mbtn" style="background:rgba(80,220,120,.1);color:#50dc78;border:1px solid rgba(80,220,120,.25);" onclick="sharePlay(currentPopupId)">🔗 Share</button>
       <button class="mbtn ok" id="pm-load-btn" onclick="loadPlayFromModal()">📂 Load to Designer</button>
     </div>
   </div>
@@ -1198,6 +1246,21 @@ function resetZoom(){
   document.getElementById('canvas-wrap').style.transform='scale(1)';
   document.getElementById('zoom-lbl').textContent='100%';
 }
+function fitZoom(){
+  const wrap=document.getElementById('field-wrap');
+  const scaleX=(wrap.clientWidth-24)/CW;
+  const scaleY=(wrap.clientHeight-24)/CH;
+  const scale=Math.round(Math.min(scaleX,scaleY,1)*100)/100;
+  S.zoom=scale;
+  document.getElementById('canvas-wrap').style.transform=`scale(${scale})`;
+  document.getElementById('zoom-lbl').textContent=Math.round(scale*100)+'%';
+}
+function toggleMobSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  const open=sb.classList.toggle('mob-open');
+  ov.classList.toggle('show',open);
+}
 // Ctrl + scroll wheel to zoom
 document.getElementById('field-wrap').addEventListener('wheel',e=>{
   if(!e.ctrlKey&&!e.metaKey) return;
@@ -1340,6 +1403,39 @@ function saveLib(l){
   localStorage.setItem(LIB_KEY,JSON.stringify(l));
 }
 
+function exportLib(){
+  const lib=getLib();
+  if(!lib.length){showToast('No plays to export','warn');return;}
+  const blob=new Blob([JSON.stringify(lib,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='wylie-plays-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast(`Exported ${lib.length} play${lib.length!==1?'s':''}`, 'ok');
+}
+
+async function importLib(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try{
+      const plays=JSON.parse(ev.target.result);
+      if(!Array.isArray(plays)) throw new Error();
+      const valid=plays.filter(p=>p.name&&Array.isArray(p.players));
+      if(!valid.length){showToast('No valid plays found in file','err');return;}
+      const existingIds=new Set(getLib().map(p=>String(p.id)));
+      const newPlays=valid.filter(p=>!existingIds.has(String(p.id)));
+      if(!newPlays.length){showToast('All plays already in library','warn');return;}
+      const merged=[...newPlays,...getLib()]; saveLib(merged);
+      if(currentUser) for(const p of newPlays) await savePlayToCloud(p);
+      renderLibrary(); updateWbSel();
+      showToast(`Imported ${newPlays.length} play${newPlays.length!==1?'s':''}`, 'ok');
+    }catch{showToast('Could not read file — make sure it is a Wylie Play Maker export','err');}
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+
 function renderLibrary(){
   const grid=document.getElementById('lib-grid');
   const q=(document.getElementById('lib-search')?.value||'').toLowerCase();
@@ -1370,6 +1466,7 @@ function renderLibrary(){
       <div class="pcard-acts">
         <button class="pcbtn" onclick="event.stopPropagation();loadPlay(${pl.id});switchPage('designer')">📂 Load</button>
         <button class="pcbtn" onclick="event.stopPropagation();wbAddById(${pl.id})">+ WB</button>
+        <button class="pcbtn" onclick="event.stopPropagation();sharePlay(${pl.id})">🔗</button>
         <button class="pcbtn red" onclick="event.stopPropagation();deletePlay(${pl.id})">🗑</button>
       </div>`;
     d.querySelector('.pcard-name').textContent=pl.name;
@@ -1429,6 +1526,19 @@ function openPlayModal(id){
 
 function closePlayModal(){ document.getElementById('play-modal').classList.remove('show'); currentPopupId=null; }
 function loadPlayFromModal(){ if(currentPopupId){ loadPlay(currentPopupId); closePlayModal(); switchPage('designer'); } }
+
+function sharePlay(id){
+  const p=getLib().find(x=>x.id===id); if(!p) return;
+  // Encode play data (without thumb — too large for a URL) as base64
+  const data={name:p.name,formation:p.formation,type:p.type,mode:p.mode,players:p.players,routes:p.routes,labels:p.labels,description:p.description||''};
+  const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  const url=window.location.origin+window.location.pathname.replace(/[^/]*$/,'')+'share.html#'+encoded;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(()=>showToast('Share link copied to clipboard!','ok'));
+  } else {
+    prompt('Copy this share link:', url);
+  }
+}
 
 function renderPlayToCanvas(play, tc){
   const W=tc.width, H=tc.height, tx=tc.getContext('2d');
@@ -2012,7 +2122,7 @@ function switchPage(id){
   document.getElementById('designer-ctrls').style.display=id==='designer'?'flex':'none';
   if(id==='library') renderLibrary();
   if(id==='wb'){updateWbSel();renderWbList();}
-  if(id==='designer') render();
+  if(id==='designer'){ render(); if(window.innerWidth<=768) fitZoom(); }
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
@@ -2026,6 +2136,10 @@ function init(){
   setStatus('Select a formation or use the Place tool to add players  ·  [S]elect [P]lace [R]oute [D]elete [L]abel');
 }
 init();
+
+// Auto-fit canvas on mobile
+if(window.innerWidth<=768) setTimeout(fitZoom,100);
+window.addEventListener('resize',debounce(()=>{ if(window.innerWidth<=768) fitZoom(); },200));
 
 // Boot auth on page load
 initAuth();
