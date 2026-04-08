@@ -247,9 +247,19 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .auth-msg.ok { background:rgba(80,220,120,.1); color:#50dc78; border:1px solid rgba(80,220,120,.25); display:block; }
 .cloud-badge { font-size:9px; padding:1px 6px; border-radius:10px; background:rgba(80,220,120,.15); color:#50dc78; border:1px solid rgba(80,220,120,.25); font-family:'Oswald',sans-serif; letter-spacing:1px; margin-left:6px; }
 #wristband-print { display:none; }
+@page { margin: .2in; }
 @media print {
   body > *:not(#wristband-print) { display:none !important; }
-  #wristband-print { display:block !important; font-family:Arial,sans-serif; }
+  #wristband-print { display:block !important; font-family:Arial,sans-serif; margin:0; }
+  #wristband-print * { box-sizing:border-box; }
+  .wh  { text-align:center; font-size:13px; font-weight:700; margin-bottom:5px; }
+  .wg  { display:grid; gap:3px; border:2px solid #222; }
+  .wc  { border:1px solid #555; padding:3px; min-height:.95in; background:white; overflow:hidden; }
+  .wn  { font-size:8px; color:#888; font-weight:bold; }
+  .wname { font-size:12px; font-weight:bold; text-align:center; margin:1px 0; }
+  .wmeta { font-size:8px; text-align:center; color:#666; }
+  .wimg { width:100%; height:52px; object-fit:cover; display:block; margin:2px 0; }
+  .we  { background:#f8f8f8; }
 }
 </style>
 </head>
@@ -260,9 +270,9 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <div id="logo">🏈 <em>Wylie's</em> <span class="logo-sub">PLAY MAKER</span></div>
   <div class="hdiv"></div>
   <div id="designer-ctrls">
-    <div class="mode-toggle">
-      <button class="mode-btn on-off" id="btn-off" onclick="setMode('offense')">● OFFENSE</button>
-      <button class="mode-btn" id="btn-def" onclick="setMode('defense')">✕ DEFENSE</button>
+    <div class="mode-toggle" role="group" aria-label="Play mode">
+      <button class="mode-btn on-off" id="btn-off" onclick="setMode('offense')" aria-pressed="true">● OFFENSE</button>
+      <button class="mode-btn" id="btn-def" onclick="setMode('defense')" aria-pressed="false">✕ DEFENSE</button>
     </div>
     <div class="hdiv"></div>
     <input type="text" id="play-name" value="Untitled Play" placeholder="Play name...">
@@ -271,8 +281,8 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     <button class="hbtn pri" onclick="openSaveModal()" title="Ctrl+S">💾 SAVE PLAY</button>
   </div>
   <div class="spacer"></div>
-  <nav class="nav-pages">
-    <button class="npbtn act" data-page="designer" onclick="switchPage('designer')">✏ DESIGNER</button>
+  <nav class="nav-pages" role="navigation" aria-label="Main navigation">
+    <button class="npbtn act" data-page="designer" onclick="switchPage('designer')" aria-current="page">✏ DESIGNER</button>
     <button class="npbtn" data-page="ai" onclick="switchPage('ai')">🤖 AI COACH</button>
     <button class="npbtn" data-page="wb" onclick="switchPage('wb')">🏈 WRISTBAND</button>
     <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 LIBRARY</button>
@@ -332,7 +342,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     </div>
     <div id="field-wrap">
       <div id="canvas-wrap">
-        <canvas id="field" width="700" height="570"></canvas>
+        <canvas id="field" width="700" height="570" role="application" aria-label="Football play designer canvas"></canvas>
         <div id="player-tip"></div>
       </div>
       <div id="zoom-ctrl">
@@ -348,13 +358,13 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <div id="page-library" class="page">
     <div class="page-topbar">
       <h2>📚 Play Library <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">☁ CLOUD</span></h2>
-      <input type="text" class="rp-input" placeholder="Search plays..." id="lib-search" oninput="renderLibrary()">
+      <input type="text" class="rp-input" placeholder="Search plays..." id="lib-search" aria-label="Search plays" oninput="renderLibraryDebounced()">
       <select class="rp-select" id="lib-filter" style="width:110px;" onchange="renderLibrary()">
         <option value="all">All Plays</option>
         <option value="offense">Offense</option>
         <option value="defense">Defense</option>
       </select>
-      <span id="lib-count"></span>
+      <span id="lib-count" aria-live="polite" aria-atomic="true"></span>
     </div>
     <div id="lib-grid"></div>
   </div>
@@ -1163,7 +1173,9 @@ function setMode(m){
   S.mode=m; S.selectedId=null;
   if(!FMTNS[m][S.formation]) S.formation=Object.keys(FMTNS[m])[0];
   document.getElementById('btn-off').className='mode-btn'+(m==='offense'?' on-off':'');
+  document.getElementById('btn-off').setAttribute('aria-pressed', m==='offense');
   document.getElementById('btn-def').className='mode-btn'+(m==='defense'?' on-def':'');
+  document.getElementById('btn-def').setAttribute('aria-pressed', m==='defense');
   rebuildFormations(); rebuildPlayerTypes(); setTool('select');
 }
 
@@ -1267,6 +1279,8 @@ function genThumb(){ return genThumbFromPlay(S.players, S.routes); }
 
 // ─── LIBRARY ─────────────────────────────────────────────────
 const LIB_KEY='gridiron_pro_v3_lib';
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+const renderLibraryDebounced=debounce(renderLibrary,200);
 function getLib(){
   if (currentUser && cloudLib !== null) return cloudLib;
   try{return JSON.parse(localStorage.getItem(LIB_KEY)||'[]');}catch{return[];}
@@ -1502,7 +1516,7 @@ function printWb(){
   const title=escHtml(document.getElementById('wb-title').value||'Game Plan');
   let plays=S.wbPlays.map((id,i)=>({i:i+1,p:lib.find(x=>x.id===id)})).filter(x=>x.p);
   while(plays.length%cols!==0) plays.push({i:null,p:null});
-  let html=`<style>@page{margin:.2in;}*{box-sizing:border-box;}body{font-family:Arial,sans-serif;margin:0;}.wh{text-align:center;font-size:13px;font-weight:700;margin-bottom:5px;}.wg{display:grid;grid-template-columns:repeat(${cols},1fr);gap:3px;border:2px solid #222;}.wc{border:1px solid #555;padding:3px;min-height:0.95in;background:white;overflow:hidden;}.wn{font-size:8px;color:#888;font-weight:bold;}.wname{font-size:12px;font-weight:bold;text-align:center;margin:1px 0;}.wmeta{font-size:8px;text-align:center;color:#666;}.wimg{width:100%;height:52px;object-fit:cover;display:block;margin:2px 0;}.we{background:#f8f8f8;}</style><div class="wh">🏈 ${title} — ${S.wbPlays.length} Play${S.wbPlays.length>1?'s':''}</div><div class="wg">`;
+  let html=`<div class="wh">🏈 ${title} — ${S.wbPlays.length} Play${S.wbPlays.length>1?'s':''}</div><div class="wg" style="grid-template-columns:repeat(${cols},1fr);">`;
   plays.forEach(({i,p})=>{
     if(!p){html+='<div class="wc we"></div>';return;}
     html+=`<div class="wc"><div class="wn">#${i}</div>${p.thumb?`<img class="wimg" src="${p.thumb}">`:'<div style="height:52px;background:#ddd;"></div>'}<div class="wname">${escHtml(p.name)}</div><div class="wmeta">${escHtml(p.formation||'')} ${p.type?'· '+escHtml(p.type.toUpperCase()):''}</div></div>`;
@@ -1938,7 +1952,11 @@ document.getElementById('label-text').addEventListener('keydown',e=>{if(e.key===
 // ─── PAGE NAVIGATION ──────────────────────────────────────────
 function switchPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
-  document.querySelectorAll('.npbtn').forEach(b=>b.classList.toggle('act',b.dataset.page===id));
+  document.querySelectorAll('.npbtn').forEach(b=>{
+    const active=b.dataset.page===id;
+    b.classList.toggle('act',active);
+    b.setAttribute('aria-current', active ? 'page' : 'false');
+  });
   document.getElementById('page-'+id).classList.add('act');
   document.getElementById('designer-ctrls').style.display=id==='designer'?'flex':'none';
   if(id==='library') renderLibrary();
