@@ -118,13 +118,18 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .lib-page-header { display:flex; align-items:center; gap:16px; padding:16px 20px 14px; background:linear-gradient(90deg,#18283a 0%,#1e3248 60%,#172838 100%); border-bottom:1px solid var(--border); flex-shrink:0; position:relative; overflow:hidden; }
 .lib-page-header::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 0% 50%,rgba(240,165,0,.07) 0%,transparent 60%); pointer-events:none; }
 .lib-hdr-left { flex:1; min-width:0; position:relative; z-index:1; }
-.lib-hdr-eyebrow { font-family:'Oswald',sans-serif; font-size:8px; font-weight:700; letter-spacing:3px; color:var(--accent); margin-bottom:3px; }
-.lib-hdr-title { font-family:'Oswald',sans-serif; font-size:20px; font-weight:700; letter-spacing:1.5px; color:var(--text-hi); line-height:1; }
-.lib-hdr-sub { font-size:11px; color:var(--text-lo); margin-top:3px; }
-.lib-hdr-stats { display:flex; gap:24px; flex-shrink:0; position:relative; z-index:1; }
-.lib-stat { display:flex; flex-direction:column; align-items:center; gap:1px; }
-.lib-stat-num { font-family:'Oswald',sans-serif; font-size:24px; font-weight:700; color:var(--accent); line-height:1; }
+.lib-hdr-eyebrow { font-family:'Oswald',sans-serif; font-size:8px; font-weight:700; letter-spacing:3px; color:var(--accent); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.lib-hdr-team { font-family:'Oswald',sans-serif; font-size:clamp(18px,2.4vw,30px); font-weight:700; letter-spacing:2px; color:var(--accent); line-height:1; margin-bottom:4px; }
+.lib-hdr-coach { font-family:'Rajdhani',sans-serif; font-size:12px; color:var(--text-lo); letter-spacing:.5px; }
+.lib-hdr-stats { display:flex; gap:24px; flex-shrink:0; position:relative; z-index:1; align-items:center; }
+.lib-stat { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.lib-stat-num { font-family:'Oswald',sans-serif; font-size:26px; font-weight:700; color:var(--accent); line-height:1; }
 .lib-stat-lbl { font-family:'Oswald',sans-serif; font-size:7px; font-weight:600; letter-spacing:2px; color:var(--text-lo); }
+.lib-stat-edit { cursor:pointer; padding:4px 6px; border-radius:6px; transition:background .15s; }
+.lib-stat-edit:hover { background:rgba(240,165,0,.08); }
+.lib-stat-edit:hover .lib-stat-lbl { color:var(--accent); }
+.lib-stat-input { font-family:'Oswald',sans-serif; font-size:26px; font-weight:700; color:var(--accent); background:transparent; border:none; border-bottom:2px solid var(--accent); width:4ch; text-align:center; outline:none; padding:0; line-height:1; }
+.lib-stat-div { width:1px; height:36px; background:var(--border); align-self:center; }
 .lib-filter-bar { display:flex; align-items:center; gap:7px; padding:9px 20px; border-bottom:1px solid var(--border); background:rgba(22,34,50,.95); flex-shrink:0; flex-wrap:wrap; }
 .lib-search { flex:1; min-width:150px; max-width:260px; padding:6px 11px; background:rgba(255,255,255,.06); border:1px solid var(--border-bright); color:var(--text-hi); border-radius:20px; font-family:'Rajdhani',sans-serif; font-size:13px; transition:border-color .18s,background .18s; }
 .lib-search:focus { outline:none; border-color:var(--accent); background:rgba(255,255,255,.09); }
@@ -483,14 +488,29 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <div id="page-library" class="page">
     <div class="lib-page-header">
       <div class="lib-hdr-left">
-        <div class="lib-hdr-eyebrow">COACHING TOOLS</div>
-        <div class="lib-hdr-title">📚 MY PLAYBOOK</div>
-        <div class="lib-hdr-sub">Your custom plays — saved, organized, ready to use <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">☁ CLOUD</span></div>
+        <div class="lib-hdr-eyebrow">MY PLAYBOOK <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">☁ CLOUD</span></div>
+        <div class="lib-hdr-team" id="hdr-team-name">MY TEAM</div>
+        <div class="lib-hdr-coach" id="hdr-coach-name"></div>
       </div>
       <div class="lib-hdr-stats">
-        <div class="lib-stat"><span class="lib-stat-num" id="lib-stat-total">0</span><span class="lib-stat-lbl">TOTAL</span></div>
-        <div class="lib-stat"><span class="lib-stat-num" id="lib-stat-off">0</span><span class="lib-stat-lbl">OFFENSE</span></div>
-        <div class="lib-stat"><span class="lib-stat-num" id="lib-stat-def">0</span><span class="lib-stat-lbl">DEFENSE</span></div>
+        <div class="lib-stat">
+          <span class="lib-stat-num" id="lib-stat-total">0</span>
+          <span class="lib-stat-lbl">PLAYS</span>
+        </div>
+        <div class="lib-stat-div"></div>
+        <div class="lib-stat lib-stat-edit" onclick="editRecord('wins')" title="Click to update wins">
+          <span class="lib-stat-num" id="lib-stat-wins">0</span>
+          <span class="lib-stat-lbl">WINS</span>
+        </div>
+        <div class="lib-stat lib-stat-edit" onclick="editRecord('losses')" title="Click to update losses">
+          <span class="lib-stat-num" id="lib-stat-losses">0</span>
+          <span class="lib-stat-lbl">LOSSES</span>
+        </div>
+        <div class="lib-stat-div"></div>
+        <div class="lib-stat lib-stat-edit" onclick="editRecord('season')" title="Click to update season">
+          <span class="lib-stat-num" id="lib-stat-season" style="font-size:20px;letter-spacing:1px;">2025</span>
+          <span class="lib-stat-lbl">SEASON</span>
+        </div>
       </div>
     </div>
     <div class="lib-filter-bar">
@@ -1586,6 +1606,62 @@ async function importLib(e){
   reader.readAsText(file);
 }
 
+// ─── PLAYBOOK HERO ────────────────────────────────────────────
+const RECORD_KEY = 'wpm-record';
+
+function getRecord() {
+  try { return JSON.parse(localStorage.getItem(RECORD_KEY)||'null') || {wins:0,losses:0,season:new Date().getFullYear().toString()}; }
+  catch { return {wins:0,losses:0,season:new Date().getFullYear().toString()}; }
+}
+function saveRecord(r) { try { localStorage.setItem(RECORD_KEY,JSON.stringify(r)); } catch {} }
+
+function updateHeroProfile() {
+  const meta = (currentUser && currentUser.user_metadata) || {};
+  const teamEl = document.getElementById('hdr-team-name');
+  const coachEl = document.getElementById('hdr-coach-name');
+  if (teamEl) teamEl.textContent = meta.team_name ? meta.team_name.toUpperCase() : 'MY TEAM';
+  if (coachEl) coachEl.textContent = meta.name ? 'Coach ' + meta.name : '';
+  const rec = getRecord();
+  const wEl = document.getElementById('lib-stat-wins');
+  const lEl = document.getElementById('lib-stat-losses');
+  const sEl = document.getElementById('lib-stat-season');
+  if (wEl) wEl.textContent = rec.wins;
+  if (lEl) lEl.textContent = rec.losses;
+  if (sEl) sEl.textContent = rec.season;
+}
+
+function editRecord(field) {
+  const idMap = {wins:'lib-stat-wins', losses:'lib-stat-losses', season:'lib-stat-season'};
+  const el = document.getElementById(idMap[field]);
+  if (!el || el.tagName === 'INPUT') return;
+  const rec = getRecord();
+  const inp = document.createElement('input');
+  inp.type = field === 'season' ? 'text' : 'number';
+  inp.value = rec[field] ?? (field === 'season' ? new Date().getFullYear() : 0);
+  inp.className = 'lib-stat-input';
+  if (field !== 'season') { inp.min = 0; inp.max = 99; }
+  if (field === 'season') inp.style.fontSize = '20px';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function save() {
+    const raw = inp.value.trim();
+    const val = field === 'season' ? (raw || new Date().getFullYear().toString()) : Math.max(0, parseInt(raw)||0);
+    rec[field] = val;
+    saveRecord(rec);
+    const span = document.createElement('span');
+    span.className = 'lib-stat-num';
+    span.id = idMap[field];
+    if (field === 'season') { span.style.fontSize = '20px'; span.style.letterSpacing = '1px'; }
+    span.textContent = val;
+    inp.replaceWith(span);
+  }
+  inp.addEventListener('blur', save);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); save(); }
+    if (e.key === 'Escape') { inp.replaceWith(el); }
+  });
+}
+
 function setLibFilter(mode){
   // Update pill active state
   ['all','off','def'].forEach(k=>{
@@ -1597,6 +1673,7 @@ function setLibFilter(mode){
 }
 
 function renderLibrary(){
+  updateHeroProfile();
   const grid=document.getElementById('lib-grid');
   const q=(document.getElementById('lib-search')?.value||'').toLowerCase();
   const f=window._libFilter||'all';
@@ -1606,16 +1683,10 @@ function renderLibrary(){
     const mf=f==='all'||p.mode===f; return ms&&mf;
   });
 
-  // Update header stats
+  // Update play count in hero
   const total=allLib.length;
-  const offCount=allLib.filter(p=>p.mode==='offense').length;
-  const defCount=allLib.filter(p=>p.mode==='defense').length;
   const statTotal=document.getElementById('lib-stat-total');
-  const statOff=document.getElementById('lib-stat-off');
-  const statDef=document.getElementById('lib-stat-def');
   if(statTotal) statTotal.textContent=total;
-  if(statOff) statOff.textContent=offCount;
-  if(statDef) statDef.textContent=defCount;
 
   const countEl=document.getElementById('lib-count');
   if(countEl) countEl.textContent=lib.length+' play'+(lib.length!==1?'s':'');
