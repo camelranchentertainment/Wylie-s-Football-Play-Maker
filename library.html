@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Play Library — Wylie's Play Maker</title>
+<script>
+// Synchronous auth gate — runs before any HTML renders to prevent flash
+(function(){
+  try {
+    var s = JSON.parse(localStorage.getItem('sb-rvxanoqourdrfmbucvpz-auth-token') || 'null');
+    if (!s || !s.access_token || s.expires_at <= Math.floor(Date.now() / 1000)) {
+      window.location.replace('login.html'); return;
+    }
+    // Profile gate using localStorage flag (reliable — doesn't depend on stale SDK session)
+    var done = localStorage.getItem('wpm_profile_done') === '1' ||
+               localStorage.getItem('wpm_profile_skipped') === '1';
+    if (!done) { window.location.replace('profile.html'); return; }
+  } catch(e) { window.location.replace('login.html'); }
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="js/supabase.min.js"></script>
 <script src="js/play-library.js"></script>
@@ -289,17 +304,7 @@ let currentUser = null;
 
 (async()=>{
   const {data:{session}} = await supa.auth.getSession();
-  if(!session){
-    window.location.replace('login.html');
-    return;
-  }
-  // If profile not yet completed, redirect to profile page
-  const profileDone = session.user.user_metadata?.coaching_level ||
-                      localStorage.getItem('wpm_profile_skipped') === '1';
-  if(!profileDone){
-    window.location.replace('profile.html');
-    return;
-  }
+  if(!session){ window.location.replace('login.html'); return; }
   currentUser = session.user;
   updateNavUser(session.user.email, session.user.user_metadata?.name);
   init();

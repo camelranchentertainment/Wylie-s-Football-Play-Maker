@@ -96,7 +96,8 @@ input::placeholder{color:var(--lo);}
     </div>
     <div class="field">
       <label>PASSWORD</label>
-      <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+      <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('login-form').dispatchEvent(new Event('submit'));}">
     </div>
     <button type="submit" class="btn-gold" id="submit-btn">SIGN IN TO MY PLAYBOOK</button>
   </form>
@@ -170,9 +171,15 @@ async function doLogin(e) {
         user: data.user
       }));
       showMsg('Signed in! Redirecting…', 'success');
-      // If profile not yet completed, send to profile page first
-      const profileDone = data.user?.user_metadata?.coaching_level ||
-                          localStorage.getItem('wpm_profile_skipped') === '1';
+      // Check if profile already complete (by flag or by having metadata from a previous session)
+      const alreadyFlagged = localStorage.getItem('wpm_profile_done') === '1' ||
+                             localStorage.getItem('wpm_profile_skipped') === '1';
+      const hasMetadata = !!(data.user?.user_metadata?.coaching_level);
+      if (hasMetadata) {
+        // Mark done so we never prompt them again on this device
+        try { localStorage.setItem('wpm_profile_done', '1'); } catch {}
+      }
+      const profileDone = alreadyFlagged || hasMetadata;
       setTimeout(() => window.location.replace(profileDone ? 'library.html' : 'profile.html'), 800);
     }
   } catch(err) {

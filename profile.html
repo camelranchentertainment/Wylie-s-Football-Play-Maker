@@ -138,15 +138,20 @@ let sessionData = null;
 // Auth gate — must be signed in to see this page
 try {
   const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-  if (!s || s.expires_at <= Math.floor(Date.now() / 1000)) {
+  if (!s || !s.access_token || s.expires_at <= Math.floor(Date.now() / 1000)) {
     window.location.replace('login.html');
   } else {
     sessionData = s;
-    // Pre-fill name if stored from signup
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedName = s.user?.user_metadata?.name || '';
-      if (savedName) document.getElementById('prof-name').value = savedName;
-    });
+    // If already completed profile, skip straight to library
+    if (localStorage.getItem('wpm_profile_done') === '1') {
+      window.location.replace('library.html');
+    } else {
+      // Pre-fill name if stored from signup
+      window.addEventListener('DOMContentLoaded', () => {
+        const savedName = s.user?.user_metadata?.name || '';
+        if (savedName) document.getElementById('prof-name').value = savedName;
+      });
+    }
   }
 } catch(e) { window.location.replace('login.html'); }
 
@@ -200,9 +205,11 @@ async function doSaveProfile(e) {
     } else {
       // Update local session with new metadata
       if (sessionData) {
-        sessionData.user = data;
+        if (data && data.id) sessionData.user = data;
         try { localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData)); } catch {}
       }
+      // Set flag so library/app don't redirect back here
+      try { localStorage.setItem('wpm_profile_done', '1'); } catch {}
       showMsg('Profile saved! Taking you to the Play Library…', 'success');
       setTimeout(() => window.location.replace('library.html'), 900);
     }
@@ -214,8 +221,10 @@ async function doSaveProfile(e) {
 }
 
 function skipProfile() {
-  // Mark as skipped so they don't get bounced in a loop
-  try { localStorage.setItem('wpm_profile_skipped', '1'); } catch {}
+  try {
+    localStorage.setItem('wpm_profile_skipped', '1');
+    localStorage.setItem('wpm_profile_done', '1');
+  } catch {}
   window.location.replace('library.html');
 }
 </script>

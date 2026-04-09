@@ -819,17 +819,11 @@ let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
 // Called on page load — restore session if one exists
 async function initAuth() {
   const { data: { session } } = await supa.auth.getSession();
-  if (!session) {
-    window.location.replace('login.html');
-    return;
-  }
-  // If profile not yet completed, redirect to profile page
-  const profileDone = session.user.user_metadata?.coaching_level ||
+  if (!session) { window.location.replace('login.html'); return; }
+  // Profile gate via localStorage flag (faster + avoids stale SDK session issue)
+  const profileDone = localStorage.getItem('wpm_profile_done') === '1' ||
                       localStorage.getItem('wpm_profile_skipped') === '1';
-  if (!profileDone) {
-    window.location.replace('profile.html');
-    return;
-  }
+  if (!profileDone) { window.location.replace('profile.html'); return; }
   currentUser = session.user;
   await loadCloudLib();
   // If new account with no cloud plays but has local plays, migrate them
