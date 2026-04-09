@@ -119,7 +119,7 @@ const SESSION_KEY = 'sb-rvxanoqourdrfmbucvpz-auth-token';
 try {
   const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
   if (s && s.expires_at > Math.floor(Date.now() / 1000)) {
-    window.location.replace('app.html');
+    window.location.replace('library.html');
   }
 } catch(e) {}
 
@@ -170,7 +170,7 @@ async function doLogin(e) {
         user: data.user
       }));
       showMsg('Signed in! Redirecting…', 'success');
-      setTimeout(() => window.location.replace('app.html'), 800);
+      setTimeout(() => window.location.replace('library.html'), 800);
     }
   } catch(err) {
     showMsg('Network error. Please try again.', 'error');

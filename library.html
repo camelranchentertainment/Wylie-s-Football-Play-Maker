@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Play Library — Wylie's Play Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="js/supabase.min.js"></script>
+<script src="js/play-library.js"></script>
+<style>
+:root{
+  --bg:#0d1821;
+  --panel:#1b2b3d;
+  --card:#1e3248;
+  --card-hover:#243d58;
+  --accent:#f0a500;
+  --accent-dim:rgba(240,165,0,.15);
+  --accent-glow:rgba(240,165,0,.35);
+  --offense:#e63946;
+  --defense:#4a9eff;
+  --hi:#f5f7fb;
+  --mid:#c0d4e8;
+  --lo:#7fa0bc;
+  --border:#2a3d55;
+  --border-bright:#3d5a7a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-height:100vh;overflow-x:hidden;}
+
+/* ── NAVBAR ─────────────────────────────────────────────── */
+#navbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(13,24,33,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  border-top:2px solid var(--accent);
+  height:52px;padding:0 20px;
+  display:flex;align-items:center;gap:12px;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo svg{width:34px;height:34px;flex-shrink:0;}
+.nav-logo-text{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;color:var(--hi);}
+.nav-logo-text em{color:var(--accent);font-style:normal;}
+.nav-div{width:1px;height:24px;background:var(--border-bright);flex-shrink:0;}
+.nav-tag{font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;letter-spacing:2.5px;color:var(--lo);}
+.spacer{flex:1;}
+#nav-user{font-size:12px;color:var(--lo);font-family:'Oswald',sans-serif;letter-spacing:.5px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nbtn{padding:5px 13px;height:30px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.2px;cursor:pointer;border:1px solid var(--border-bright);background:transparent;color:var(--mid);border-radius:7px;transition:all .18s;white-space:nowrap;}
+.nbtn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.nbtn.pri{background:var(--accent);border-color:transparent;color:#000;box-shadow:0 2px 12px rgba(240,165,0,.3);}
+.nbtn.pri:hover{background:#ffc62e;box-shadow:0 4px 20px rgba(240,165,0,.45);}
+
+/* ── HERO ────────────────────────────────────────────────── */
+#hero{
+  position:relative;overflow:hidden;
+  padding:48px 24px 40px;
+  background:linear-gradient(160deg,#0d1821 0%,#122030 50%,#0d1821 100%);
+}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.6;}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;}
+.hero-eyebrow{font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--accent);margin-bottom:10px;}
+.hero-title{font-family:'Oswald',sans-serif;font-size:clamp(36px,6vw,72px);font-weight:700;letter-spacing:3px;line-height:1;color:#fff;margin-bottom:8px;}
+.hero-title em{color:var(--accent);font-style:normal;}
+.hero-sub{font-size:14px;color:var(--lo);margin-bottom:32px;letter-spacing:.5px;}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap;}
+.stat-block{display:flex;flex-direction:column;gap:2px;}
+.stat-num{font-family:'Oswald',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:700;color:var(--accent);line-height:1;}
+.stat-label{font-family:'Oswald',sans-serif;font-size:9px;font-weight:600;letter-spacing:2.5px;color:var(--lo);}
+
+/* ── FILTER STRIP ────────────────────────────────────────── */
+#filter-wrap{
+  position:sticky;top:52px;z-index:90;
+  background:rgba(13,24,33,.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+}
+.filter-row{display:flex;align-items:center;gap:8px;padding:10px 0;overflow-x:auto;scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
+.tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);}
+.tab-btn{padding:10px 20px;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;border:none;background:none;color:var(--lo);position:relative;transition:color .2s;flex-shrink:0;}
+.tab-btn::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform .25s cubic-bezier(.4,0,.2,1);}
+.tab-btn.act{color:var(--accent);}
+.tab-btn.act::after{transform:scaleX(1);}
+.pill{padding:5px 13px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.2px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--lo);border-radius:20px;white-space:nowrap;transition:all .18s;flex-shrink:0;}
+.pill:hover{border-color:var(--border-bright);color:var(--mid);}
+.pill.act{background:var(--accent);border-color:var(--accent);color:#000;box-shadow:0 2px 12px rgba(240,165,0,.3);}
+.pill.act-off{background:var(--offense);border-color:var(--offense);color:#fff;}
+.pill.act-def{background:var(--defense);border-color:var(--defense);color:#fff;}
+.filter-div{width:1px;height:20px;background:var(--border);flex-shrink:0;}
+.filter-count{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;color:var(--lo);white-space:nowrap;margin-left:auto;flex-shrink:0;}
+
+/* ── GRID ────────────────────────────────────────────────── */
+#grid-wrap{max-width:1400px;margin:0 auto;padding:28px 20px 60px;}
+#play-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:18px;
+}
+.empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--lo);}
+.empty-state .ei{font-size:48px;margin-bottom:16px;}
+.empty-state p{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;}
+
+/* ── PLAY CARD ───────────────────────────────────────────── */
+.pcard{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  cursor:default;
+  transition:transform .22s cubic-bezier(.4,0,.2,1), box-shadow .22s cubic-bezier(.4,0,.2,1), border-color .22s;
+  animation:cardIn .35s both;
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(18px) scale(.97);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+.pcard:hover{
+  transform:translateY(-5px) scale(1.01);
+  border-color:rgba(240,165,0,.5);
+  box-shadow:0 8px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(240,165,0,.2), 0 0 30px rgba(240,165,0,.12);
+}
+.pcard-thumb-wrap{
+  position:relative;overflow:hidden;background:#11211a;line-height:0;
+}
+.pcard-thumb-wrap::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 60%,rgba(30,50,72,.9) 100%);
+  pointer-events:none;
+}
+.pcard-thumb{width:100%;aspect-ratio:16/9;display:block;object-fit:cover;}
+.pcard-badges{
+  position:absolute;bottom:0;left:0;right:0;z-index:1;
+  padding:6px 10px;display:flex;gap:5px;align-items:center;
+}
+.badge{padding:2px 7px;border-radius:4px;font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;}
+.badge-off{background:rgba(230,57,70,.85);color:#fff;}
+.badge-def{background:rgba(74,158,255,.85);color:#fff;}
+.badge-pass{background:rgba(240,165,0,.2);border:1px solid rgba(240,165,0,.4);color:var(--accent);}
+.badge-run{background:rgba(80,220,120,.15);border:1px solid rgba(80,220,120,.3);color:#50dc78;}
+.badge-cat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--mid);font-size:8px;letter-spacing:1px;}
+.pcard-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:4px;}
+.pcard-name{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:.5px;line-height:1.2;}
+.pcard-formation{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1.5px;color:var(--lo);}
+.pcard-desc{font-size:11.5px;color:var(--mid);line-height:1.45;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pcard-acts{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--border);}
+.pcbtn{flex:1;padding:7px 6px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid var(--border-bright);background:transparent;color:var(--mid);border-radius:7px;cursor:pointer;transition:all .16s;white-space:nowrap;}
+.pcbtn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.pcbtn.pri{background:var(--accent);border-color:transparent;color:#000;box-shadow:0 2px 10px rgba(240,165,0,.25);}
+.pcbtn.pri:hover{background:#ffc62e;box-shadow:0 4px 16px rgba(240,165,0,.4);}
+.pcbtn.danger{border-color:rgba(230,57,70,.4);color:#ff6b75;}
+.pcbtn.danger:hover{background:rgba(230,57,70,.12);border-color:#e63946;}
+
+/* ── MY LIBRARY EMPTY ────────────────────────────────────── */
+#my-empty{display:none;text-align:center;padding:80px 20px;color:var(--lo);}
+#my-empty .ei{font-size:48px;margin-bottom:16px;}
+#my-empty p{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;margin-bottom:24px;}
+.btn-gold{padding:11px 28px;background:var(--accent);color:#000;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 20px rgba(240,165,0,.3);transition:all .2s;}
+.btn-gold:hover{background:#ffc62e;box-shadow:0 6px 28px rgba(240,165,0,.45);transform:translateY(-1px);}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+#toast-container{position:fixed;bottom:28px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{padding:10px 16px;background:#1b2b3d;border:1px solid var(--border-bright);border-radius:8px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.5px;color:var(--hi);box-shadow:0 8px 32px rgba(0,0,0,.5);animation:toastIn .3s ease,toastOut .3s ease 2.2s both;pointer-events:none;display:flex;align-items:center;gap:8px;}
+.toast.ok{border-left:3px solid var(--accent);}
+.toast.err{border-left:3px solid #e63946;color:#ff6b75;}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:none;}}
+@keyframes toastOut{to{opacity:0;transform:translateX(20px);}}
+
+/* ── SCROLLBAR ───────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:600px){
+  #play-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+  .hero-stats{gap:20px;}
+  .hero-title{font-size:32px;}
+  #navbar{padding:0 12px;}
+  #grid-wrap{padding:16px 12px 40px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<nav id="navbar">
+  <a class="nav-logo" href="library.html">
+    <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 3L40 10.5V23C40 33.5 32 41 22 44C12 41 4 33.5 4 23V10.5L22 3Z" fill="#1b2b3d" stroke="#f0a500" stroke-width="1.4"/>
+      <ellipse cx="22" cy="20" rx="12" ry="7.5" fill="none" stroke="#f0a500" stroke-width="1.6" transform="rotate(-18 22 20)"/>
+      <line x1="22" y1="12" x2="22" y2="28" stroke="#f0a500" stroke-width=".9" opacity=".65"/>
+      <line x1="16.5" y1="17" x2="27.5" y2="17" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+      <line x1="16.5" y1="20" x2="27.5" y2="20" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+      <line x1="16.5" y1="23" x2="27.5" y2="23" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+    </svg>
+    <span class="nav-logo-text"><em>WYLIE'S</em> PLAY MAKER</span>
+  </a>
+  <div class="nav-div"></div>
+  <span class="nav-tag">PLAY LIBRARY</span>
+  <div class="spacer"></div>
+  <span id="nav-user"></span>
+  <button class="nbtn pri" onclick="openDesigner()">✏ DESIGNER</button>
+  <button class="nbtn" id="btn-signout" onclick="doSignOut()">SIGN OUT</button>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">COACHING TOOLS</div>
+    <h1 class="hero-title"><em>PLAY</em> LIBRARY</h1>
+    <p class="hero-sub">Browse, preview, and add plays to your personal playbook</p>
+    <div class="hero-stats">
+      <div class="stat-block">
+        <span class="stat-num" id="stat-plays">0</span>
+        <span class="stat-label">TEMPLATE PLAYS</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-num" id="stat-cats">0</span>
+        <span class="stat-label">CATEGORIES</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-num" id="stat-mine">0</span>
+        <span class="stat-label">MY PLAYS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FILTER STRIP ══ -->
+<div id="filter-wrap">
+  <!-- Tabs -->
+  <div class="tab-row">
+    <button class="tab-btn act" id="tab-tpl" onclick="switchTab('tpl')">📚 TEMPLATE PLAYS</button>
+    <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">⭐ MY LIBRARY</button>
+  </div>
+
+  <!-- Mode row (only for templates) -->
+  <div class="filter-row" id="mode-row">
+    <button class="pill act" id="pill-all" onclick="setMode('all')">ALL PLAYS</button>
+    <button class="pill" id="pill-off" onclick="setMode('offense')">OFFENSE</button>
+    <button class="pill" id="pill-def" onclick="setMode('defense')">DEFENSE</button>
+    <div class="filter-div"></div>
+    <button class="pill act" id="pill-type-all" onclick="setType('')">ALL TYPES</button>
+    <button class="pill" id="pill-pass" onclick="setType('Pass')">PASS</button>
+    <button class="pill" id="pill-run" onclick="setType('Run')">RUN</button>
+    <button class="pill" id="pill-deft" onclick="setType('Defense')">DEFENSE</button>
+    <div class="filter-div"></div>
+    <span id="filter-count" class="filter-count"></span>
+  </div>
+
+  <!-- Category row -->
+  <div class="filter-row" id="cat-row"></div>
+</div>
+
+<!-- ══ GRID ══ -->
+<div id="grid-wrap">
+  <div id="play-grid"></div>
+  <div id="my-empty">
+    <div class="ei">📋</div>
+    <p>YOUR LIBRARY IS EMPTY</p>
+    <p style="font-size:12px;font-family:'Rajdhani',sans-serif;color:var(--lo);margin-bottom:20px;">Add plays from the Template Library to build your playbook.</p>
+    <button class="btn-gold" onclick="switchTab('tpl')">BROWSE TEMPLATES</button>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+'use strict';
+
+/* ── AUTH ────────────────────────────────────────────────── */
+const SUPA_URL   = location.origin + '/supa';
+const SUPA_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
+const SESSION_KEY= 'sb-rvxanoqourdrfmbucvpz-auth-token';
+const LIB_KEY    = 'wfpm-plays';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+let currentUser = null;
+
+(async()=>{
+  const {data:{session}} = await supa.auth.getSession();
+  if(!session){
+    // Allow guest browsing — no redirect
+    updateNavUser(null);
+  } else {
+    currentUser = session.user;
+    updateNavUser(session.user.email);
+  }
+  init();
+})();
+
+function updateNavUser(email){
+  const el = document.getElementById('nav-user');
+  el.textContent = email ? ('👤 '+email) : 'GUEST MODE';
+  document.getElementById('btn-signout').style.display = email ? '' : 'none';
+}
+
+async function doSignOut(){
+  await supa.auth.signOut();
+  localStorage.removeItem(SESSION_KEY);
+  window.location.replace('login.html');
+}
+
+function openDesigner(){
+  window.location.href = 'app.html';
+}
+
+/* ── HERO CANVAS ANIMATION ───────────────────────────────── */
+(()=>{
+  const cv = document.getElementById('hero-canvas');
+  const ctx = cv.getContext('2d');
+  let raf, ox=0, oy=0;
+  function resize(){ cv.width=cv.offsetWidth; cv.height=cv.offsetHeight; }
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    const sp=44;
+    ctx.strokeStyle='rgba(240,165,0,0.055)';
+    ctx.lineWidth=0.8;
+    for(let x=(ox%sp)-sp;x<cv.width+sp;x+=sp){
+      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();
+    }
+    for(let y=(oy%sp)-sp;y<cv.height+sp;y+=sp){
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();
+    }
+    // LOS-style line
+    const my=cv.height*0.62;
+    ctx.strokeStyle='rgba(255,255,255,0.06)';
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([8,8]);
+    ctx.beginPath();ctx.moveTo(0,my);ctx.lineTo(cv.width,my);ctx.stroke();
+    ctx.setLineDash([]);
+    ox+=0.25; oy+=0.1;
+    raf=requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',()=>{resize();});
+  resize(); draw();
+})();
+
+/* ── COUNT-UP ────────────────────────────────────────────── */
+function countUp(id,target,dur=900){
+  const el=document.getElementById(id);
+  const start=performance.now();
+  function step(now){
+    const p=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(ease*target);
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ── THUMBNAIL RENDERER ──────────────────────────────────── */
+function genThumb(players,routes){
+  const TW=400,TH=252, SW=700,SH=570;
+  const sx=TW/SW, sy=TH/SH;
+  const c=document.createElement('canvas');
+  c.width=TW; c.height=TH;
+  const g=c.getContext('2d');
+
+  // Field
+  const fg=g.createLinearGradient(0,0,0,TH);
+  fg.addColorStop(0,'#142a18'); fg.addColorStop(1,'#0e1f12');
+  g.fillStyle=fg; g.fillRect(0,0,TW,TH);
+
+  // Yard lines
+  g.strokeStyle='rgba(255,255,255,0.055)'; g.lineWidth=0.8;
+  for(let y=0;y<SH;y+=57){g.beginPath();g.moveTo(0,y*sy);g.lineTo(TW,y*sy);g.stroke();}
+  for(let x=0;x<SW;x+=65.6){g.beginPath();g.moveTo(x*sx,0);g.lineTo(x*sx,TH);g.stroke();}
+
+  // LOS
+  const LY=300*sy;
+  g.strokeStyle='rgba(255,255,255,0.22)'; g.lineWidth=1;
+  g.setLineDash([5,5]);
+  g.beginPath();g.moveTo(0,LY);g.lineTo(TW,LY);g.stroke();
+  g.setLineDash([]);
+
+  // Routes
+  routes.forEach(r=>{
+    const pl=players.find(p=>p.id===r.pid);
+    if(!pl||!r.waypoints||!r.waypoints.length) return;
+    const pts=[{x:pl.x*sx,y:pl.y*sy},...r.waypoints.map(w=>({x:w.x*sx,y:w.y*sy}))];
+    g.beginPath(); g.moveTo(pts[0].x,pts[0].y);
+    pts.slice(1).forEach(p=>g.lineTo(p.x,p.y));
+    g.strokeStyle=r.color||'#ffcc00';
+    g.lineWidth=1.8;
+    if(r.style==='dashed') g.setLineDash([4,4]);
+    else if(r.style==='motion') g.setLineDash([1,4]);
+    else g.setLineDash([]);
+    g.stroke(); g.setLineDash([]);
+    const last=pts[pts.length-1];
+    if(r.style==='block'){
+      g.beginPath();g.arc(last.x,last.y,3.5,0,Math.PI*2);
+      g.fillStyle=r.color||'#ffcc00';g.fill();
+    } else if(pts.length>1){
+      const prev=pts[pts.length-2];
+      const a=Math.atan2(last.y-prev.y,last.x-prev.x);
+      g.beginPath();g.moveTo(last.x,last.y);
+      g.lineTo(last.x-7*Math.cos(a-.45),last.y-7*Math.sin(a-.45));
+      g.lineTo(last.x-7*Math.cos(a+.45),last.y-7*Math.sin(a+.45));
+      g.closePath();g.fillStyle=r.color||'#ffcc00';g.fill();
+    }
+  });
+
+  // Players
+  players.forEach(p=>{
+    const x=p.x*sx, y=p.y*sy;
+    const off=p.side!=='defense';
+    const r=off?7:6.5;
+    g.beginPath();g.arc(x,y,r,0,Math.PI*2);
+    g.fillStyle=off?'#c5202c':'#2d78cc'; g.fill();
+    g.strokeStyle=off?'rgba(255,100,100,.7)':'rgba(100,180,255,.7)';
+    g.lineWidth=1.2; g.stroke();
+    const lbl=(p.lbl||p.pos||'').substring(0,2);
+    g.fillStyle='#fff';
+    g.font=`bold ${off?6:5.5}px Arial`;
+    g.textAlign='center'; g.textBaseline='middle';
+    g.fillText(lbl,x,y);
+  });
+
+  return c.toDataURL('image/jpeg',.88);
+}
+
+/* ── STATE ───────────────────────────────────────────────── */
+let activeTab  = 'tpl';   // 'tpl' | 'mine'
+let activeMode = 'all';
+let activeType = '';
+let activeCat  = '';
+
+/* ── LOCAL LIBRARY ───────────────────────────────────────── */
+function getMyLib(){ try{return JSON.parse(localStorage.getItem(LIB_KEY)||'[]');}catch{return[];} }
+function saveMyLib(arr){ localStorage.setItem(LIB_KEY,JSON.stringify(arr)); }
+
+/* ── INIT ────────────────────────────────────────────────── */
+function init(){
+  const tpls = window.PLAY_LIBRARY||[];
+  const cats  = [...new Set(tpls.map(p=>p.category||'').filter(Boolean))];
+  countUp('stat-plays',tpls.length);
+  countUp('stat-cats',cats.length,700);
+  countUp('stat-mine',getMyLib().length,600);
+  buildCatRow(tpls);
+  renderGrid();
+}
+
+/* ── FILTER BUILDERS ─────────────────────────────────────── */
+function buildCatRow(tpls){
+  const row=document.getElementById('cat-row');
+  row.innerHTML='';
+  const filtered=tpls.filter(p=>{
+    if(activeMode!=='all'&&p.mode!==activeMode) return false;
+    if(activeType&&p.type!==activeType) return false;
+    return true;
+  });
+  const cats=[...new Set(filtered.map(p=>p.category||'').filter(Boolean))];
+  if(!cats.length){row.style.display='none';return;}
+  row.style.display='flex';
+  const all=document.createElement('button');
+  all.className='pill'+(activeCat===''?' act':'');
+  all.textContent='ALL CATEGORIES';
+  all.onclick=()=>{activeCat='';renderGrid();};
+  row.appendChild(all);
+  cats.forEach(cat=>{
+    const b=document.createElement('button');
+    b.className='pill'+(activeCat===cat?' act':'');
+    b.textContent=cat.toUpperCase();
+    b.onclick=()=>{activeCat=cat;renderGrid();};
+    row.appendChild(b);
+  });
+}
+
+function setMode(m){
+  activeMode=m; activeCat=''; activeType='';
+  ['all','offense','defense'].forEach(x=>{
+    const el=document.getElementById('pill-'+x);
+    if(!el) return;
+    el.className='pill'+(x===m?(' act'+(m==='offense'?' act-off':m==='defense'?' act-def':'')):'');
+  });
+  // sync type pills visibility
+  const showPass=m==='all'||m==='offense';
+  const showRun =m==='all'||m==='offense';
+  const showDef =m==='all'||m==='defense';
+  document.getElementById('pill-pass').style.opacity=showPass?'1':'0.3';
+  document.getElementById('pill-run').style.opacity =showRun ?'1':'0.3';
+  document.getElementById('pill-deft').style.opacity=showDef ?'1':'0.3';
+  document.getElementById('pill-type-all').className='pill act';
+  buildCatRow(window.PLAY_LIBRARY||[]);
+  renderGrid();
+}
+
+function setType(t){
+  activeType=t; activeCat='';
+  ['','Pass','Run','Defense'].forEach(x=>{
+    const idMap={'':'pill-type-all','Pass':'pill-pass','Run':'pill-run','Defense':'pill-deft'};
+    const el=document.getElementById(idMap[x]);
+    if(el) el.className='pill'+(x===t?' act':'');
+  });
+  buildCatRow(window.PLAY_LIBRARY||[]);
+  renderGrid();
+}
+
+/* ── TAB SWITCH ──────────────────────────────────────────── */
+function switchTab(tab){
+  activeTab=tab;
+  document.getElementById('tab-tpl').classList.toggle('act',tab==='tpl');
+  document.getElementById('tab-mine').classList.toggle('act',tab==='mine');
+  document.getElementById('mode-row').style.display=tab==='tpl'?'':'none';
+  document.getElementById('cat-row').style.display=tab==='tpl'?'':'none';
+  renderGrid();
+}
+
+/* ── MAIN RENDER ─────────────────────────────────────────── */
+function renderGrid(){
+  const grid=document.getElementById('play-grid');
+  const myEmpty=document.getElementById('my-empty');
+  grid.innerHTML=''; myEmpty.style.display='none';
+
+  if(activeTab==='mine'){
+    const plays=getMyLib();
+    if(!plays.length){ myEmpty.style.display='block'; return; }
+    plays.forEach((p,i)=>grid.appendChild(makeCard(p,i,'mine')));
+    document.getElementById('filter-count').textContent='';
+    return;
+  }
+
+  // Template plays
+  const tpls=(window.PLAY_LIBRARY||[]).filter(p=>{
+    if(activeMode!=='all'&&p.mode!==activeMode) return false;
+    if(activeType&&p.type!==activeType) return false;
+    if(activeCat&&(p.category||'')!==activeCat) return false;
+    return true;
+  });
+
+  document.getElementById('filter-count').textContent=tpls.length+' PLAY'+(tpls.length!==1?'S':'');
+
+  if(!tpls.length){
+    grid.innerHTML='<div class="empty-state"><div class="ei">🔍</div><p>NO PLAYS MATCH YOUR FILTERS</p></div>';
+    return;
+  }
+
+  tpls.forEach((p,i)=>grid.appendChild(makeCard(p,i,'tpl')));
+}
+
+/* ── CARD BUILDER ────────────────────────────────────────── */
+function makeCard(pl,idx,source){
+  const thumb=genThumb(pl.players,pl.routes);
+  const off=pl.mode!=='defense';
+  const mBadge=off
+    ?'<span class="badge badge-off">OFF</span>'
+    :'<span class="badge badge-def">DEF</span>';
+  const tKey={Pass:'badge-pass',Run:'badge-run',Defense:'badge-def'};
+  const tBadge=pl.type?`<span class="badge ${tKey[pl.type]||'badge-pass'}">${pl.type.toUpperCase()}</span>`:'';
+  const catBadge=pl.category?`<span class="badge badge-cat">${pl.category.toUpperCase()}</span>`:'';
+
+  const d=document.createElement('div');
+  d.className='pcard';
+  d.style.animationDelay=(idx*28)+'ms';
+
+  if(source==='mine'){
+    d.innerHTML=`
+      <div class="pcard-thumb-wrap">
+        <img class="pcard-thumb" src="${thumb}" alt="${pl.name}">
+        <div class="pcard-badges">${mBadge}${tBadge}${catBadge}</div>
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-name"></div>
+        <div class="pcard-formation"></div>
+        <div class="pcard-desc"></div>
+      </div>
+      <div class="pcard-acts">
+        <button class="pcbtn pri" style="flex:2;" onclick="openInDesigner(${JSON.stringify(pl).replace(/"/g,'&quot;')})">✏ OPEN IN DESIGNER</button>
+        <button class="pcbtn danger" onclick="removeFromLib(${JSON.stringify(pl.id)})">✕</button>
+      </div>`;
+  } else {
+    const alreadySaved=getMyLib().some(p=>p.name===pl.name&&p.type===pl.type);
+    d.innerHTML=`
+      <div class="pcard-thumb-wrap">
+        <img class="pcard-thumb" src="${thumb}" alt="${pl.name}">
+        <div class="pcard-badges">${mBadge}${tBadge}${catBadge}</div>
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-name"></div>
+        <div class="pcard-formation"></div>
+        <div class="pcard-desc"></div>
+      </div>
+      <div class="pcard-acts">
+        <button class="pcbtn${alreadySaved?'':' pri'}" style="flex:2;" onclick="addToLib(${pl.id})">${alreadySaved?'✓ SAVED':'+ ADD TO LIBRARY'}</button>
+        <button class="pcbtn" onclick="openInDesigner(${JSON.stringify(pl).replace(/"/g,'&quot;')})">▶ PREVIEW</button>
+      </div>`;
+  }
+  d.querySelector('.pcard-name').textContent=pl.name;
+  d.querySelector('.pcard-formation').textContent=(pl.formation||'').toUpperCase();
+  d.querySelector('.pcard-desc').textContent=pl.description||'';
+  return d;
+}
+
+/* ── ACTIONS ─────────────────────────────────────────────── */
+function addToLib(id){
+  const tpl=(window.PLAY_LIBRARY||[]).find(p=>p.id===id);
+  if(!tpl) return;
+  const idMap={};
+  const players=tpl.players.map(p=>{const nid=Date.now()+Math.random();idMap[p.id]=nid;return{...p,id:nid};});
+  const routes=tpl.routes.map(r=>({...r,id:Date.now()+Math.random(),pid:idMap[r.pid]}));
+  const play={...tpl,id:Date.now()+Math.random(),ts:Date.now(),players,routes};
+  const lib=[play,...getMyLib()];
+  saveMyLib(lib);
+  // Cloud save
+  if(currentUser) cloudSave(play);
+  showToast('"'+play.name+'" added to My Library','ok');
+  // Recount
+  countUp('stat-mine',lib.length,400);
+  renderGrid();
+}
+
+function removeFromLib(id){
+  const lib=getMyLib().filter(p=>p.id!==id);
+  saveMyLib(lib);
+  countUp('stat-mine',lib.length,400);
+  renderGrid();
+  showToast('Play removed','ok');
+}
+
+function openInDesigner(play){
+  sessionStorage.setItem('wfpm-open-play',JSON.stringify(play));
+  window.location.href='app.html';
+}
+
+/* ── CLOUD SAVE (best-effort) ────────────────────────────── */
+async function cloudSave(play){
+  if(!currentUser) return;
+  try{
+    await supa.from('plays').upsert({
+      user_id:currentUser.id, play_id:String(play.id),
+      data:play, updated_at:new Date().toISOString()
+    },{onConflict:'user_id,play_id'});
+  }catch(e){/* silent */}
+}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+function showToast(msg,type='ok'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className='toast '+type;
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(),2600);
+}
+</script>
+</body>
+</html>
