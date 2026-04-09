@@ -863,15 +863,9 @@ async function initAuth() {
   updateAuthUI();
   renderLibrary();
   updateWbSel();
-  // Listen for auth state changes (sign-in / sign-out in other tabs)
-  supa.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      currentUser = session.user;
-      await loadCloudLib();
-      updateAuthUI();
-      renderLibrary();
-      updateWbSel();
-    } else if (event === 'SIGNED_OUT') {
+  // Listen for auth state changes (sign-out only — avoid redundant cloud reloads on token refresh)
+  supa.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
       window.location.replace('login.html');
     }
   });
@@ -916,7 +910,7 @@ function showToast(msg, type='ok', duration=3500) {
 async function loadCloudLib() {
   if (!currentUser) return;
   const { data, error } = await supa.from('plays').select('*').order('ts', { ascending: false });
-  if (error) { console.error('Cloud load error:', error); showToast('Could not load cloud library — showing local plays.', 'warn'); return; }
+  if (error) { console.warn('Cloud load error (using local plays):', error.message); return; }
   cloudLib = (data || []).map(row => ({
     id: row.play_id,
     name: row.name,
