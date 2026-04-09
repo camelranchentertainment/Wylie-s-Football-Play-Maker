@@ -1,1 +1,8 @@
-{}
+{
+  "rewrites": [
+    {
+      "source": "/supa/:path*",
+      "destination": "https://rvxanoqourdrfmbucvpz.supabase.co/:path*"
+    }
+  ]
+}
