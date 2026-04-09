@@ -399,8 +399,8 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   </div>
   <div class="spacer"></div>
   <nav class="nav-pages" role="navigation" aria-label="Main navigation">
-    <button class="npbtn" onclick="window.location.href='library.html'">🏈 TEMPLATES</button>
-    <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 MY LIBRARY</button>
+    <button class="npbtn" onclick="window.location.href='library.html'">🏈 PLAY LIBRARY</button>
+    <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 PLAYBOOK</button>
     <button class="npbtn" data-page="ai" onclick="switchPage('ai')">🤖 AI COACH</button>
     <button class="npbtn" data-page="wb" onclick="switchPage('wb')">📋 WRISTBAND</button>
     <button class="npbtn act" data-page="designer" onclick="switchPage('designer')" aria-current="page">✏ DESIGNER</button>
@@ -483,8 +483,8 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <div id="page-library" class="page">
     <div class="lib-page-header">
       <div class="lib-hdr-left">
-        <div class="lib-hdr-eyebrow">MY PLAYBOOK</div>
-        <div class="lib-hdr-title">📚 MY LIBRARY</div>
+        <div class="lib-hdr-eyebrow">COACHING TOOLS</div>
+        <div class="lib-hdr-title">📚 MY PLAYBOOK</div>
         <div class="lib-hdr-sub">Your custom plays — saved, organized, ready to use <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">☁ CLOUD</span></div>
       </div>
       <div class="lib-hdr-stats">
@@ -499,7 +499,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
       <button class="lib-pill" id="lp-off" onclick="setLibFilter('offense')">OFFENSE</button>
       <button class="lib-pill" id="lp-def" onclick="setLibFilter('defense')">DEFENSE</button>
       <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-        <button class="hbtn pri" onclick="window.location.href='library.html'" title="Browse template plays">🏈 TEMPLATES</button>
+        <button class="hbtn pri" onclick="window.location.href='library.html'" title="Browse the Play Library">🏈 PLAY LIBRARY</button>
         <button class="hbtn" onclick="exportLib()" title="Export plays as JSON">⬇ EXPORT</button>
         <label class="hbtn" style="cursor:pointer;" title="Import from JSON">⬆ IMPORT<input type="file" accept=".json" style="display:none;" onchange="importLib(event)"></label>
       </div>
@@ -1756,7 +1756,7 @@ function renderTplLibrary(){
           <div class="pcard-desc"></div>
         </div>
         <div class="pcard-acts">
-          <button class="pcbtn ok" style="flex:2;" onclick="addTemplatePlay(${pl.id})">+ Add to My Library</button>
+          <button class="pcbtn ok" style="flex:2;" onclick="addTemplatePlay(${pl.id})">+ Add to Playbook</button>
           <button class="pcbtn" onclick="previewTemplatePlay(${pl.id})">👁 Load</button>
         </div>`;
       d.querySelector('.pcard-name').textContent=pl.name;

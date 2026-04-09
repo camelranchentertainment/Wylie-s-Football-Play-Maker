@@ -237,8 +237,8 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 <div id="filter-wrap">
   <!-- Tabs -->
   <div class="tab-row">
-    <button class="tab-btn act" id="tab-tpl" onclick="switchTab('tpl')">🏈 TEMPLATES</button>
-    <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📚 MY LIBRARY</button>
+    <button class="tab-btn act" id="tab-tpl" onclick="switchTab('tpl')">🏈 PLAY LIBRARY</button>
+    <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📚 MY PLAYBOOK</button>
     <div class="tab-div"></div>
     <button class="tab-btn ext" onclick="goApp('ai')">🤖 AI COACH</button>
     <button class="tab-btn ext" onclick="goApp('wb')">📋 WRISTBAND</button>
@@ -270,7 +270,7 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
     <div class="ei">📋</div>
     <p>YOUR LIBRARY IS EMPTY</p>
     <p style="font-size:12px;font-family:'Rajdhani',sans-serif;color:var(--lo);margin-bottom:20px;">Add plays from the Template Library to build your playbook.</p>
-    <button class="btn-gold" onclick="switchTab('tpl')">BROWSE TEMPLATES</button>
+    <button class="btn-gold" onclick="switchTab('tpl')">BROWSE PLAY LIBRARY</button>
   </div>
 </div>
 
@@ -614,7 +614,7 @@ function addToLib(id){
   saveMyLib(lib);
   // Cloud save
   if(currentUser) cloudSave(play);
-  showToast('"'+play.name+'" added to My Library','ok');
+  showToast('"'+play.name+'" added to your Playbook','ok');
   // Recount
   countUp('stat-mine',lib.length,400);
   renderGrid();
