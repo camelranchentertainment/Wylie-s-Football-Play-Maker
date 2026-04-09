@@ -342,6 +342,7 @@ function goApp(page){
 /* ── HERO CANVAS ANIMATION ───────────────────────────────── */
 (()=>{
   const cv = document.getElementById('hero-canvas');
+  if(!cv) return;
   const ctx = cv.getContext('2d');
   let raf, ox=0, oy=0;
   function resize(){ cv.width=cv.offsetWidth; cv.height=cv.offsetHeight; }
