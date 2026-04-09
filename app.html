@@ -647,21 +647,24 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <div class="modal" style="max-width:920px;width:96%;max-height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
     <div style="padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <span style="font-family:'Oswald',sans-serif;font-size:17px;font-weight:700;letter-spacing:1px;">🏈 PLAY TEMPLATE LIBRARY</span>
-      <select id="tpl-mode" class="rp-select" style="width:130px;" onchange="renderTplLibrary()">
+      <select id="tpl-mode" class="rp-select" style="width:130px;" onchange="tplModeChanged()">
         <option value="all">All Plays</option>
         <option value="offense">Offense</option>
         <option value="defense">Defense</option>
       </select>
-      <select id="tpl-type" class="rp-select" style="width:120px;" onchange="renderTplLibrary()">
+      <select id="tpl-type" class="rp-select" style="width:120px;" onchange="tplTypeChanged()">
         <option value="">All Types</option>
         <option value="Pass">Pass</option>
         <option value="Run">Run</option>
         <option value="Defense">Defense</option>
       </select>
+      <select id="tpl-cat" class="rp-select" style="width:180px;" onchange="renderTplLibrary()">
+        <option value="">All Categories</option>
+      </select>
       <span id="tpl-count" style="font-size:12px;color:var(--text-lo);margin-left:4px;"></span>
       <button onclick="closeTplModal()" style="margin-left:auto;background:none;border:none;color:var(--text-mid);font-size:22px;cursor:pointer;line-height:1;padding:2px 6px;">✕</button>
     </div>
-    <div id="tpl-grid" style="flex:1;overflow-y:auto;padding:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;align-content:start;"></div>
+    <div id="tpl-grid" style="flex:1;overflow-y:auto;padding:18px 18px 24px;"></div>
   </div>
 </div>
 
@@ -1510,43 +1513,89 @@ function openTplModal(){
 function closeTplModal(){
   document.getElementById('tpl-modal').classList.remove('show');
 }
+function tplModeChanged(){
+  // When mode changes, reset type and category, then re-populate category list
+  document.getElementById('tpl-type').value='';
+  document.getElementById('tpl-cat').value='';
+  renderTplLibrary();
+}
+function tplTypeChanged(){
+  // When type changes, reset category and re-populate category list
+  document.getElementById('tpl-cat').value='';
+  renderTplLibrary();
+}
 function renderTplLibrary(){
   const mode=document.getElementById('tpl-mode').value;
   const type=document.getElementById('tpl-type').value;
-  const grid=document.getElementById('tpl-grid');
+  const cat=document.getElementById('tpl-cat').value;
+  const container=document.getElementById('tpl-grid');
   const typeColor={Pass:'ptag-p',Run:'ptag-r',Defense:'ptag-d'};
-  const plays=(window.PLAY_LIBRARY||[]).filter(p=>{
+
+  // Filter by mode and type first (not category) to build category dropdown
+  const byModeType=(window.PLAY_LIBRARY||[]).filter(p=>{
     if(mode!=='all'&&p.mode!==mode) return false;
     if(type&&p.type!==type) return false;
     return true;
   });
+
+  // Rebuild category dropdown options preserving current selection
+  const catSel=document.getElementById('tpl-cat');
+  const cats=[...new Set(byModeType.map(p=>p.category||'').filter(Boolean))];
+  catSel.innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option value="${c}"${c===cat?'selected':''}>${c}</option>`).join('');
+
+  // Now apply category filter
+  const plays=byModeType.filter(p=>!cat||(p.category||'')=== cat);
+
   document.getElementById('tpl-count').textContent=plays.length+' play'+(plays.length!==1?'s':'');
-  grid.innerHTML='';
+  container.innerHTML='';
   if(!plays.length){
-    grid.innerHTML='<div class="lib-empty">No plays match the selected filters.</div>';
+    container.innerHTML='<div class="lib-empty">No plays match the selected filters.</div>';
     return;
   }
+
+  // Group by category (preserving insertion order from PLAY_LIBRARY)
+  const grouped=new Map();
   plays.forEach(pl=>{
-    const thumb=genThumbFromPlay(pl.players,pl.routes);
-    const mTag=pl.mode==='offense'?'<span class="ptag ptag-o">OFF</span>':'<span class="ptag ptag-d">DEF</span>';
-    const tyKey=typeColor[pl.type]||'ptag-o';
-    const tyTag=pl.type?`<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>`:'';
-    const d=document.createElement('div'); d.className='pcard';
-    d.innerHTML=`
-      <img class="pcard-thumb" src="${thumb}">
-      <div class="pcard-body">
-        <div class="pcard-name"></div>
-        <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta"></span></div>
-        <div class="pcard-desc"></div>
-      </div>
-      <div class="pcard-acts">
-        <button class="pcbtn ok" style="flex:2;" onclick="addTemplatePlay(${pl.id})">+ Add to My Library</button>
-        <button class="pcbtn" onclick="previewTemplatePlay(${pl.id})">👁 Load</button>
-      </div>`;
-    d.querySelector('.pcard-name').textContent=pl.name;
-    d.querySelector('.pcard-fmeta').textContent=pl.formation||'';
-    d.querySelector('.pcard-desc').textContent=pl.description||'';
-    grid.appendChild(d);
+    const key=pl.category||'General';
+    if(!grouped.has(key)) grouped.set(key,[]);
+    grouped.get(key).push(pl);
+  });
+
+  grouped.forEach((group,catName)=>{
+    // Section header
+    const hdr=document.createElement('div');
+    hdr.style.cssText='font-family:Oswald,sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;color:var(--accent);text-transform:uppercase;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(240,165,0,.25);';
+    if(grouped.size>1||!cat) hdr.textContent=catName;
+    if(grouped.size===1&&cat) hdr.style.display='none';
+    container.appendChild(hdr);
+
+    // Grid for this category
+    const grid=document.createElement('div');
+    grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:8px;';
+    container.appendChild(grid);
+
+    group.forEach(pl=>{
+      const thumb=genThumbFromPlay(pl.players,pl.routes);
+      const mTag=pl.mode==='offense'?'<span class="ptag ptag-o">OFF</span>':'<span class="ptag ptag-d">DEF</span>';
+      const tyKey=typeColor[pl.type]||'ptag-o';
+      const tyTag=pl.type?`<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>`:'';
+      const d=document.createElement('div'); d.className='pcard';
+      d.innerHTML=`
+        <img class="pcard-thumb" src="${thumb}">
+        <div class="pcard-body">
+          <div class="pcard-name"></div>
+          <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta"></span></div>
+          <div class="pcard-desc"></div>
+        </div>
+        <div class="pcard-acts">
+          <button class="pcbtn ok" style="flex:2;" onclick="addTemplatePlay(${pl.id})">+ Add to My Library</button>
+          <button class="pcbtn" onclick="previewTemplatePlay(${pl.id})">👁 Load</button>
+        </div>`;
+      d.querySelector('.pcard-name').textContent=pl.name;
+      d.querySelector('.pcard-fmeta').textContent=pl.formation||'';
+      d.querySelector('.pcard-desc').textContent=pl.description||'';
+      grid.appendChild(d);
+    });
   });
 }
 function addTemplatePlay(id){
