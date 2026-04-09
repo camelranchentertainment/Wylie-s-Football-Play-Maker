@@ -69,19 +69,33 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 /* ── HERO ────────────────────────────────────────────────── */
 #hero{
   position:relative;overflow:hidden;
-  padding:48px 24px 40px;
-  background:linear-gradient(160deg,#0d1821 0%,#122030 50%,#0d1821 100%);
+  padding:52px 32px 44px;
+  background:
+    linear-gradient(100deg,rgba(8,16,26,.93) 0%,rgba(12,26,18,.86) 45%,rgba(8,14,24,.9) 100%),
+    repeating-linear-gradient(0deg,transparent,transparent 54px,rgba(255,255,255,.04) 54px,rgba(255,255,255,.04) 55px),
+    url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+  border-bottom:2px solid rgba(240,165,0,.18);
 }
-#hero-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.6;}
-.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;}
-.hero-eyebrow{font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--accent);margin-bottom:10px;}
-.hero-title{font-family:'Oswald',sans-serif;font-size:clamp(36px,6vw,72px);font-weight:700;letter-spacing:3px;line-height:1;color:#fff;margin-bottom:8px;}
+#hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 60%,rgba(28,70,36,.38) 0%,transparent 62%);
+  pointer-events:none;
+}
+#hero::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),rgba(240,165,0,.3),transparent);
+  pointer-events:none;
+}
+#hero-canvas{display:none;}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0;text-align:left;}
+.hero-eyebrow{font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--accent);margin-bottom:10px;text-align:left;}
+.hero-title{font-family:'Oswald',sans-serif;font-size:clamp(36px,6vw,72px);font-weight:700;letter-spacing:3px;line-height:1;color:#fff;margin-bottom:8px;text-align:left;text-shadow:0 2px 16px rgba(0,0,0,.7);}
 .hero-title em{color:var(--accent);font-style:normal;}
-.hero-sub{font-size:14px;color:var(--lo);margin-bottom:32px;letter-spacing:.5px;}
-.hero-stats{display:flex;gap:32px;flex-wrap:wrap;}
-.stat-block{display:flex;flex-direction:column;gap:2px;}
-.stat-num{font-family:'Oswald',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:700;color:var(--accent);line-height:1;}
-.stat-label{font-family:'Oswald',sans-serif;font-size:9px;font-weight:600;letter-spacing:2.5px;color:var(--lo);}
+.hero-sub{font-size:14px;color:var(--mid);margin-bottom:32px;letter-spacing:.5px;text-align:left;}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap;justify-content:flex-start;}
+.stat-block{display:flex;flex-direction:column;gap:2px;align-items:flex-start;}
+.stat-num{font-family:'Oswald',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:700;color:var(--accent);line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.6);}
+.stat-label{font-family:'Oswald',sans-serif;font-size:9px;font-weight:600;letter-spacing:2.5px;color:rgba(192,212,232,.75);}
 
 /* ── FILTER STRIP ────────────────────────────────────────── */
 #filter-wrap{
@@ -226,7 +240,6 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 
 <!-- ══ HERO ══ -->
 <section id="hero">
-  <canvas id="hero-canvas"></canvas>
   <div class="hero-inner">
     <div class="hero-eyebrow">COACHING TOOLS</div>
     <h1 class="hero-title"><em>PLAY</em> LIBRARY</h1>
