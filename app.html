@@ -325,8 +325,6 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 <!-- ═══ HEADER ═══ -->
 <div id="hdr">
   <button id="mob-sidebar-btn" onclick="toggleMobSidebar()" aria-label="Toggle sidebar">☰</button>
-  <button class="hbtn" onclick="window.location.href='library.html'" title="Back to Play Library" style="flex-shrink:0;">← LIBRARY</button>
-  <div class="hdiv"></div>
   <div id="logo">🏈 <em>Wylie's</em> <span class="logo-sub">PLAY MAKER</span></div>
   <div class="hdiv"></div>
   <div id="designer-ctrls">
@@ -342,10 +340,11 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   </div>
   <div class="spacer"></div>
   <nav class="nav-pages" role="navigation" aria-label="Main navigation">
-    <button class="npbtn act" data-page="designer" onclick="switchPage('designer')" aria-current="page">✏ DESIGNER</button>
+    <button class="npbtn" onclick="window.location.href='library.html'">🏈 TEMPLATES</button>
+    <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 MY LIBRARY</button>
     <button class="npbtn" data-page="ai" onclick="switchPage('ai')">🤖 AI COACH</button>
-    <button class="npbtn" data-page="wb" onclick="switchPage('wb')">🏈 WRISTBAND</button>
-    <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 LIBRARY</button>
+    <button class="npbtn" data-page="wb" onclick="switchPage('wb')">📋 WRISTBAND</button>
+    <button class="npbtn act" data-page="designer" onclick="switchPage('designer')" aria-current="page">✏ DESIGNER</button>
   </nav>
   <div class="hdiv"></div>
   <button class="auth-btn" id="auth-nav-btn" onclick="openAuthModal()">👤 SIGN IN</button>
@@ -683,6 +682,15 @@ const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let currentUser = null;       // Supabase user object when signed in
 let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
+
+// Switch to page requested via URL param (e.g. app.html?page=ai)
+(function checkUrlPage(){
+  const p = new URLSearchParams(location.search).get('page');
+  if(p && ['library','ai','wb','designer'].includes(p)){
+    // defer until switchPage is defined
+    window.addEventListener('DOMContentLoaded', ()=>{ try{ switchPage(p); }catch(e){} });
+  }
+})();
 
 // Check if library.html sent a play to open
 (function checkSessionPlay(){

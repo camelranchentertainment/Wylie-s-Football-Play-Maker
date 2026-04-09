@@ -78,11 +78,15 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 }
 .filter-row{display:flex;align-items:center;gap:8px;padding:10px 0;overflow-x:auto;scrollbar-width:none;}
 .filter-row::-webkit-scrollbar{display:none;}
-.tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);}
-.tab-btn{padding:10px 20px;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;border:none;background:none;color:var(--lo);position:relative;transition:color .2s;flex-shrink:0;}
+.tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.tab-row::-webkit-scrollbar{display:none;}
+.tab-btn{padding:12px 18px;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;border:none;background:none;color:var(--lo);position:relative;transition:color .2s;flex-shrink:0;white-space:nowrap;}
 .tab-btn::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform .25s cubic-bezier(.4,0,.2,1);}
 .tab-btn.act{color:var(--accent);}
 .tab-btn.act::after{transform:scaleX(1);}
+.tab-btn.ext{color:var(--lo);}
+.tab-btn.ext:hover{color:var(--mid);}
+.tab-div{width:1px;height:20px;background:var(--border);align-self:center;flex-shrink:0;margin:0 4px;}
 .pill{padding:5px 13px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.2px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--lo);border-radius:20px;white-space:nowrap;transition:all .18s;flex-shrink:0;}
 .pill:hover{border-color:var(--border-bright);color:var(--mid);}
 .pill.act{background:var(--accent);border-color:var(--accent);color:#000;box-shadow:0 2px 12px rgba(240,165,0,.3);}
@@ -202,7 +206,6 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
   <span class="nav-tag">PLAY LIBRARY</span>
   <div class="spacer"></div>
   <span id="nav-user"></span>
-  <button class="nbtn pri" onclick="openDesigner()">✏ DESIGNER</button>
   <button class="nbtn" id="btn-signout" onclick="doSignOut()">SIGN OUT</button>
 </nav>
 
@@ -234,8 +237,12 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 <div id="filter-wrap">
   <!-- Tabs -->
   <div class="tab-row">
-    <button class="tab-btn act" id="tab-tpl" onclick="switchTab('tpl')">📚 TEMPLATE PLAYS</button>
-    <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">⭐ MY LIBRARY</button>
+    <button class="tab-btn act" id="tab-tpl" onclick="switchTab('tpl')">🏈 TEMPLATES</button>
+    <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📚 MY LIBRARY</button>
+    <div class="tab-div"></div>
+    <button class="tab-btn ext" onclick="goApp('ai')">🤖 AI COACH</button>
+    <button class="tab-btn ext" onclick="goApp('wb')">📋 WRISTBAND</button>
+    <button class="tab-btn ext" onclick="goApp('designer')">✏ DESIGNER</button>
   </div>
 
   <!-- Mode row (only for templates) -->
@@ -304,8 +311,8 @@ async function doSignOut(){
   window.location.replace('login.html');
 }
 
-function openDesigner(){
-  window.location.href = 'app.html';
+function goApp(page){
+  window.location.href = page === 'designer' ? 'app.html' : 'app.html?page='+page;
 }
 
 /* ── HERO CANVAS ANIMATION ───────────────────────────────── */
