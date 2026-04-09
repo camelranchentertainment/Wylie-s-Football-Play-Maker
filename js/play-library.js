@@ -393,6 +393,262 @@
     ]
   },
 
+
+  /* ── QUICK GAME (cont.) ───────────────────────────────────── */
+
+  {
+    id:121, name:'Hitch & Go', formation:'Shotgun', type:'Pass', cat:'Quick Game',
+    desc:'Pump-fake to X on the hitch; defender bites; X breaks vertical for the big play.',
+    players: SG,
+    routes:[
+      {pi:6, wpts:[[-16,0],[-16,-5],[-10,-16]],    style:'solid', color:'#ffcc00'}, // X hitch-and-go
+      {pi:7, wpts:[[18,0],[18,-10],[10,-15]],       style:'solid', color:'#ffcc00'}, // Z post clear
+      {pi:8, wpts:[[-8,0],[-8,-4],[4,-4]],          style:'solid', color:'#ffcc00'}, // SL drag
+      {pi:5, wpts:[[6.5,0],[6.5,-8]],               style:'solid', color:'#ff9966'}, // TE seam
+      {pi:10,wpts:[[-3,7],[4,-2]],                  style:'dashed',color:'#ffcc00'}  // RB check-down
+    ]
+  },
+  {
+    id:122, name:'Slant-Flat', formation:'Shotgun', type:'Pass', cat:'Quick Game',
+    desc:'Classic high-low on linebackers: X slants inside; RB releases to the flat; TE reads the void.',
+    players: SG,
+    routes:[
+      {pi:6, wpts:[[-16,0],[-16,-2],[-4,-6]],      style:'solid', color:'#ffcc00'}, // X slant
+      {pi:7, wpts:[[18,0],[18,-3],[24,-3]],         style:'solid', color:'#ffcc00'}, // Z out/clear
+      {pi:5, wpts:[[6.5,0],[6.5,-5],[11,-5]],       style:'solid', color:'#ff9966'}, // TE seam high-low
+      {pi:10,wpts:[[-3,7],[-10,-1]],                style:'dashed',color:'#ffcc00'}, // RB flat
+      {pi:8, wpts:[[-8,0],[-8,-4]],                 style:'dashed',color:'#ffcc00'}  // SL sit/option
+    ]
+  },
+
+  /* ── TIMING ROUTES / WEST COAST (cont.) ─────────────────────── */
+
+  {
+    id:123, name:'Corner Route', formation:'Singleback', type:'Pass', cat:'Timing Routes / West Coast',
+    desc:'WRs run 8-yd post fake then break to corner at 45°. Beats Cover 3 deep outside.',
+    players: SB,
+    routes:[
+      {pi:6, wpts:[[-18,0],[-18,-8],[-22,-14]],    style:'solid', color:'#ffcc00'}, // X corner
+      {pi:7, wpts:[[18,0],[18,-8],[22,-14]],        style:'solid', color:'#ffcc00'}, // Z corner
+      {pi:5, wpts:[[6.5,0],[6.5,-5],[3,-10]],       style:'solid', color:'#ff9966'}, // TE post
+      {pi:8, wpts:[[-8,0],[-8,-5],[-2,-5]],         style:'solid', color:'#ffcc00'}, // SL sit
+      {pi:10,wpts:[[0,6],[7,-2]],                   style:'dashed',color:'#ffcc00'}  // RB check-down
+    ]
+  },
+  {
+    id:124, name:'Comeback / Bench', formation:'Shotgun', type:'Pass', cat:'Timing Routes / West Coast',
+    desc:'WRs sprint 12 yds then break back to the sideline. Exploits CB over-running the route.',
+    players: SG,
+    routes:[
+      {pi:6, wpts:[[-16,0],[-16,-12],[-20,-10]],   style:'solid', color:'#ffcc00'}, // X comeback
+      {pi:7, wpts:[[18,0],[18,-12],[22,-10]],       style:'solid', color:'#ffcc00'}, // Z comeback
+      {pi:8, wpts:[[-8,0],[-8,-6],[-6,-4]],         style:'solid', color:'#ffcc00'}, // SL curl
+      {pi:5, wpts:[[6.5,0],[6.5,-9]],               style:'solid', color:'#ff9966'}, // TE seam
+      {pi:10,wpts:[[-3,7],[5,-2]],                  style:'dashed',color:'#ffcc00'}  // RB outlet
+    ]
+  },
+  {
+    id:125, name:'Double Post', formation:'Shotgun', type:'Pass', cat:'Timing Routes / West Coast',
+    desc:'Both outside WRs run posts simultaneously, stressing both safeties. TE seam splits the middle.',
+    players: SG,
+    routes:[
+      {pi:6, wpts:[[-16,0],[-16,-8],[-8,-15]],     style:'solid', color:'#ffcc00'}, // X post
+      {pi:7, wpts:[[18,0],[18,-8],[10,-15]],        style:'solid', color:'#ffcc00'}, // Z post
+      {pi:5, wpts:[[6.5,0],[4,-12]],                style:'solid', color:'#ff9966'}, // TE seam split
+      {pi:8, wpts:[[-8,0],[-8,-7],[-1,-7]],         style:'solid', color:'#ffcc00'}, // SL dig underneath
+      {pi:10,wpts:[[-3,7],[4,-2]],                  style:'dashed',color:'#ffcc00'}
+    ]
+  },
+  {
+    id:126, name:'Drive Concept', formation:'Shotgun', type:'Pass', cat:'Timing Routes / West Coast',
+    desc:'SL crosses at 5 yds; TE drives high at 10 yds creating a high-low; outside WRs clear.',
+    players: SG,
+    routes:[
+      {pi:8, wpts:[[-8,0],[-8,-5],[12,-5]],         style:'solid', color:'#ffcc00'}, // SL shallow drive
+      {pi:5, wpts:[[6.5,0],[6.5,-10],[-8,-10]],     style:'solid', color:'#ff9966'}, // TE high drive cross
+      {pi:7, wpts:[[18,0],[18,-15]],                style:'solid', color:'#ffcc00'}, // Z go/clear
+      {pi:6, wpts:[[-16,0],[-16,-5],[-14,-3]],      style:'solid', color:'#ffcc00'}, // X hitch
+      {pi:10,wpts:[[-3,7],[-7,-2]],                 style:'dashed',color:'#ffcc00'}  // RB swing
+    ]
+  },
+  {
+    id:127, name:'Switch Concept', formation:'Spread / Trips', type:'Pass', cat:'Timing Routes / West Coast',
+    desc:'Inside receivers cross/switch at the LOS creating natural picks. Stresses zone and man alike.',
+    players: TR,
+    routes:[
+      {pi:6, wpts:[[8,0],[8,-1],[14,-5]],           style:'solid', color:'#ffcc00'}, // Z out after switch
+      {pi:7, wpts:[[13,0],[13,-1],[5,-6]],          style:'solid', color:'#ff9966'}, // Y in after switch
+      {pi:8, wpts:[[18,0],[18,-14]],                style:'solid', color:'#ffcc00'}, // F go/clear
+      {pi:5, wpts:[[-18,0],[-18,-5],[-14,-3]],      style:'solid', color:'#ffcc00'}, // X out
+      {pi:10,wpts:[[-3,7],[-8,-2]],                 style:'dashed',color:'#ffcc00'}  // RB flat
+    ]
+  },
+
+  /* ── DROPBACK / VERTICAL (cont.) ─────────────────────────────── */
+
+  {
+    id:128, name:'Post Route', formation:'Singleback', type:'Pass', cat:'Dropback / Vertical',
+    desc:'Primary read is Z on the deep post; X digs underneath to hold the safety; TE seams the middle.',
+    players: SB,
+    routes:[
+      {pi:7, wpts:[[18,0],[18,-8],[10,-16]],        style:'solid', color:'#ffcc00'}, // Z post primary
+      {pi:6, wpts:[[-18,0],[-18,-10],[-5,-10]],     style:'solid', color:'#ffcc00'}, // X dig
+      {pi:8, wpts:[[-8,0],[-8,-5],[5,-5]],          style:'solid', color:'#ffcc00'}, // SL cross
+      {pi:5, wpts:[[6.5,0],[5,-9]],                 style:'solid', color:'#ff9966'}, // TE seam
+      {pi:10,wpts:[[0,6],[7,-2]],                   style:'dashed',color:'#ffcc00'}
+    ]
+  },
+  {
+    id:129, name:'Sail Route', formation:'Singleback', type:'Pass', cat:'Dropback / Vertical',
+    desc:'Three-level stretch: WR sails deep flag-corner; TE runs a 7-yd corner; FL hitches underneath.',
+    players: SB,
+    routes:[
+      {pi:7, wpts:[[18,0],[22,-5],[25,-13]],        style:'solid', color:'#ffcc00'}, // Z sail (flag-corner)
+      {pi:5, wpts:[[6.5,0],[8,-6],[13,-11]],        style:'solid', color:'#ff9966'}, // TE corner
+      {pi:6, wpts:[[-18,0],[-18,-7],[-16,-5]],      style:'solid', color:'#ffcc00'}, // X curl
+      {pi:8, wpts:[[-8,0],[-8,-3],[-14,-3]],        style:'solid', color:'#ffcc00'}, // SL flat
+      {pi:10,wpts:[[0,6],[7,-2]],                   style:'dashed',color:'#ffcc00'}
+    ]
+  },
+  {
+    id:130, name:'Levels (H-Cross)', formation:'Singleback', type:'Pass', cat:'Dropback / Vertical',
+    desc:'High-low crossing concept: TE shallow at 3 yds; X digs at 8 yds — two levels over the middle.',
+    players: SB,
+    routes:[
+      {pi:5, wpts:[[6.5,0],[6.5,-3],[-12,-3]],     style:'solid', color:'#ff9966'}, // TE shallow cross
+      {pi:6, wpts:[[-18,0],[-18,-8],[6,-8]],        style:'solid', color:'#ffcc00'}, // X dig
+      {pi:7, wpts:[[18,0],[14,-13]],                style:'solid', color:'#ffcc00'}, // Z post clear
+      {pi:8, wpts:[[-8,0],[-8,-3],[-14,-3]],        style:'solid', color:'#ffcc00'}, // SL out
+      {pi:10,wpts:[[0,6],[6,-2]],                   style:'dashed',color:'#ffcc00'}
+    ]
+  },
+  {
+    id:131, name:'Comeback Route', formation:'Shotgun', type:'Pass', cat:'Dropback / Vertical',
+    desc:'X runs a 14-yd comeback to the boundary; Z runs a post to hold the safety; TE corners flat.',
+    players: SG,
+    routes:[
+      {pi:6, wpts:[[-16,0],[-20,-12],[-22,-9]],    style:'solid', color:'#ffcc00'}, // X comeback boundary
+      {pi:7, wpts:[[18,0],[18,-8],[10,-14]],        style:'solid', color:'#ffcc00'}, // Z post
+      {pi:8, wpts:[[-8,0],[-8,-7],[-3,-7]],         style:'solid', color:'#ffcc00'}, // SL dig
+      {pi:5, wpts:[[6.5,0],[9,-6],[13,-11]],        style:'solid', color:'#ff9966'}, // TE corner
+      {pi:10,wpts:[[-3,7],[5,-2]],                  style:'dashed',color:'#ffcc00'}
+    ]
+  },
+  {
+    id:132, name:'Divide (Hi-Lo Verts)', formation:'Spread / Trips', type:'Pass', cat:'Dropback / Vertical',
+    desc:'Inside/outside verticals on both sides create hi-lo reads on every safety. Air Raid staple.',
+    players: TR,
+    routes:[
+      {pi:6, wpts:[[8,0],[8,-14]],                  style:'solid', color:'#ffcc00'}, // Z seam
+      {pi:7, wpts:[[13,0],[13,-14]],                style:'solid', color:'#ffcc00'}, // Y go
+      {pi:8, wpts:[[18,0],[18,-8],[12,-14]],        style:'solid', color:'#ffcc00'}, // F post
+      {pi:5, wpts:[[-18,0],[-18,-8],[-10,-14]],     style:'solid', color:'#ffcc00'}, // X post
+      {pi:10,wpts:[[-3,7],[4,-3]],                  style:'dashed',color:'#ffcc00'}
+    ]
+  },
+
+  /* ── PLAY ACTION (cont.) ──────────────────────────────────────── */
+
+  {
+    id:133, name:'PA Cross', formation:'I-Formation', type:'Pass', cat:'Play Action',
+    desc:'Fake to HB; TE drags across at 8 yds; SE runs a post; FL clears underneath.',
+    players: IF,
+    routes:[
+      {pi:5, wpts:[[6.5,0],[6.5,-8],[-10,-8]],     style:'solid', color:'#ff9966'}, // TE drag cross
+      {pi:7, wpts:[[18,0],[18,-10],[8,-16]],        style:'solid', color:'#ffcc00'}, // SE post
+      {pi:6, wpts:[[-18,0],[-18,-5],[-4,-5]],       style:'solid', color:'#ffcc00'}, // FL shallow cross
+      {pi:10,wpts:[[0,7],[3,3]],                    style:'dashed',color:'#aaaaaa'}, // HB fake
+      {pi:8, wpts:[[0,1.5],[6,2]],                  style:'motion',color:'#ffcc00'}  // QB boot right
+    ]
+  },
+  {
+    id:134, name:'PA Pop Pass', formation:'Singleback', type:'Pass', cat:'Play Action',
+    desc:'Short-yardage play action: TE pops over the linebackers after fake; WRs clear vertically.',
+    players: SB,
+    routes:[
+      {pi:5, wpts:[[6.5,0],[6.5,-5]],              style:'solid', color:'#ff9966'}, // TE pop (quick throw)
+      {pi:6, wpts:[[-18,0],[-18,-12]],              style:'solid', color:'#ffcc00'}, // X fade/clear
+      {pi:7, wpts:[[18,0],[14,-12]],                style:'solid', color:'#ffcc00'}, // Z post clear
+      {pi:8, wpts:[[-8,0],[-8,-4],[4,-4]],          style:'solid', color:'#ffcc00'}, // SL drag
+      {pi:10,wpts:[[0,6],[4,2]],                    style:'dashed',color:'#aaaaaa'}  // RB fake
+    ]
+  },
+  {
+    id:135, name:'Naked Bootleg Left', formation:'I-Formation', type:'Pass', cat:'Play Action',
+    desc:'No OL protection — QB sprints left alone on the boot. FL runs corner; TE drags opposite.',
+    players: IF,
+    routes:[
+      {pi:6, wpts:[[-18,0],[-18,-8],[-22,-13]],    style:'solid', color:'#ffcc00'}, // FL corner/flag
+      {pi:5, wpts:[[6.5,0],[6.5,-5],[-4,-5]],      style:'solid', color:'#ff9966'}, // TE drag
+      {pi:7, wpts:[[18,0],[18,-15]],               style:'solid', color:'#ffcc00'}, // SE go clear
+      {pi:8, wpts:[[0,1.5],[-6,2]],               style:'motion',color:'#ffcc00'}, // QB naked boot left
+      {pi:10,wpts:[[0,7],[4,3]],                   style:'dashed',color:'#aaaaaa'}  // HB fake right
+    ]
+  },
+
+  /* ── SCREEN PLAYS (cont.) ─────────────────────────────────────── */
+
+  {
+    id:136, name:'TE Screen', formation:'Singleback', type:'Pass', cat:'Screen Plays',
+    desc:'TE releases to the flat behind the line; tackle and guard release to lead-block.',
+    players: SB,
+    routes:[
+      {pi:5, wpts:[[6.5,0],[6.5,3],[10,1]],        style:'solid', color:'#ff9966'}, // TE screen catch
+      {pi:4, wpts:[[4,0],[4,2],[9,0]],              style:'solid', color:'#ff9966'}, // RT release lead
+      {pi:3, wpts:[[2,0],[2,2],[7,0]],              style:'solid', color:'#ff9966'}, // RG release lead
+      {pi:7, wpts:[[18,0],[18,-12]],               style:'solid', color:'#ffcc00'}, // Z go/clear
+      {pi:6, wpts:[[-18,0],[-16,-3]],              style:'solid', color:'#ffcc00'}  // X stalk
+    ]
+  },
+  {
+    id:137, name:'Middle Screen', formation:'Shotgun', type:'Pass', cat:'Screen Plays',
+    desc:'RB drifts up the middle as OL engages pass-rush; QB waits and dumps into the A-gap.',
+    players: SG,
+    routes:[
+      {pi:10,wpts:[[-3,7],[0,4],[0,-1]],            style:'solid', color:'#ffcc00'}, // RB set up middle
+      {pi:1, wpts:[[-2,0],[-2,2],[-1,-3]],          style:'solid', color:'#ff9966'}, // LG release lead
+      {pi:3, wpts:[[2,0],[2,2],[1,-3]],             style:'solid', color:'#ff9966'}, // RG release lead
+      {pi:6, wpts:[[-16,0],[-16,-12]],              style:'solid', color:'#ffcc00'}, // X go/clear
+      {pi:7, wpts:[[18,0],[18,-12]],               style:'solid', color:'#ffcc00'}  // Z go/clear
+    ]
+  },
+  {
+    id:138, name:'Slip Screen', formation:'Shotgun', type:'Pass', cat:'Screen Plays',
+    desc:'OL initially pass-blocks hard then releases to lead; RB swings right into open space.',
+    players: SG,
+    routes:[
+      {pi:10,wpts:[[-3,7],[4,4],[12,2]],            style:'solid', color:'#ffcc00'}, // RB swing screen
+      {pi:3, wpts:[[2,0],[2,2],[8,2]],              style:'solid', color:'#ff9966'}, // RG slip/lead
+      {pi:4, wpts:[[4,0],[4,2],[10,0]],             style:'solid', color:'#ff9966'}, // RT slip/lead
+      {pi:7, wpts:[[18,0],[16,-2]],                style:'block', color:'#aaaaaa'}, // Z stalk
+      {pi:6, wpts:[[-16,0],[-14,-3]],              style:'solid', color:'#ffcc00'}  // X go/clear
+    ]
+  },
+  {
+    id:139, name:'Army Screen', formation:'I-Formation', type:'Pass', cat:'Screen Plays',
+    desc:'Classic HB screen right; FB leads block; LG pulls to escort the ball carrier.',
+    players: IF,
+    routes:[
+      {pi:10,wpts:[[0,7],[8,3],[12,0]],             style:'solid', color:'#ffcc00'}, // HB screen right
+      {pi:9, wpts:[[0,4],[6,0]],                    style:'solid', color:'#ff6666'}, // FB lead block
+      {pi:1, wpts:[[-2,0],[-2,2],[4,1]],            style:'solid', color:'#ff9966'}, // LG pull right
+      {pi:6, wpts:[[-18,0],[-14,-2]],               style:'block', color:'#aaaaaa'}, // FL stalk
+      {pi:7, wpts:[[18,0],[14,-2]],                style:'block', color:'#aaaaaa'}  // SE crack
+    ]
+  },
+  {
+    id:140, name:'Jailbreak Screen', formation:'Spread / Trips', type:'Pass', cat:'Screen Plays',
+    desc:'Quick boundary screen to the outside WR; inside trio cracks and stalks to spring him free.',
+    players: TR,
+    routes:[
+      {pi:8, wpts:[[18,0],[18,2],[12,0]],           style:'solid', color:'#ffcc00'}, // F boundary screen
+      {pi:7, wpts:[[13,0],[12,-2]],                style:'block', color:'#aaaaaa'}, // Y crack inside
+      {pi:6, wpts:[[8,0],[8,-2]],                  style:'block', color:'#aaaaaa'}, // Z crack inside
+      {pi:5, wpts:[[-18,0],[-18,-12]],              style:'solid', color:'#ffcc00'}, // X go/clear
+      {pi:10,wpts:[[-3,7],[-4,4]],                 style:'block', color:'#ffcc00'}  // RB protect
+    ]
+  },
+
   ]; // end PASS
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -710,6 +966,319 @@
       {pi:5, wpts:[[6.5,0],[5,-1.5]],             style:'block', color:'#ffcc00'},
       {pi:6, wpts:[[-6.5,0],[-5,-1.5]],           style:'block', color:'#ffcc00'},
       {pi:8, wpts:[[0,1.5],[0,-1]],               style:'solid', color:'#ffffff'}  // QB sneak
+    ]
+  },
+
+
+  /* ── INSIDE RUN / GAP SCHEME (cont.) ─────────────────────── */
+
+  {
+    id:221, name:'G-T Counter Right', formation:'I-Formation', type:'Run', cat:'Inside Run / Gap Scheme',
+    desc:'Guard and tackle pull right through the C-gap; FB seals backside; HB counters off their blocks.',
+    players: IF,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'}, // LT down
+      {pi:1, wpts:[[-2,0],[-3,-1.5]],              style:'block', color:'#ffcc00'}, // LG down
+      {pi:2, wpts:[[0,0],[-1,-1.5]],               style:'block', color:'#ffcc00'}, // C base
+      {pi:3, wpts:[[2,0],[2,2],[7,0],[8,-1]],      style:'solid', color:'#ff9966'}, // RG pull right
+      {pi:4, wpts:[[4,0],[4,2],[8,0],[9,-1]],      style:'solid', color:'#ff9966'}, // RT pull right
+      {pi:5, wpts:[[6.5,0],[5,-1.5]],              style:'block', color:'#ffcc00'}, // TE release
+      {pi:9, wpts:[[0,4],[5,0]],                   style:'solid', color:'#ff6666'}, // FB lead seal
+      {pi:10,wpts:[[0,7],[6,1],[8,4]],             style:'solid', color:'#ffffff'}  // HB counter right
+    ]
+  },
+  {
+    id:222, name:'Double-Team Blast', formation:'I-Formation', type:'Run', cat:'Inside Run / Gap Scheme',
+    desc:'C and RG combo double-team the nose; FB isolates the linebacker; HB hits the gap hard.',
+    players: IF,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-2,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[1,-2]],                  style:'block', color:'#ff9966'}, // C combo double
+      {pi:3, wpts:[[2,0],[1,-2]],                  style:'block', color:'#ff9966'}, // RG combo double
+      {pi:4, wpts:[[4,0],[5,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[6,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:9, wpts:[[0,4],[2,-1]],                  style:'solid', color:'#ff6666'}, // FB iso LB
+      {pi:10,wpts:[[0,7],[2,1],[3,4]],             style:'solid', color:'#ffffff'}
+    ]
+  },
+  {
+    id:223, name:'Lead Draw', formation:'Singleback', type:'Run', cat:'Inside Run / Gap Scheme',
+    desc:'OL shows pass-block; QB delays; RB takes draw with SL as a crack-blocker on the MIKE.',
+    players: SB,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-4,-2]],                style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-1,-2]],                style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-2]],                  style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[1,-2]],                  style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[4,-2]],                  style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[6,-2]],                style:'block', color:'#ffcc00'},
+      {pi:8, wpts:[[-8,0],[-5,-2]],                style:'block', color:'#aaaaaa'}, // SL crack block
+      {pi:10,wpts:[[0,6],[0,3],[2,-3]],            style:'solid', color:'#ffffff'}  // RB delayed draw
+    ]
+  },
+  {
+    id:224, name:'Belly Right', formation:'I-Formation', type:'Run', cat:'Inside Run / Gap Scheme',
+    desc:'FB takes the belly path off-tackle right; HB fakes outside to freeze the defense.',
+    players: IF,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-2,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[1,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[3,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[5,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[8,-1.5]],              style:'block', color:'#ffcc00'}, // TE kick-out
+      {pi:9, wpts:[[0,4],[5,0],[6,3]],             style:'solid', color:'#ffffff'}, // FB belly right
+      {pi:10,wpts:[[0,7],[8,-1]],                  style:'dashed',color:'#aaaaaa'}  // HB fake outside
+    ]
+  },
+
+  /* ── ZONE SCHEME (cont.) ──────────────────────────────────────── */
+
+  {
+    id:225, name:'Cut-Back Zone', formation:'Singleback', type:'Run', cat:'Zone Scheme',
+    desc:'Zone left; RB reads the backside and cuts back against the grain into the open crease.',
+    players: SB,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-3,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[-1,-1.5]],               style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[1,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[3,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:6, wpts:[[-18,0],[-15,-2]],              style:'block', color:'#aaaaaa'}, // X stalk
+      {pi:10,wpts:[[0,6],[-3,-1],[4,3]],           style:'solid', color:'#ffffff'}  // RB zone then cut-back
+    ]
+  },
+  {
+    id:226, name:'Split Zone', formation:'Singleback', type:'Run', cat:'Zone Scheme',
+    desc:'OL zones right; H-back (slot) kicks out the backside DE; RB reads and bounces or cuts.',
+    players: SB,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-3,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-1,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[1,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[3,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[5,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[7.5,-1.5]],            style:'block', color:'#ffcc00'},
+      {pi:8, wpts:[[-8,0],[-5,-1.5]],              style:'block', color:'#ff9966'}, // H-back kick-out DE
+      {pi:10,wpts:[[0,6],[7,-1],[8,3]],            style:'solid', color:'#ffffff'}
+    ]
+  },
+  {
+    id:227, name:'Duo Run', formation:'Shotgun', type:'Run', cat:'Zone Scheme',
+    desc:'Double-team zone blocking scheme: every down lineman fires a combo with his neighbor.',
+    players: SG,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-3,-2]],                style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-3,-2]],                style:'block', color:'#ff9966'}, // LG doubles with LT
+      {pi:2, wpts:[[0,0],[1,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[1,-2]],                  style:'block', color:'#ff9966'}, // RG doubles with C
+      {pi:4, wpts:[[4,0],[5,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[5,-2]],                style:'block', color:'#ff9966'}, // TE doubles with RT
+      {pi:10,wpts:[[-3,7],[3,-2],[5,2]],           style:'solid', color:'#ffffff'}
+    ]
+  },
+  {
+    id:228, name:'Zone-Read Left', formation:'Pistol', type:'Run', cat:'Zone Scheme',
+    desc:'Mirror of standard read option: OL zones left; QB reads the backside DE and keeps or hands.',
+    players: PS,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-3,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[-1,-1.5]],               style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[1,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[3,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[6,-1.5]],              style:'block', color:'#ffcc00'}, // TE read key (unblocked)
+      {pi:10,wpts:[[0,8],[-6,-2],[-7,3]],          style:'solid', color:'#ffffff'}, // RB zone left
+      {pi:9, wpts:[[0,4],[8,-2]],                  style:'dashed',color:'#ffcc00'}  // QB keep right (read)
+    ]
+  },
+
+  /* ── MISDIRECTION (cont.) ─────────────────────────────────────── */
+
+  {
+    id:229, name:'Fly Sweep Left', formation:'Spread / Trips', type:'Run', cat:'Misdirection',
+    desc:'F goes in motion from right to left at full speed and receives a jet handoff going left.',
+    players: TR,
+    routes:[
+      {pi:8, wpts:[[18,0],[18,1],[-2,1],[-20,-3]], style:'motion',color:'#ffffff'}, // F fly sweep left
+      {pi:5, wpts:[[-18,0],[-14,-2]],              style:'block', color:'#aaaaaa'}, // X stalk
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-2,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[2,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[4,-1.5]],                style:'block', color:'#ffcc00'}
+    ]
+  },
+  {
+    id:230, name:'Halfback Pass', formation:'I-Formation', type:'Run', cat:'Misdirection',
+    desc:'Trick play: HB receives a pitch and throws a deep strike to the SE. Defense expects run.',
+    players: IF,
+    routes:[
+      {pi:10,wpts:[[0,7],[10,-1]],                 style:'solid', color:'#ffcc00'}, // HB receives pitch, rolls right
+      {pi:7, wpts:[[18,0],[10,-14]],               style:'solid', color:'#ff9966'}, // SE go deep post
+      {pi:6, wpts:[[-18,0],[-18,-12]],             style:'solid', color:'#ffcc00'}, // FL go/clear
+      {pi:5, wpts:[[6.5,0],[8,-8]],                style:'solid', color:'#ff9966'}, // TE flat outlet
+      {pi:9, wpts:[[0,4],[3,0]],                   style:'solid', color:'#ff6666'}  // FB lead/protect
+    ]
+  },
+  {
+    id:231, name:'End-Around Left', formation:'Singleback', type:'Run', cat:'Misdirection',
+    desc:'Z goes in motion from right; QB hands to Z running left; LG pulls to lead the way.',
+    players: SB,
+    routes:[
+      {pi:7, wpts:[[18,0],[18,1],[0,1],[-14,-3]], style:'motion',color:'#ffffff'}, // Z end-around left
+      {pi:1, wpts:[[-2,0],[-2,2],[-8,1]],          style:'solid', color:'#ff9966'}, // LG pull left
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[1,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:6, wpts:[[-18,0],[-15,-2]],              style:'block', color:'#aaaaaa'}, // X crack block
+      {pi:10,wpts:[[0,6],[6,-1]],                  style:'dashed',color:'#aaaaaa'}  // RB fake inside
+    ]
+  },
+  {
+    id:232, name:'Statue of Liberty', formation:'Singleback', type:'Run', cat:'Misdirection',
+    desc:'QB raises arm in throwing motion; RB sweeps left taking a hand-off behind him. Classic trick.',
+    players: SB,
+    routes:[
+      {pi:10,wpts:[[0,6],[-8,-3],[-12,0]],         style:'solid', color:'#ffffff'}, // RB Statue sweep left
+      {pi:1, wpts:[[-2,0],[-2,2],[-6,1]],           style:'solid', color:'#ff9966'}, // LG pull left
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:8, wpts:[[-8,0],[-8,-2]],                style:'block', color:'#aaaaaa'}, // SL inside crack
+      {pi:6, wpts:[[-18,0],[-15,-2]],              style:'block', color:'#aaaaaa'}, // X stalk
+      {pi:5, wpts:[[6.5,0],[5,-1.5]],              style:'block', color:'#ffcc00'}  // TE seal inside
+    ]
+  },
+
+  /* ── OPTION / PERIMETER (cont.) ───────────────────────────────── */
+
+  {
+    id:233, name:'Triple Option', formation:'Power I', type:'Run', cat:'Option / Perimeter',
+    desc:'QB reads two defenders: first gives to FB on dive; if he crashes, QB keeps or pitches to HB.',
+    players: PI,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-2,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[2,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[4,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:9, wpts:[[0,4],[0,-2]],                  style:'solid', color:'#ffffff'}, // FB dive (give)
+      {pi:8, wpts:[[0,1.5],[8,-2]],                style:'dashed',color:'#ffcc00'}, // QB keep path
+      {pi:10,wpts:[[0,7],[10,-1],[12,2]],           style:'dashed',color:'#aaaaaa'}  // HB pitch path
+    ]
+  },
+  {
+    id:234, name:'Inverted Veer', formation:'Pistol', type:'Run', cat:'Option / Perimeter',
+    desc:'TE kicks out the DE (not left unblocked); RB reads inside; QB reads outside DE and keeps.',
+    players: PS,
+    routes:[
+      {pi:5, wpts:[[6.5,0],[8,-1.5]],              style:'block', color:'#ff9966'}, // TE kick-out
+      {pi:0, wpts:[[-4,0],[-4,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-2,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[2,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[4,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:10,wpts:[[0,8],[3,-2],[4,2]],            style:'solid', color:'#ffffff'}, // RB inside read
+      {pi:9, wpts:[[0,4],[8,-2]],                  style:'dashed',color:'#ffcc00'}  // QB keep outside
+    ]
+  },
+  {
+    id:235, name:'Arc Option Left', formation:'Power I', type:'Run', cat:'Option / Perimeter',
+    desc:'QB sprints left with HB as the pitch man; left TE seals; FB arcs to lead block the CB.',
+    players: PI,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-3,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[2,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[4,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:6, wpts:[[-6.5,0],[-5,-1.5]],            style:'block', color:'#ffcc00'}, // left TE seal
+      {pi:9, wpts:[[0,4],[-8,-1]],                 style:'solid', color:'#ff6666'}, // FB arc lead
+      {pi:8, wpts:[[0,1.5],[-8,-2]],               style:'dashed',color:'#ffcc00'}, // QB option left
+      {pi:10,wpts:[[0,7],[-12,-3],[-14,1]],        style:'dashed',color:'#aaaaaa'}  // HB pitch path
+    ]
+  },
+  {
+    id:236, name:'Rocket Toss', formation:'Shotgun', type:'Run', cat:'Option / Perimeter',
+    desc:'QB immediately tosses to RB sweeping hard right; TE kicks out the DE; OL zones.',
+    players: SG,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-3,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-1,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[1,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[3,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[5,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[8,-1.5]],              style:'block', color:'#ff9966'}, // TE kick-out
+      {pi:6, wpts:[[-16,0],[-14,-2]],              style:'block', color:'#aaaaaa'}, // X stalk
+      {pi:10,wpts:[[-3,7],[8,-3],[12,2]],           style:'solid', color:'#ffffff'}  // RB toss sweep right
+    ]
+  },
+
+  /* ── SPECIAL / GOAL LINE (cont.) ─────────────────────────────── */
+
+  {
+    id:237, name:'Sprint Draw', formation:'Shotgun', type:'Run', cat:'Special / Goal Line',
+    desc:'QB sprints right showing pass; hands back to RB on a draw cutting opposite through the vacated gap.',
+    players: SG,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-4,-2]],                style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-2,-2]],                style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-2]],                  style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[2,-2]],                  style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[4,-2]],                  style:'block', color:'#ffcc00'},
+      {pi:6, wpts:[[-16,0],[-16,-10]],             style:'solid', color:'#ffcc00'}, // X go/clear
+      {pi:9, wpts:[[0,7],[5,5]],                   style:'dashed',color:'#ffcc00'}, // QB sprint right
+      {pi:10,wpts:[[-3,7],[0,5],[3,-2]],           style:'solid', color:'#ffffff'}  // RB draw cutback
+    ]
+  },
+  {
+    id:238, name:'Bootleg Run', formation:'I-Formation', type:'Run', cat:'Special / Goal Line',
+    desc:'QB keeps on a pure bootleg right — no pass fake — and runs for the corner with FB escort.',
+    players: IF,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-2,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[3,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:4, wpts:[[4,0],[4,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[8,-1.5]],              style:'block', color:'#ffcc00'}, // TE kick-out
+      {pi:7, wpts:[[18,0],[14,-2]],                style:'block', color:'#aaaaaa'}, // SE crack
+      {pi:9, wpts:[[0,4],[5,0]],                   style:'solid', color:'#ff6666'}, // FB lead right
+      {pi:8, wpts:[[0,1.5],[8,-2],[10,2]],         style:'solid', color:'#ffffff'}, // QB bootleg right
+      {pi:10,wpts:[[0,7],[-4,2]],                  style:'dashed',color:'#aaaaaa'}  // HB fake left
+    ]
+  },
+  {
+    id:239, name:'Shovel Pass Option', formation:'Pistol', type:'Run', cat:'Special / Goal Line',
+    desc:'QB rolls out with the option to keep or shovel pass to RB running underneath through the gap.',
+    players: PS,
+    routes:[
+      {pi:9, wpts:[[0,4],[5,1]],                   style:'motion',color:'#ffcc00'}, // QB roll right
+      {pi:10,wpts:[[0,8],[2,3],[3,-1]],            style:'solid', color:'#ffffff'}, // RB shovel target
+      {pi:5, wpts:[[6.5,0],[7,-1.5]],              style:'block', color:'#ffcc00'}, // TE seal
+      {pi:0, wpts:[[-4,0],[-4,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-2,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[2,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:8, wpts:[[-8,0],[-8,-10]],               style:'solid', color:'#ffcc00'}  // SL go/clear
+    ]
+  },
+  {
+    id:240, name:'QB Keeper Right', formation:'Singleback', type:'Run', cat:'Special / Goal Line',
+    desc:'Designed QB keeper right; RG pulls to lead; RB fakes inside to freeze linebackers.',
+    players: SB,
+    routes:[
+      {pi:0, wpts:[[-4,0],[-5,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:1, wpts:[[-2,0],[-2,-1.5]],              style:'block', color:'#ffcc00'},
+      {pi:2, wpts:[[0,0],[0,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:3, wpts:[[2,0],[2,2],[7,0]],             style:'solid', color:'#ff9966'}, // RG pull right
+      {pi:4, wpts:[[4,0],[5,-1.5]],                style:'block', color:'#ffcc00'},
+      {pi:5, wpts:[[6.5,0],[8,-1.5]],              style:'block', color:'#ffcc00'}, // TE kick-out
+      {pi:6, wpts:[[-18,0],[-14,-2]],              style:'block', color:'#aaaaaa'}, // X stalk
+      {pi:8, wpts:[[-8,0],[-5,-2]],                style:'block', color:'#aaaaaa'}, // SL crack
+      {pi:9, wpts:[[0,1.5],[8,-2],[10,2]],         style:'solid', color:'#ffffff'}, // QB keeper right
+      {pi:10,wpts:[[0,6],[0,2]],                   style:'dashed',color:'#aaaaaa'}  // RB fake inside
     ]
   },
 
@@ -1126,6 +1695,415 @@
       {pi:8, wpts:[[-18,-2],[-18,-10]],            style:'solid', color:'#ff9966',assign:'cover'},
       {pi:9, wpts:[[18,-2],[18,-10]],              style:'solid', color:'#ff9966',assign:'cover'},
       {pi:10,wpts:[[0,-12],[0,-14]],               style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+
+
+  /* ── ZONE COVERAGE (cont.) ────────────────────────────────────── */
+
+  {
+    id:321, name:'Cover 2 Sink', formation:'4-3', type:'Defense', cat:'Zone Coverage', mode:'defense',
+    desc:'CBs sink inside/underneath instead of flattening — better against crossing routes than standard Cover 2.',
+    players: D43,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-2,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-9,-4],[-14,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[0,-4],[0,-8]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[9,-4],[14,-7]],                 style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-12,-7]],              style:'dashed',color:'#ff9966',assign:'zone'}, // CB sinks inside
+      {pi:8, wpts:[[18,-2],[12,-7]],                style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:9, wpts:[[-5,-9],[-12,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[5,-13],[12,-14]],               style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:322, name:'Cover 3 Sky', formation:'3-4', type:'Defense', cat:'Zone Coverage', mode:'defense',
+    desc:'SS rotates down to boundary flat; FS holds deep middle; CBs own the deep outside thirds.',
+    players: D34,
+    routes:[
+      {pi:0, wpts:[[-5,-1],[-5,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[0,-1],[0,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[5,-1],[5,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[-8,-3],[-14,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:4, wpts:[[-2,-4.5],[-4,-8]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[2,-4.5],[4,-8]],                style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[8,-3],[14,-7]],                 style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-18,-14]],             style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:8, wpts:[[18,-2],[18,-14]],               style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:9, wpts:[[-4,-9],[-14,-6]],               style:'dashed',color:'#4a9eff',assign:'zone'}, // SS sky/flat
+      {pi:10,wpts:[[4,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}  // FS deep middle
+    ]
+  },
+  {
+    id:323, name:'Cloud Coverage', formation:'Nickel', type:'Defense', cat:'Zone Coverage', mode:'defense',
+    desc:'Boundary CB rotates short to flat; field safety takes the outside third. Inverted from standard.',
+    players: DNK,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-2,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-4,-4],[-8,-7]],                style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[4,-4],[6,-7]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[-18,-2],[-14,-5]],              style:'solid', color:'#ff9966',assign:'cover'}, // CB cloud (short flat)
+      {pi:7, wpts:[[18,-2],[18,-12]],               style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:8, wpts:[[-10,-4],[-12,-7]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:9, wpts:[[-4,-9],[-18,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'}, // SS deep outside
+      {pi:10,wpts:[[4,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:324, name:'Palms Coverage', formation:'Nickel', type:'Defense', cat:'Zone Coverage', mode:'defense',
+    desc:'CBs read the #1 receiver; safeties pattern-match #2. Quarters-based zone that adjusts to formation.',
+    players: DNK,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-2,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-4,-4],[-6,-8]],                style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[4,-4],[6,-8]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[-18,-2],[-18,-10]],             style:'solid', color:'#ff9966',assign:'cover'}, // CB read #1
+      {pi:7, wpts:[[18,-2],[18,-10]],               style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:8, wpts:[[-10,-4],[-10,-12]],             style:'dashed',color:'#4a9eff',assign:'zone'}, // NB read #2
+      {pi:9, wpts:[[-4,-9],[-12,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[4,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+
+  /* ── MAN COVERAGE (cont.) ────────────────────────────────────── */
+
+  {
+    id:325, name:'Pattern Match', formation:'4-3', type:'Defense', cat:'Man Coverage', mode:'defense',
+    desc:'Starts as zone but defenders lock to receivers based on route pattern. Blends man and zone benefits.',
+    players: D43,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-2,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-9,-4],[-18,-6]],               style:'solid', color:'#4a9eff',assign:'cover'}, // OLB match WR
+      {pi:5, wpts:[[0,-4],[0,-7]],                  style:'dashed',color:'#4a9eff',assign:'zone'},  // MLB pattern read
+      {pi:6, wpts:[[9,-4],[6.5,-5]],                style:'solid', color:'#4a9eff',assign:'cover'}, // OLB match TE
+      {pi:7, wpts:[[-18,-2],[-18,-9]],              style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:8, wpts:[[18,-2],[18,-9]],                style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:9, wpts:[[-5,-9],[-12,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[5,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:326, name:'Banjo (Switch Man)', formation:'Nickel', type:'Defense', cat:'Man Coverage', mode:'defense',
+    desc:'Two defenders "banjo" — they call out switches based on receiver routes, preventing natural picks.',
+    players: DNK,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-2,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-4,-4],[-4,-7]],                style:'solid', color:'#4a9eff',assign:'cover'}, // LB banjo
+      {pi:5, wpts:[[4,-4],[7,-5]],                  style:'solid', color:'#4a9eff',assign:'cover'},
+      {pi:6, wpts:[[-18,-2],[-18,-6]],              style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:7, wpts:[[18,-2],[18,-6]],                style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:8, wpts:[[-10,-4],[-6,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'}, // NB switch
+      {pi:9, wpts:[[-4,-9],[0,-13]],                style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[4,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:327, name:'Trail Man', formation:'4-3', type:'Defense', cat:'Man Coverage', mode:'defense',
+    desc:'CBs play trail technique — staying inside-out behind the WR. Good against back-shoulder fades.',
+    players: D43,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-2,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-9,-4],[-18,-5]],               style:'solid', color:'#4a9eff',assign:'cover'},
+      {pi:5, wpts:[[0,-4],[0,-7]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[9,-4],[6.5,-5]],                style:'solid', color:'#4a9eff',assign:'cover'},
+      {pi:7, wpts:[[-18,-2],[-18,-8]],              style:'dashed',color:'#ff9966',assign:'cover'}, // trail (inside-out)
+      {pi:8, wpts:[[18,-2],[18,-8]],                style:'dashed',color:'#ff9966',assign:'cover'},
+      {pi:9, wpts:[[-5,-9],[-8,-5]],                style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[5,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:328, name:'Press-Quarter', formation:'4-3', type:'Defense', cat:'Man Coverage', mode:'defense',
+    desc:'Boundary CB presses man; field CB plays quarters — half the field man, half zone in one call.',
+    players: D43,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-2,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-9,-4],[-14,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[0,-4],[0,-7]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[9,-4],[14,-7]],                 style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-18,-8]],              style:'solid', color:'#ff9966',assign:'cover'}, // boundary press man
+      {pi:8, wpts:[[18,-2],[18,-10]],               style:'dashed',color:'#ff9966',assign:'zone'},  // field quarters
+      {pi:9, wpts:[[-5,-9],[-12,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[5,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+
+  /* ── BLITZ / PRESSURE (cont.) ─────────────────────────────────── */
+
+  {
+    id:329, name:'CB Blitz', formation:'Nickel', type:'Defense', cat:'Blitz / Pressure', mode:'defense',
+    desc:'Boundary CB walks down and blitzes off the edge; NB rotates to cover his vacated deep third.',
+    players: DNK,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-2,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-4,-4],[-8,-7]],                style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[4,-4],[8,-7]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[-18,-2],[-18,-0.5]],            style:'solid', color:'#ff4444',assign:'blitz'}, // CB blitzes
+      {pi:7, wpts:[[18,-2],[18,-12]],               style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:8, wpts:[[-10,-4],[-14,-9]],              style:'dashed',color:'#4a9eff',assign:'zone'},  // NB rotates cover
+      {pi:9, wpts:[[-4,-9],[-12,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[4,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:330, name:'A-Gap Pressure', formation:'4-3', type:'Defense', cat:'Blitz / Pressure', mode:'defense',
+    desc:'Both DTs slant aggressively into A-gaps; MLB follows through the same gap. Maximum interior pressure.',
+    players: D43,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[0,-3]],                 style:'solid', color:'#ff4444',assign:'blitz'}, // DT A-gap slant
+      {pi:2, wpts:[[2,-1],[0,-3]],                  style:'solid', color:'#ff4444',assign:'blitz'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-9,-4],[-14,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[0,-4],[0,-1]],                  style:'solid', color:'#ff4444',assign:'blitz'}, // MLB through A-gap
+      {pi:6, wpts:[[9,-4],[14,-7]],                 style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-18,-8]],              style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:8, wpts:[[18,-2],[18,-8]],                style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:9, wpts:[[-5,-9],[-12,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[5,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:331, name:'Double A-Gap Blitz', formation:'3-4', type:'Defense', cat:'Blitz / Pressure', mode:'defense',
+    desc:'Both ILBs attack the A-gaps simultaneously — the most dangerous interior blitz in the game.',
+    players: D34,
+    routes:[
+      {pi:0, wpts:[[-5,-1],[-5,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[0,-1],[0,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[5,-1],[5,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[-8,-3],[-13,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:4, wpts:[[-2,-4.5],[-2,-1]],              style:'solid', color:'#ff4444',assign:'blitz'}, // ILB A-gap
+      {pi:5, wpts:[[2,-4.5],[2,-1]],                style:'solid', color:'#ff4444',assign:'blitz'},
+      {pi:6, wpts:[[8,-3],[13,-7]],                 style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-18,-9]],              style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:8, wpts:[[18,-2],[18,-9]],                style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:9, wpts:[[-4,-9],[-10,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[4,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:332, name:'Edge Overload Left', formation:'4-3', type:'Defense', cat:'Blitz / Pressure', mode:'defense',
+    desc:'Three rushers from the left edge overwhelm the protection. OLB wraps, DE wide, DT slants.',
+    players: D43,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#ff4444',assign:'blitz'}, // DE rush wide
+      {pi:1, wpts:[[-2,-1],[-5,-4]],                style:'solid', color:'#ff4444',assign:'blitz'}, // DT slant outside
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-9,-4],[-9,-1]],                style:'solid', color:'#ff4444',assign:'blitz'}, // OLB blitz left
+      {pi:5, wpts:[[0,-4],[0,-7]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[9,-4],[14,-7]],                 style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-18,-10]],             style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:8, wpts:[[18,-2],[18,-12]],               style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:9, wpts:[[-5,-9],[-14,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'}, // SS fills vacated flat
+      {pi:10,wpts:[[5,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:333, name:'Simulated Pressure', formation:'4-3', type:'Defense', cat:'Blitz / Pressure', mode:'defense',
+    desc:'Show max blitz pre-snap to force a quick throw; LBs show then drop to underneath zones. Deception over pressure.',
+    players: D43,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-2,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[2,-1],[2,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-9,-4],[-9,-2],[-14,-7]],       style:'dashed',color:'#4a9eff',assign:'zone'}, // show then drop
+      {pi:5, wpts:[[0,-4],[0,-2],[0,-8]],           style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[9,-4],[9,-2],[14,-7]],          style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-18,-12]],             style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:8, wpts:[[18,-2],[18,-12]],               style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:9, wpts:[[-5,-9],[-12,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[5,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:334, name:'DL Twist / Stunt', formation:'4-3', type:'Defense', cat:'Blitz / Pressure', mode:'defense',
+    desc:'DTs and DEs twist responsibilities: DE crashes inside while DT loops outside to create confusion.',
+    players: D43,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-3,-4]],              style:'solid', color:'#ff4444',assign:'blitz'}, // DE crash inside
+      {pi:1, wpts:[[-2,-1],[-6,-4]],                style:'solid', color:'#ff4444',assign:'blitz'}, // DT loop outside
+      {pi:2, wpts:[[2,-1],[6,-4]],                  style:'solid', color:'#ff4444',assign:'blitz'}, // DT loop
+      {pi:3, wpts:[[6.5,-1],[3,-4]],                style:'solid', color:'#ff4444',assign:'blitz'}, // DE crash inside
+      {pi:4, wpts:[[-9,-4],[-14,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[0,-4],[0,-8]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[9,-4],[14,-7]],                 style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-18,-8]],              style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:8, wpts:[[18,-2],[18,-8]],                style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:9, wpts:[[-5,-9],[-12,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[5,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+
+  /* ── SPECIALTY / GOAL LINE (cont.) ───────────────────────────── */
+
+  {
+    id:335, name:'5-2 Monster', formation:'5-2', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    desc:'Classic 5-2 with a "monster" safety walked up to the strong side. Dominant run-stop formation.',
+    players:[
+      {pos:'DE', lbl:'DE', x:-6,  y:-1,  side:'defense'},
+      {pos:'DT', lbl:'DT', x:-3,  y:-1,  side:'defense'},
+      {pos:'NT', lbl:'NT', x: 0,  y:-1,  side:'defense'},
+      {pos:'DT', lbl:'DT', x: 3,  y:-1,  side:'defense'},
+      {pos:'DE', lbl:'DE', x: 6,  y:-1,  side:'defense'},
+      {pos:'LB', lbl:'LB', x:-3,  y:-3.5,side:'defense'},
+      {pos:'LB', lbl:'LB', x: 3,  y:-3.5,side:'defense'},
+      {pos:'CB', lbl:'CB', x:-18, y:-2,  side:'defense'},
+      {pos:'CB', lbl:'CB', x: 18, y:-2,  side:'defense'},
+      {pos:'S',  lbl:'M',  x: 8,  y:-4,  side:'defense'}, // monster safety
+      {pos:'FS', lbl:'FS', x: 0,  y:-12, side:'defense'}
+    ],
+    routes:[
+      {pi:0, wpts:[[-6,-1],[-6,-3]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-3,-1],[-3,-3]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[0,-1],[0,-3]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[3,-1],[3,-3]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[6,-1],[6,-3]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:5, wpts:[[-3,-3.5],[-5,-1]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:6, wpts:[[3,-3.5],[5,-1]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:7, wpts:[[-18,-2],[-18,-8]],              style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:8, wpts:[[18,-2],[18,-8]],                style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:9, wpts:[[8,-4],[8,-2]],                  style:'solid', color:'#4a9eff',assign:'rush'},  // monster fills
+      {pi:10,wpts:[[0,-12],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:336, name:'46 Defense', formation:'46', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    desc:'Buddy Ryan\'s famous 46: eight defenders in the box, overloading one side. Suffocates the run.',
+    players:[
+      {pos:'NT', lbl:'NT', x:-1,  y:-1,  side:'defense'},
+      {pos:'DT', lbl:'DT', x: 2,  y:-1,  side:'defense'},
+      {pos:'DE', lbl:'DE', x: 5,  y:-1,  side:'defense'},
+      {pos:'DE', lbl:'DE', x:-5,  y:-1,  side:'defense'},
+      {pos:'OLB',lbl:'SLB',x:-7,  y:-2,  side:'defense'}, // walked in
+      {pos:'OLB',lbl:'WLB',x: 7,  y:-2,  side:'defense'},
+      {pos:'ILB',lbl:'MLB',x: 0,  y:-4,  side:'defense'},
+      {pos:'ILB',lbl:'ILB',x: 3,  y:-3,  side:'defense'},
+      {pos:'CB', lbl:'CB', x:-18, y:-2,  side:'defense'},
+      {pos:'CB', lbl:'CB', x: 18, y:-2,  side:'defense'},
+      {pos:'FS', lbl:'FS', x: 0,  y:-12, side:'defense'}
+    ],
+    routes:[
+      {pi:0, wpts:[[-1,-1],[-1,-3]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[2,-1],[2,-3]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[5,-1],[5,-3]],                  style:'solid', color:'#ff4444',assign:'blitz'},
+      {pi:3, wpts:[[-5,-1],[-5,-3]],                style:'solid', color:'#ff4444',assign:'blitz'},
+      {pi:4, wpts:[[-7,-2],[-7,-0.5]],              style:'solid', color:'#ff4444',assign:'blitz'},
+      {pi:5, wpts:[[7,-2],[7,-0.5]],                style:'solid', color:'#ff4444',assign:'blitz'},
+      {pi:6, wpts:[[0,-4],[0,-2]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:7, wpts:[[3,-3],[3,-1]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:8, wpts:[[-18,-2],[-18,-8]],              style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:9, wpts:[[18,-2],[18,-8]],                style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:10,wpts:[[0,-12],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:337, name:'3-3-5 Stack', formation:'3-3-5', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    desc:'Three DL, three stacked LBs, five DBs. Versatile against spread formations — can blitz or drop all 8.',
+    players:[
+      {pos:'DE', lbl:'DE', x:-5,  y:-1,  side:'defense'},
+      {pos:'NT', lbl:'NT', x: 0,  y:-1,  side:'defense'},
+      {pos:'DE', lbl:'DE', x: 5,  y:-1,  side:'defense'},
+      {pos:'LB', lbl:'LB', x:-4,  y:-3,  side:'defense'},
+      {pos:'LB', lbl:'LB', x: 0,  y:-3,  side:'defense'},
+      {pos:'LB', lbl:'LB', x: 4,  y:-3,  side:'defense'},
+      {pos:'CB', lbl:'CB', x:-18, y:-2,  side:'defense'},
+      {pos:'CB', lbl:'CB', x: 18, y:-2,  side:'defense'},
+      {pos:'SS', lbl:'SS', x:-8,  y:-6,  side:'defense'},
+      {pos:'FS', lbl:'FS', x: 0,  y:-10, side:'defense'},
+      {pos:'DB', lbl:'DB', x: 8,  y:-6,  side:'defense'}
+    ],
+    routes:[
+      {pi:0, wpts:[[-5,-1],[-5,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[0,-1],[0,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[5,-1],[5,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[-4,-3],[-8,-6]],                style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:4, wpts:[[0,-3],[0,-6]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[4,-3],[8,-6]],                  style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[-18,-2],[-18,-12]],             style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:7, wpts:[[18,-2],[18,-12]],               style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:8, wpts:[[-8,-6],[-12,-12]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:9, wpts:[[0,-10],[0,-13]],                style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[8,-6],[12,-12]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:338, name:'Cover 3 Cloud Variant', formation:'3-4', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    desc:'Boundary CB plays cloud (short flat); SS rotates to cover boundary deep third; field CB owns his third.',
+    players: D34,
+    routes:[
+      {pi:0, wpts:[[-5,-1],[-5,-4]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[0,-1],[0,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:2, wpts:[[5,-1],[5,-4]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[-8,-3],[-13,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:4, wpts:[[-2,-4.5],[-4,-8]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:5, wpts:[[2,-4.5],[4,-8]],                style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:6, wpts:[[8,-3],[13,-7]],                 style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-14,-5]],              style:'solid', color:'#ff9966',assign:'cover'}, // CB cloud short
+      {pi:8, wpts:[[18,-2],[18,-14]],               style:'dashed',color:'#ff9966',assign:'zone'},  // field CB deep
+      {pi:9, wpts:[[-4,-9],[-18,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},  // SS rotates boundary deep
+      {pi:10,wpts:[[4,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:339, name:'Two-Gap 3-4', formation:'3-4', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    desc:'NT controls both A-gaps by reading and shedding; DEs two-gap their C-gaps. Disciplined run defense.',
+    players: D34,
+    routes:[
+      {pi:0, wpts:[[-5,-1],[-5,-3]],                style:'solid', color:'#4a9eff',assign:'rush'},  // DE two-gap hold
+      {pi:1, wpts:[[0,-1],[0,-3]],                  style:'solid', color:'#4a9eff',assign:'rush'},   // NT both A-gaps
+      {pi:2, wpts:[[5,-1],[5,-3]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[-8,-3],[-13,-7]],               style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:4, wpts:[[-2,-4.5],[-2,-2]],              style:'solid', color:'#4a9eff',assign:'rush'},   // ILB fill
+      {pi:5, wpts:[[2,-4.5],[2,-2]],                style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:6, wpts:[[8,-3],[13,-7]],                 style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:7, wpts:[[-18,-2],[-18,-12]],             style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:8, wpts:[[18,-2],[18,-12]],               style:'dashed',color:'#ff9966',assign:'zone'},
+      {pi:9, wpts:[[-4,-9],[-10,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[4,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
+    ]
+  },
+  {
+    id:340, name:'Eagle Front', formation:'4-3', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    desc:'DTs shade outside the guards; OLBs walk inside the C-gap — compresses every running lane.',
+    players: D43,
+    routes:[
+      {pi:0, wpts:[[-6.5,-1],[-6.5,-4]],           style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:1, wpts:[[-2,-1],[-4,-3]],                style:'solid', color:'#4a9eff',assign:'rush'},   // DT shade outside
+      {pi:2, wpts:[[2,-1],[4,-3]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:3, wpts:[[6.5,-1],[6.5,-4]],              style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:4, wpts:[[-9,-4],[-5,-2]],                style:'solid', color:'#4a9eff',assign:'rush'},   // OLB walk inside
+      {pi:5, wpts:[[0,-4],[0,-2]],                  style:'solid', color:'#4a9eff',assign:'rush'},   // MLB A-gap
+      {pi:6, wpts:[[9,-4],[5,-2]],                  style:'solid', color:'#4a9eff',assign:'rush'},
+      {pi:7, wpts:[[-18,-2],[-18,-8]],              style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:8, wpts:[[18,-2],[18,-8]],                style:'solid', color:'#ff9966',assign:'cover'},
+      {pi:9, wpts:[[-5,-9],[-12,-14]],              style:'dashed',color:'#4a9eff',assign:'zone'},
+      {pi:10,wpts:[[5,-13],[0,-14]],                style:'dashed',color:'#4a9eff',assign:'zone'}
     ]
   },
 
