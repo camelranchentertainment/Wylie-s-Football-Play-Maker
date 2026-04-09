@@ -114,20 +114,74 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 #lib-count { font-size:11px; color:var(--text-lo); margin-left:4px; }
 #lib-grid { flex:1; overflow-y:auto; padding:20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; align-content:start; }
 
+/* ─── LIBRARY PAGE ENHANCEMENTS ──────────────────────────── */
+.lib-page-header { display:flex; align-items:center; gap:16px; padding:16px 20px 14px; background:linear-gradient(90deg,#18283a 0%,#1e3248 60%,#172838 100%); border-bottom:1px solid var(--border); flex-shrink:0; position:relative; overflow:hidden; }
+.lib-page-header::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 0% 50%,rgba(240,165,0,.07) 0%,transparent 60%); pointer-events:none; }
+.lib-hdr-left { flex:1; min-width:0; position:relative; z-index:1; }
+.lib-hdr-eyebrow { font-family:'Oswald',sans-serif; font-size:8px; font-weight:700; letter-spacing:3px; color:var(--accent); margin-bottom:3px; }
+.lib-hdr-title { font-family:'Oswald',sans-serif; font-size:20px; font-weight:700; letter-spacing:1.5px; color:var(--text-hi); line-height:1; }
+.lib-hdr-sub { font-size:11px; color:var(--text-lo); margin-top:3px; }
+.lib-hdr-stats { display:flex; gap:24px; flex-shrink:0; position:relative; z-index:1; }
+.lib-stat { display:flex; flex-direction:column; align-items:center; gap:1px; }
+.lib-stat-num { font-family:'Oswald',sans-serif; font-size:24px; font-weight:700; color:var(--accent); line-height:1; }
+.lib-stat-lbl { font-family:'Oswald',sans-serif; font-size:7px; font-weight:600; letter-spacing:2px; color:var(--text-lo); }
+.lib-filter-bar { display:flex; align-items:center; gap:7px; padding:9px 20px; border-bottom:1px solid var(--border); background:rgba(22,34,50,.95); flex-shrink:0; flex-wrap:wrap; }
+.lib-search { flex:1; min-width:150px; max-width:260px; padding:6px 11px; background:rgba(255,255,255,.06); border:1px solid var(--border-bright); color:var(--text-hi); border-radius:20px; font-family:'Rajdhani',sans-serif; font-size:13px; transition:border-color .18s,background .18s; }
+.lib-search:focus { outline:none; border-color:var(--accent); background:rgba(255,255,255,.09); }
+.lib-search::placeholder { color:var(--text-lo); }
+.lib-pill { padding:4px 12px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1px; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-lo); border-radius:20px; white-space:nowrap; transition:all .18s; }
+.lib-pill:hover { border-color:var(--border-bright); color:var(--text-mid); }
+.lib-pill.act { background:var(--accent); border-color:var(--accent); color:#000; box-shadow:0 2px 10px rgba(240,165,0,.3); }
+.lib-pill.act-off { background:var(--offense); border-color:var(--offense); color:#fff; }
+.lib-pill.act-def { background:var(--defense); border-color:var(--defense); color:#fff; }
+
+/* ─── PCARD CANVAS THUMB ─────────────────────────────────── */
+.pcard-canvas-thumb { width:100%; height:90px; display:block; background:#1a4423; }
+
+/* ─── COLUMN HEADERS (AI / WB) ───────────────────────────── */
+.col-header { background:linear-gradient(90deg,#18283a 0%,#1e3248 100%); border-bottom:1px solid var(--border); padding:14px 16px 12px; flex-shrink:0; position:relative; }
+.col-header::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent) 0%,transparent 100%); }
+.col-header h2 { font-family:'Oswald',sans-serif; font-size:16px; font-weight:700; letter-spacing:1px; color:var(--text-hi); display:flex; align-items:center; gap:6px; }
+.col-header .col-sub { font-size:10.5px; color:var(--text-lo); margin-top:3px; }
+
+/* ─── FORM SECTION DIVIDERS ──────────────────────────────── */
+.form-section { display:flex; flex-direction:column; gap:5px; }
+.form-section-lbl { font-family:'Oswald',sans-serif; font-size:9px; font-weight:700; letter-spacing:2px; color:var(--accent); margin-bottom:2px; display:flex; align-items:center; gap:7px; opacity:.8; }
+.form-section-lbl::after { content:''; flex:1; height:1px; background:rgba(240,165,0,.2); }
+
+/* ─── RESULTS PANE HEADER ────────────────────────────────── */
+.results-hdr { display:flex; align-items:center; gap:10px; padding:13px 18px 11px; border-bottom:1px solid var(--border); flex-shrink:0; background:rgba(20,32,48,.8); }
+.results-hdr h3 { font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-mid); }
+.results-hdr-count { font-family:'Oswald',sans-serif; font-size:9px; color:var(--text-lo); letter-spacing:1px; background:rgba(255,255,255,.05); padding:2px 8px; border-radius:10px; border:1px solid var(--border); }
+
+/* ─── SIDEBAR IMPROVEMENTS ───────────────────────────────── */
+.sb-sec-head { font-family:'Oswald',sans-serif; font-size:9px; font-weight:700; letter-spacing:2.5px; color:var(--accent); text-transform:uppercase; margin-bottom:8px; padding-left:2px; display:flex; align-items:center; gap:5px; opacity:.9; }
+.sb-sec-head::before { content:''; width:2px; height:10px; background:var(--accent); border-radius:1px; flex-shrink:0; opacity:.7; }
+
+/* ─── WB SECTION LABELS ──────────────────────────────────── */
+.wb-sec-lbl { font-family:'Oswald',sans-serif; font-size:9px; font-weight:700; letter-spacing:2px; color:var(--text-lo); display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.wb-sec-lbl::after { content:''; flex:1; height:1px; background:var(--border); }
+.wb-plays-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.wb-plays-hdr .wb-sec-lbl { margin-bottom:0; flex:1; }
+
+/* ─── CARD STAGGER ANIMATION ─────────────────────────────── */
+@keyframes cardFadeUp { from{opacity:0;transform:translateY(12px) scale(.98);} to{opacity:1;transform:none;} }
+.pcard-anim { animation:cardFadeUp .28s both; }
+
 /* ─── AI COACH PAGE ────────────────────────────────────────── */
 #page-ai { flex-direction:row; }
-#ai-controls-col { width:300px; min-width:300px; background:var(--bg-panel); border-right:1px solid var(--border); overflow-y:auto; padding:18px 14px; display:flex; flex-direction:column; gap:12px; }
-#ai-controls-col h2 { font-family:'Oswald',sans-serif; font-size:16px; font-weight:700; letter-spacing:1px; color:var(--text-hi); border-bottom:1px solid var(--border); padding-bottom:10px; }
-#ai-results-col { flex:1; overflow-y:auto; padding:18px; background:var(--bg-deep); }
-#ai-results-col h3 { font-family:'Oswald',sans-serif; font-size:13px; color:var(--text-mid); letter-spacing:1px; margin-bottom:14px; }
+#ai-controls-col { width:300px; min-width:300px; background:var(--bg-panel); border-right:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
+#ai-controls-body { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:11px; }
+#ai-results-col { flex:1; overflow-y:auto; display:flex; flex-direction:column; background:var(--bg-deep); }
+#ai-results-body { flex:1; overflow-y:auto; padding:18px; }
 #ai-output { display:flex; flex-direction:column; gap:14px; }
 
 /* ─── WRISTBAND PAGE ───────────────────────────────────────── */
 #page-wb { flex-direction:row; }
-#wb-controls-col { width:300px; min-width:300px; background:var(--bg-panel); border-right:1px solid var(--border); overflow-y:auto; padding:18px 14px; display:flex; flex-direction:column; gap:12px; }
-#wb-controls-col h2 { font-family:'Oswald',sans-serif; font-size:16px; font-weight:700; letter-spacing:1px; color:var(--text-hi); border-bottom:1px solid var(--border); padding-bottom:10px; }
-#wb-preview-col { flex:1; overflow-y:auto; padding:20px; background:var(--bg-deep); display:flex; flex-direction:column; gap:10px; align-content:start; }
-#wb-preview-col h3 { font-family:'Oswald',sans-serif; font-size:13px; color:var(--text-mid); letter-spacing:1px; }
+#wb-controls-col { width:300px; min-width:300px; background:var(--bg-panel); border-right:1px solid var(--border); display:flex; flex-direction:column; }
+#wb-controls-body { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:11px; }
+#wb-preview-col { flex:1; overflow-y:auto; display:flex; flex-direction:column; background:var(--bg-deep); }
+#wb-preview-body { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:10px; }
 
 /* ─── SHARED FORM ELEMENTS ─────────────────────────────────── */
 .rp-label { font-family:'Oswald',sans-serif; font-size:9px; font-weight:700; letter-spacing:2px; color:var(--text-lo); margin-bottom:4px; display:block; text-transform:uppercase; }
@@ -140,7 +194,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 
 /* ─── PLAY CARDS ───────────────────────────────────────────── */
 .pcard { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; transition:all .2s; box-shadow:var(--shadow-sm); }
-.pcard:hover { border-color:var(--border-bright); transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,.5); }
+.pcard:hover { border-color:rgba(240,165,0,.5); transform:translateY(-4px); box-shadow:0 14px 44px rgba(0,0,0,.6),0 0 0 1px rgba(240,165,0,.18),0 0 32px rgba(240,165,0,.1); }
 .pcard-thumb { width:100%; height:80px; display:block; background:var(--green-dark); object-fit:cover; }
 .pcard-body { padding:9px 10px 5px; }
 .pcard-name { font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; color:var(--text-hi); letter-spacing:.3px; }
@@ -308,13 +362,18 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   #sidebar-overlay.show { display:block; }
   /* Canvas auto-fit on mobile */
   #field-wrap { align-items:flex-start; justify-content:flex-start; overflow:auto; padding:8px; }
-  /* Library topbar wraps on mobile */
-  .page-topbar { flex-wrap:wrap; gap:8px; }
-  .page-topbar .rp-input { width:100%; }
+  /* Library filter bar wraps on mobile */
+  .lib-filter-bar { flex-wrap:wrap; gap:6px; }
+  .lib-search { max-width:100%; }
+  .lib-hdr-stats { display:none; }
   /* Wristband: stack columns */
   #page-wb { flex-direction:column; }
-  #wb-controls-col { width:100%; min-width:unset; max-height:none; border-right:none; border-bottom:1px solid var(--border); }
-  #wb-preview-col { padding:14px; }
+  #wb-controls-col { width:100%; min-width:unset; border-right:none; border-bottom:1px solid var(--border); }
+  #wb-controls-body { max-height:50vh; }
+  /* AI: stack columns */
+  #page-ai { flex-direction:column; }
+  #ai-controls-col { width:100%; min-width:unset; border-right:none; border-bottom:1px solid var(--border); }
+  #ai-controls-body { max-height:50vh; }
   /* Guest banner compact */
   #guest-banner { font-size:11px; padding:6px 12px; }
 }
@@ -363,7 +422,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <div id="page-designer" class="page act">
     <div id="sidebar">
       <div class="sb-sec">
-        <div class="sb-title">Tools</div>
+        <div class="sb-sec-head">TOOLS</div>
         <div class="tool-grid">
           <button class="tbtn act" id="t-select" onclick="setTool('select')" title="S"><span class="ti">↖</span>Select</button>
           <button class="tbtn" id="t-place" onclick="setTool('place')" title="P"><span class="ti">＋</span>Place</button>
@@ -373,29 +432,29 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
         </div>
       </div>
       <div class="sb-sec" id="sec-ptypes" style="display:none;">
-        <div class="sb-title">Player Type</div>
+        <div class="sb-sec-head">PLAYER TYPE</div>
         <div id="ptypes-list"></div>
       </div>
       <div class="sb-sec">
-        <div class="sb-title">Formations</div>
+        <div class="sb-sec-head">FORMATIONS</div>
         <div id="formations-list"></div>
       </div>
       <div class="sb-sec" id="sec-route" style="display:none;">
-        <div class="sb-title">Route Style</div>
+        <div class="sb-sec-head">ROUTE STYLE</div>
         <div class="rs-grid">
           <button class="rsbtn act" id="rs-solid" onclick="setRouteStyle('solid')">Solid</button>
           <button class="rsbtn" id="rs-dashed" onclick="setRouteStyle('dashed')">Dashed</button>
           <button class="rsbtn" id="rs-motion" onclick="setRouteStyle('motion')">Motion</button>
           <button class="rsbtn" id="rs-block" onclick="setRouteStyle('block')">Block</button>
         </div>
-        <div style="margin-top:8px;">
-          <div class="sb-title">Color</div>
-          <input type="color" id="route-color" value="#ffcc00" style="width:100%;height:26px;border:none;border-radius:4px;cursor:pointer;background:none;">
+        <div style="margin-top:10px;">
+          <div class="sb-sec-head">ROUTE COLOR</div>
+          <input type="color" id="route-color" value="#ffcc00" style="width:100%;height:28px;border:none;border-radius:6px;cursor:pointer;background:none;">
         </div>
         <button class="finish-btn" onclick="finishRoute()">✓ FINISH ROUTE</button>
       </div>
       <div class="sb-sec" id="sec-assign" style="display:none;">
-        <div class="sb-title">Assignment</div>
+        <div class="sb-sec-head">ASSIGNMENT</div>
         <div class="rs-grid">
           <button class="rsbtn act" id="as-rush" onclick="setAssign('rush')">Rush</button>
           <button class="rsbtn" id="as-cover" onclick="setAssign('cover')">Cover</button>
@@ -422,20 +481,29 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 
   <!-- ══ LIBRARY ══ -->
   <div id="page-library" class="page">
-    <div class="page-topbar">
-      <h2>📚 Play Library <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">☁ CLOUD</span></h2>
-      <input type="text" class="rp-input" placeholder="Search plays..." id="lib-search" aria-label="Search plays" oninput="renderLibraryDebounced()">
-      <select class="rp-select" id="lib-filter" style="width:110px;" onchange="renderLibrary()">
-        <option value="all">All Plays</option>
-        <option value="offense">Offense</option>
-        <option value="defense">Defense</option>
-      </select>
-      <span id="lib-count" aria-live="polite" aria-atomic="true"></span>
-      <div style="margin-left:auto;display:flex;gap:6px;">
-        <button class="hbtn ok" onclick="openTplModal()" title="Browse pre-built play templates">🏈 Browse Templates</button>
-        <button class="hbtn" onclick="exportLib()" title="Export plays as JSON file">⬇ Export</button>
-        <label class="hbtn" style="cursor:pointer;" title="Import plays from JSON file">⬆ Import<input type="file" accept=".json" style="display:none;" onchange="importLib(event)"></label>
+    <div class="lib-page-header">
+      <div class="lib-hdr-left">
+        <div class="lib-hdr-eyebrow">MY PLAYBOOK</div>
+        <div class="lib-hdr-title">📚 MY LIBRARY</div>
+        <div class="lib-hdr-sub">Your custom plays — saved, organized, ready to use <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">☁ CLOUD</span></div>
       </div>
+      <div class="lib-hdr-stats">
+        <div class="lib-stat"><span class="lib-stat-num" id="lib-stat-total">0</span><span class="lib-stat-lbl">TOTAL</span></div>
+        <div class="lib-stat"><span class="lib-stat-num" id="lib-stat-off">0</span><span class="lib-stat-lbl">OFFENSE</span></div>
+        <div class="lib-stat"><span class="lib-stat-num" id="lib-stat-def">0</span><span class="lib-stat-lbl">DEFENSE</span></div>
+      </div>
+    </div>
+    <div class="lib-filter-bar">
+      <input type="text" class="lib-search" placeholder="🔍  Search plays..." id="lib-search" oninput="renderLibraryDebounced()">
+      <button class="lib-pill act" id="lp-all" onclick="setLibFilter('all')">ALL</button>
+      <button class="lib-pill" id="lp-off" onclick="setLibFilter('offense')">OFFENSE</button>
+      <button class="lib-pill" id="lp-def" onclick="setLibFilter('defense')">DEFENSE</button>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+        <button class="hbtn pri" onclick="window.location.href='library.html'" title="Browse template plays">🏈 TEMPLATES</button>
+        <button class="hbtn" onclick="exportLib()" title="Export plays as JSON">⬇ EXPORT</button>
+        <label class="hbtn" style="cursor:pointer;" title="Import from JSON">⬆ IMPORT<input type="file" accept=".json" style="display:none;" onchange="importLib(event)"></label>
+      </div>
+      <span id="lib-count" style="font-family:'Oswald',sans-serif;font-size:10px;color:var(--text-lo);letter-spacing:1px;white-space:nowrap;" aria-live="polite"></span>
     </div>
     <div id="lib-grid"></div>
   </div>
@@ -443,73 +511,96 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <!-- ══ AI COACH ══ -->
   <div id="page-ai" class="page">
     <div id="ai-controls-col">
-      <h2>🤖 AI Coach</h2>
-      <div class="rp-group">
-        <label class="rp-label">Side</label>
-        <div class="mode-toggle" style="width:100%;">
-          <button class="mode-btn on-off" id="ai-side-off" onclick="setAiSide('offense')" style="flex:1;">● OFFENSE</button>
-          <button class="mode-btn" id="ai-side-def" onclick="setAiSide('defense')" style="flex:1;">✕ DEFENSE</button>
+      <div class="col-header">
+        <h2>🤖 AI COACH</h2>
+        <div class="col-sub">Build a profile — get smart play suggestions</div>
+      </div>
+      <div id="ai-controls-body">
+        <div class="form-section">
+          <div class="form-section-lbl">PLAY SIDE</div>
+          <div class="mode-toggle" style="width:100%;">
+            <button class="mode-btn on-off" id="ai-side-off" onclick="setAiSide('offense')" style="flex:1;">● OFFENSE</button>
+            <button class="mode-btn" id="ai-side-def" onclick="setAiSide('defense')" style="flex:1;">✕ DEFENSE</button>
+          </div>
+          <input type="hidden" id="ai-side" value="offense">
         </div>
-        <input type="hidden" id="ai-side" value="offense">
+        <div class="form-section">
+          <div class="form-section-lbl">TEAM PROFILE</div>
+          <div class="rp-group">
+            <label class="rp-label">Age Group</label>
+            <select class="rp-select" id="ai-age">
+              <option value="youth-6-8">Youth (6–8 yrs) — Flag</option>
+              <option value="youth-9-11">Youth (9–11 yrs)</option>
+              <option value="youth-12-14">Youth (12–14 yrs)</option>
+              <option value="hs-fresh">HS Freshman</option>
+              <option value="hs-jv">HS JV</option>
+              <option value="hs-varsity" selected>HS Varsity</option>
+              <option value="college">College</option>
+              <option value="adult">Adult / Semi-Pro</option>
+            </select>
+          </div>
+          <div class="rp-group">
+            <label class="rp-label">Skill Level</label>
+            <select class="rp-select" id="ai-skill">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate" selected>Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="elite">Elite</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-lbl">PLAY SELECTION</div>
+          <div class="rp-group">
+            <label class="rp-label">Focus</label>
+            <select class="rp-select" id="ai-focus">
+              <option value="balanced">Balanced Mix</option>
+              <option value="run">Run Heavy</option>
+              <option value="pass">Pass Heavy</option>
+              <option value="redzone">Red Zone Package</option>
+              <option value="shortyard">Short Yardage</option>
+              <option value="2min">2-Minute Drill</option>
+              <option value="special">Special Teams</option>
+            </select>
+          </div>
+          <div class="rp-group">
+            <label class="rp-label">Number of Plays</label>
+            <select class="rp-select" id="ai-count">
+              <option value="2">2 plays</option>
+              <option value="3">3 plays</option>
+              <option value="4" selected>4 plays</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-lbl">TEAM NOTES</div>
+          <textarea class="rp-textarea" id="ai-notes" placeholder="e.g. Strong OL, mobile QB, inexperienced WRs, best plays in shotgun..."></textarea>
+        </div>
+        <div class="form-section">
+          <div class="form-section-lbl">PRIOR DATA</div>
+          <div class="upload-zone" onclick="document.getElementById('ai-upload').click()">
+            <input type="file" id="ai-upload" accept=".txt,.json" multiple style="display:none" onchange="handleAiUpload(event)">
+            📂 Upload Prior Season Data
+            <div style="font-size:10px;margin-top:2px;color:var(--text-lo)">TXT / JSON accepted</div>
+            <div id="ai-file-label" style="font-size:10px;color:var(--accent);margin-top:3px;"></div>
+          </div>
+        </div>
+        <button class="ai-btn" id="ai-btn" onclick="runAi()">⚡ GET AI SUGGESTIONS</button>
       </div>
-      <div class="rp-group">
-        <label class="rp-label">Age Group</label>
-        <select class="rp-select" id="ai-age">
-          <option value="youth-6-8">Youth (6–8 yrs) — Flag</option>
-          <option value="youth-9-11">Youth (9–11 yrs)</option>
-          <option value="youth-12-14">Youth (12–14 yrs)</option>
-          <option value="hs-fresh">HS Freshman</option>
-          <option value="hs-jv">HS JV</option>
-          <option value="hs-varsity" selected>HS Varsity</option>
-          <option value="college">College</option>
-          <option value="adult">Adult / Semi-Pro</option>
-        </select>
-      </div>
-      <div class="rp-group">
-        <label class="rp-label">Skill Level</label>
-        <select class="rp-select" id="ai-skill">
-          <option value="beginner">Beginner</option>
-          <option value="intermediate" selected>Intermediate</option>
-          <option value="advanced">Advanced</option>
-          <option value="elite">Elite</option>
-        </select>
-      </div>
-      <div class="rp-group">
-        <label class="rp-label">Focus</label>
-        <select class="rp-select" id="ai-focus">
-          <option value="balanced">Balanced Mix</option>
-          <option value="run">Run Heavy</option>
-          <option value="pass">Pass Heavy</option>
-          <option value="redzone">Red Zone Package</option>
-          <option value="shortyard">Short Yardage</option>
-          <option value="2min">2-Minute Drill</option>
-          <option value="special">Special Teams</option>
-        </select>
-      </div>
-      <div class="rp-group">
-        <label class="rp-label">Number of Plays</label>
-        <select class="rp-select" id="ai-count">
-          <option value="2">2 plays</option>
-          <option value="3">3 plays</option>
-          <option value="4" selected>4 plays</option>
-        </select>
-      </div>
-      <div class="rp-group">
-        <label class="rp-label">Team Notes</label>
-        <textarea class="rp-textarea" id="ai-notes" placeholder="e.g. Strong OL, mobile QB, inexperienced WRs..."></textarea>
-      </div>
-      <div class="upload-zone" onclick="document.getElementById('ai-upload').click()">
-        <input type="file" id="ai-upload" accept=".txt,.json" multiple style="display:none" onchange="handleAiUpload(event)">
-        📂 Upload Prior Season Data
-        <div style="font-size:10px;margin-top:2px;color:var(--text-lo)">TXT / JSON accepted</div>
-        <div id="ai-file-label" style="font-size:10px;color:var(--accent);margin-top:3px;"></div>
-      </div>
-      <button class="ai-btn" id="ai-btn" onclick="runAi()">⚡ GET AI SUGGESTIONS</button>
     </div>
     <div id="ai-results-col">
-      <h3>SUGGESTIONS</h3>
-      <div id="ai-output">
-        <div style="text-align:center;color:var(--text-lo);font-size:12px;padding:40px 0;">Configure your team profile and click GET AI SUGGESTIONS.</div>
+      <div class="results-hdr">
+        <h3>AI SUGGESTIONS</h3>
+        <span class="results-hdr-count" id="ai-result-count" style="display:none;"></span>
+      </div>
+      <div id="ai-results-body">
+        <div id="ai-output">
+          <div style="text-align:center;color:var(--text-lo);font-size:12px;padding:60px 20px;line-height:2;">
+            <div style="font-size:32px;margin-bottom:12px;">🤖</div>
+            <div style="font-family:'Oswald',sans-serif;font-size:14px;color:var(--text-mid);letter-spacing:1px;margin-bottom:8px;">READY FOR YOUR TEAM</div>
+            Configure your team profile on the left, then click GET AI SUGGESTIONS.
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -517,36 +608,51 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <!-- ══ WRISTBAND ══ -->
   <div id="page-wb" class="page">
     <div id="wb-controls-col">
-      <h2>🏈 Wristband Builder</h2>
-      <div class="rp-group">
-        <label class="rp-label">Card Title</label>
-        <input type="text" class="rp-input" id="wb-title" value="Game Plan" oninput="renderWbPreview()">
+      <div class="col-header">
+        <h2>📋 WRISTBAND BUILDER</h2>
+        <div class="col-sub">Assemble plays into a printable wristband card</div>
       </div>
-      <div class="rp-group">
-        <label class="rp-label">Columns</label>
-        <select class="rp-select" id="wb-cols" onchange="renderWbPreview()">
-          <option value="3">3 columns</option>
-          <option value="4" selected>4 columns</option>
-          <option value="5">5 columns</option>
-        </select>
-      </div>
-      <div class="rp-group">
-        <label class="rp-label">Add Play</label>
-        <select class="rp-select" id="wb-sel"><option value="">— select a play —</option></select>
-        <button class="add-dashed" onclick="addToWb()" style="margin-top:4px;">+ Add to Wristband</button>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span class="rp-label" style="margin:0;">Plays (<span id="wb-count">0</span>/24)</span>
-          <button style="font-size:10px;color:var(--text-mid);background:none;border:none;cursor:pointer;" onclick="clearWb()">Clear All</button>
+      <div id="wb-controls-body">
+        <div class="form-section" style="border-top:none;padding-top:0;">
+          <div class="form-section-lbl">CARD SETUP</div>
+          <div class="rp-group">
+            <label class="rp-label">Card Title</label>
+            <input type="text" class="rp-input" id="wb-title" value="Game Plan" oninput="renderWbPreview()">
+          </div>
+          <div class="rp-group">
+            <label class="rp-label">Columns</label>
+            <select class="rp-select" id="wb-cols" onchange="renderWbPreview()">
+              <option value="3">3 columns</option>
+              <option value="4" selected>4 columns</option>
+              <option value="5">5 columns</option>
+            </select>
+          </div>
         </div>
-        <div id="wb-list"><div style="text-align:center;color:var(--text-lo);font-size:12px;padding:16px 0;">No plays added yet</div></div>
+        <div class="form-section">
+          <div class="form-section-lbl">ADD PLAYS</div>
+          <div class="rp-group">
+            <select class="rp-select" id="wb-sel"><option value="">— select a play —</option></select>
+            <button class="add-dashed" onclick="addToWb()" style="margin-top:5px;">＋ Add to Wristband</button>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="wb-plays-hdr">
+            <div class="wb-sec-lbl">PLAYS ON CARD &nbsp;<span style="color:var(--accent);font-family:'Oswald',sans-serif;font-size:10px;" id="wb-count-display">0</span><span style="color:var(--text-lo);font-size:9px;">/24</span></div>
+            <button style="font-size:9px;font-family:'Oswald',sans-serif;letter-spacing:1px;color:var(--text-lo);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;transition:color .15s;" onmouseover="this.style.color='#ff4455'" onmouseout="this.style.color=''" onclick="clearWb()">CLEAR ALL</button>
+          </div>
+          <div id="wb-list"><div style="text-align:center;color:var(--text-lo);font-size:11px;padding:20px 0;border:1px dashed var(--border);border-radius:6px;">No plays added yet</div></div>
+        </div>
+        <button class="wb-print-btn" onclick="printWb()">🖨 PRINT WRISTBAND CARD</button>
       </div>
-      <button class="wb-print-btn" onclick="printWb()">🖨 PRINT WRISTBAND CARD</button>
     </div>
     <div id="wb-preview-col">
-      <h3>CARD PREVIEW</h3>
-      <div id="wb-preview-grid"></div>
+      <div class="results-hdr">
+        <h3>CARD PREVIEW</h3>
+        <span class="results-hdr-count" id="wb-count">0 plays</span>
+      </div>
+      <div id="wb-preview-body">
+        <div id="wb-preview-grid"></div>
+      </div>
     </div>
   </div>
 
@@ -1493,41 +1599,75 @@ async function importLib(e){
   reader.readAsText(file);
 }
 
+function setLibFilter(mode){
+  // Update pill active state
+  ['all','off','def'].forEach(k=>{
+    const el=document.getElementById('lp-'+k);
+    if(el) el.className='lib-pill'+(k==='all'&&mode==='all'||k==='off'&&mode==='offense'||k==='def'&&mode==='defense'?' act':'');
+  });
+  window._libFilter=mode;
+  renderLibrary();
+}
+
 function renderLibrary(){
   const grid=document.getElementById('lib-grid');
   const q=(document.getElementById('lib-search')?.value||'').toLowerCase();
-  const f=document.getElementById('lib-filter')?.value||'all';
-  const lib=getLib().filter(p=>{
-    const ms=!q||p.name.toLowerCase().includes(q)||(p.formation||'').toLowerCase().includes(q);
+  const f=window._libFilter||'all';
+  const allLib=getLib();
+  const lib=allLib.filter(p=>{
+    const ms=!q||p.name.toLowerCase().includes(q)||(p.formation||'').toLowerCase().includes(q)||(p.type||'').toLowerCase().includes(q);
     const mf=f==='all'||p.mode===f; return ms&&mf;
   });
+
+  // Update header stats
+  const total=allLib.length;
+  const offCount=allLib.filter(p=>p.mode==='offense').length;
+  const defCount=allLib.filter(p=>p.mode==='defense').length;
+  const statTotal=document.getElementById('lib-stat-total');
+  const statOff=document.getElementById('lib-stat-off');
+  const statDef=document.getElementById('lib-stat-def');
+  if(statTotal) statTotal.textContent=total;
+  if(statOff) statOff.textContent=offCount;
+  if(statDef) statDef.textContent=defCount;
+
   const countEl=document.getElementById('lib-count');
   if(countEl) countEl.textContent=lib.length+' play'+(lib.length!==1?'s':'');
+
   if(!lib.length){
-    grid.innerHTML='<div class="lib-empty"><strong>No plays saved yet</strong>Design a play in the Designer, then hit 💾 SAVE PLAY.</div>';
+    grid.innerHTML='<div class="lib-empty"><strong>'+(total?'No plays match your filter':'No plays saved yet')+'</strong>'+(total?'Try a different filter or search term.':'Design a play in the Designer, then hit 💾 SAVE PLAY.')+'</div>';
     return;
   }
   const typeColor={run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
   grid.innerHTML='';
-  lib.forEach(pl=>{
+  lib.forEach((pl,idx)=>{
     const mTag=pl.mode==='offense'?'<span class="ptag ptag-o">OFF</span>':'<span class="ptag ptag-d">DEF</span>';
     const tyKey=typeColor[pl.type]||typeColor.default;
     const tyTag=pl.type?`<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>`:'';
-    const d=document.createElement('div'); d.className='pcard';
+    const d=document.createElement('div');
+    d.className='pcard pcard-anim';
+    d.style.animationDelay=(idx*24)+'ms';
     d.innerHTML=`
-      ${pl.thumb?`<img class="pcard-thumb" src="${pl.thumb}" loading="lazy">`:'<div class="pcard-thumb"></div>'}
+      <canvas class="pcard-canvas-thumb"></canvas>
       <div class="pcard-body">
         <div class="pcard-name"></div>
         <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta"></span></div>
+        <div class="pcard-desc" style="font-size:10.5px;color:var(--text-lo);margin-top:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></div>
       </div>
       <div class="pcard-acts">
-        <button class="pcbtn" onclick="event.stopPropagation();loadPlay(${pl.id});switchPage('designer')">📂 Load</button>
-        <button class="pcbtn" onclick="event.stopPropagation();wbAddById(${pl.id})">+ WB</button>
-        <button class="pcbtn" onclick="event.stopPropagation();sharePlay(${pl.id})">🔗</button>
-        <button class="pcbtn red" onclick="event.stopPropagation();deletePlay(${pl.id})">🗑</button>
+        <button class="pcbtn" style="flex:2;" onclick="event.stopPropagation();loadPlay(${pl.id});switchPage('designer')">✏ OPEN</button>
+        <button class="pcbtn" onclick="event.stopPropagation();wbAddById(${pl.id})" title="Add to Wristband">📋</button>
+        <button class="pcbtn" onclick="event.stopPropagation();sharePlay(${pl.id})" title="Share">🔗</button>
+        <button class="pcbtn red" onclick="event.stopPropagation();deletePlay(${pl.id})" title="Delete">🗑</button>
       </div>`;
     d.querySelector('.pcard-name').textContent=pl.name;
     d.querySelector('.pcard-fmeta').textContent=pl.formation||'';
+    if(pl.description) d.querySelector('.pcard-desc').textContent=pl.description;
+    // Render live canvas thumbnail
+    const cnv=d.querySelector('.pcard-canvas-thumb');
+    try{
+      const thumb=genThumbFromPlay(pl.players||[],pl.routes||[]);
+      const img=new Image(); img.onload=()=>{ const ctx=cnv.getContext('2d'); cnv.width=cnv.offsetWidth||220; cnv.height=90; ctx.drawImage(img,0,0,cnv.width,cnv.height); }; img.src=thumb;
+    }catch(e){}
     d.addEventListener('click',()=>openPlayModal(pl.id));
     grid.appendChild(d);
   });
@@ -1791,8 +1931,10 @@ function wbAddById(id){
 
 function renderWbList(){
   const el=document.getElementById('wb-list'); if(!el) return;
-  document.getElementById('wb-count').textContent=S.wbPlays.length;
-  if(!S.wbPlays.length){ el.innerHTML='<div style="text-align:center;color:var(--text-lo);font-size:12px;padding:16px 0;">No plays added yet</div>'; renderWbPreview(); return; }
+  const n=S.wbPlays.length;
+  const cntEl=document.getElementById('wb-count'); if(cntEl) cntEl.textContent=n+' play'+(n!==1?'s':'');
+  const cntDisp=document.getElementById('wb-count-display'); if(cntDisp) cntDisp.textContent=n;
+  if(!n){ el.innerHTML='<div style="text-align:center;color:var(--text-lo);font-size:11px;padding:20px 0;border:1px dashed var(--border);border-radius:6px;">No plays added yet</div>'; renderWbPreview(); return; }
   const lib=getLib(); el.innerHTML='';
   S.wbPlays.forEach((id,i)=>{
     const p=lib.find(x=>x.id===id); if(!p) return;
@@ -2207,7 +2349,13 @@ function renderFormationToAiCanvas(fmtnData, playType, cnv){
 function renderAiPlays(text){
   const plays=parseAiPlays(text);
   const out=document.getElementById('ai-output');
-  if(!plays.length){ out.innerHTML='<div style="color:var(--text-mid);text-align:center;padding:20px;">No plays parsed from response.</div>'; return; }
+  const cntBadge=document.getElementById('ai-result-count');
+  if(!plays.length){
+    out.innerHTML='<div style="color:var(--text-mid);text-align:center;padding:20px;">No plays parsed from response.</div>';
+    if(cntBadge){cntBadge.style.display='none';}
+    return;
+  }
+  if(cntBadge){cntBadge.textContent=plays.length+' suggestion'+(plays.length!==1?'s':'');cntBadge.style.display='';}
   out.innerHTML='';
   plays.forEach((play,idx)=>{
     const typeColor={run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
