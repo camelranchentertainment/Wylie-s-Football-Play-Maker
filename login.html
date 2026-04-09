@@ -170,7 +170,10 @@ async function doLogin(e) {
         user: data.user
       }));
       showMsg('Signed in! Redirecting…', 'success');
-      setTimeout(() => window.location.replace('library.html'), 800);
+      // If profile not yet completed, send to profile page first
+      const profileDone = data.user?.user_metadata?.coaching_level ||
+                          localStorage.getItem('wpm_profile_skipped') === '1';
+      setTimeout(() => window.location.replace(profileDone ? 'library.html' : 'profile.html'), 800);
     }
   } catch(err) {
     showMsg('Network error. Please try again.', 'error');

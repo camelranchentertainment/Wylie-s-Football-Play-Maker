@@ -290,19 +290,25 @@ let currentUser = null;
 (async()=>{
   const {data:{session}} = await supa.auth.getSession();
   if(!session){
-    // Allow guest browsing — no redirect
-    updateNavUser(null);
-  } else {
-    currentUser = session.user;
-    updateNavUser(session.user.email);
+    window.location.replace('login.html');
+    return;
   }
+  // If profile not yet completed, redirect to profile page
+  const profileDone = session.user.user_metadata?.coaching_level ||
+                      localStorage.getItem('wpm_profile_skipped') === '1';
+  if(!profileDone){
+    window.location.replace('profile.html');
+    return;
+  }
+  currentUser = session.user;
+  updateNavUser(session.user.email, session.user.user_metadata?.name);
   init();
 })();
 
-function updateNavUser(email){
+function updateNavUser(email, name){
   const el = document.getElementById('nav-user');
-  el.textContent = email ? ('👤 '+email) : 'GUEST MODE';
-  document.getElementById('btn-signout').style.display = email ? '' : 'none';
+  const display = name || (email ? email.split('@')[0] : '');
+  el.textContent = display ? ('👤 '+display) : '';
 }
 
 async function doSignOut(){

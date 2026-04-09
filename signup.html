@@ -100,6 +100,10 @@ input.invalid{border-color:var(--off);}
   <div class="msg" id="msg"></div>
   <form id="signup-form" onsubmit="doSignup(event)">
     <div class="field">
+      <label>FULL NAME</label>
+      <input type="text" id="fullname" placeholder="Your name" required autocomplete="name">
+    </div>
+    <div class="field">
       <label>EMAIL ADDRESS</label>
       <input type="email" id="email" placeholder="coach@example.com" required autocomplete="email">
     </div>
@@ -173,11 +177,13 @@ function friendlyError(msg) {
 
 async function doSignup(e) {
   e.preventDefault();
+  const fullname = document.getElementById('fullname').value.trim();
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
   const confirm = document.getElementById('confirm').value;
   const btn = document.getElementById('submit-btn');
 
+  if (!fullname) { showMsg('Please enter your name.', 'error'); return; }
   if (password.length < 6) { showMsg('Password must be at least 6 characters.', 'error'); return; }
   if (password !== confirm) { showMsg('Passwords do not match.', 'error'); return; }
 
@@ -188,7 +194,7 @@ async function doSignup(e) {
     const res = await fetch(SUPA_URL + '/auth/v1/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password, data: { name: fullname } })
     });
     const data = await res.json();
 
@@ -206,8 +212,8 @@ async function doSignup(e) {
         refresh_token: data.session.refresh_token,
         user: data.user
       }));
-      showMsg('Account created! Redirecting to your playbook…', 'success');
-      setTimeout(() => window.location.replace('library.html'), 1000);
+      showMsg('Account created! Setting up your profile…', 'success');
+      setTimeout(() => window.location.replace('profile.html'), 800);
     } else {
       showMsg('Account created! Check your email to confirm your account, then sign in.', 'success');
       btn.disabled = false;

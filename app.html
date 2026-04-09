@@ -820,22 +820,26 @@ let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
 async function initAuth() {
   const { data: { session } } = await supa.auth.getSession();
   if (!session) {
-    // Guest mode — allow local-only use without forcing a login
-    updateAuthUI();
-    renderLibrary();
-    updateWbSel();
-  } else {
-    currentUser = session.user;
-    await loadCloudLib();
-    // If new account with no cloud plays but has local plays, migrate them
-    if (cloudLib !== null && cloudLib.length === 0) {
-      const localPlays = JSON.parse(localStorage.getItem(LIB_KEY) || '[]');
-      if (localPlays.length > 0) await migrateLocalToCloud();
-    }
-    updateAuthUI();
-    renderLibrary();
-    updateWbSel();
+    window.location.replace('login.html');
+    return;
   }
+  // If profile not yet completed, redirect to profile page
+  const profileDone = session.user.user_metadata?.coaching_level ||
+                      localStorage.getItem('wpm_profile_skipped') === '1';
+  if (!profileDone) {
+    window.location.replace('profile.html');
+    return;
+  }
+  currentUser = session.user;
+  await loadCloudLib();
+  // If new account with no cloud plays but has local plays, migrate them
+  if (cloudLib !== null && cloudLib.length === 0) {
+    const localPlays = JSON.parse(localStorage.getItem(LIB_KEY) || '[]');
+    if (localPlays.length > 0) await migrateLocalToCloud();
+  }
+  updateAuthUI();
+  renderLibrary();
+  updateWbSel();
   // Listen for auth state changes (sign-in / sign-out in other tabs)
   supa.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
@@ -845,12 +849,7 @@ async function initAuth() {
       renderLibrary();
       updateWbSel();
     } else if (event === 'SIGNED_OUT') {
-      currentUser = null;
-      cloudLib = null;
-      recentAiFmtns = [];
-      updateAuthUI();
-      renderLibrary();
-      updateWbSel();
+      window.location.replace('login.html');
     }
   });
 }
@@ -864,8 +863,8 @@ function updateAuthUI() {
   const btn = document.getElementById('auth-nav-btn');
   if (!btn) return;
   if (currentUser) {
-    const short = currentUser.email.split('@')[0];
-    btn.textContent = '👤 ' + short.toUpperCase();
+    const name = currentUser.user_metadata?.name || currentUser.email.split('@')[0];
+    btn.textContent = '👤 ' + name.toUpperCase();
     btn.classList.add('signed-in');
   } else {
     btn.textContent = '👤 SIGN IN';
@@ -873,12 +872,6 @@ function updateAuthUI() {
   }
   const badge = document.getElementById('lib-cloud-badge');
   if (badge) badge.style.display = currentUser ? 'inline' : 'none';
-  // Show guest banner when signed out (unless user dismissed it this session)
-  const banner = document.getElementById('guest-banner');
-  if (banner) {
-    const dismissed = localStorage.getItem('wpm_guest_banner_dismissed') === '1';
-    banner.classList.toggle('show', !currentUser && !dismissed);
-  }
 }
 
 // ─── TOAST ────────────────────────────────────────────────────
