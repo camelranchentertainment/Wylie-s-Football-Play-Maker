@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Reset Password — Wylie's Play Maker</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="js/supabase.min.js"></script>
 <style>
 :root{--bg:#14202e;--panel:#1b2b3d;--accent:#f0a500;--hi:#f5f7fb;--mid:#c0d4e8;--lo:#7fa0bc;--border:#2a3d55;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -91,18 +90,23 @@ input::placeholder{color:var(--lo);}
 </div>
 
 <script>
-const SUPA_URL = location.origin + '/supa';
+const SUPA_URL = '/supa';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-// If Supabase detects a PASSWORD_RECOVERY event (user clicked the email link),
-// switch to the new-password form
-supa.auth.onAuthStateChange((event) => {
-  if (event === 'PASSWORD_RECOVERY') {
+// Check if user arrived via a password recovery link (token in URL hash)
+let recoveryToken = null;
+(function() {
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  const token = hash.get('access_token');
+  const type  = hash.get('type');
+  if (token && type === 'recovery') {
+    recoveryToken = token;
     document.getElementById('request-card').style.display = 'none';
     document.getElementById('newpw-card').style.display = 'block';
+    // Clean up the URL so the token isn't visible
+    history.replaceState(null, '', window.location.pathname);
   }
-});
+})();
 
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
@@ -124,17 +128,28 @@ async function doRequest(e) {
   const btn = document.getElementById('req-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>SENDING…';
-  const { error } = await supa.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/reset.html',
-  });
-  if (error) {
-    showMsg('req-msg', error.message, 'error');
+
+  try {
+    const redirectTo = window.location.origin + '/reset.html';
+    const res = await fetch(SUPA_URL + '/auth/v1/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
+      body: JSON.stringify({ email, gotrue_meta_security: {}, redirect_to: redirectTo })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      showMsg('req-msg', data.error_description || data.msg || 'An error occurred.', 'error');
+      btn.disabled = false;
+      btn.textContent = 'SEND RESET LINK';
+    } else {
+      showMsg('req-msg', 'Reset link sent! Check your email inbox (and spam folder).', 'success');
+      btn.disabled = true;
+      btn.textContent = 'EMAIL SENT';
+    }
+  } catch(err) {
+    showMsg('req-msg', 'Network error. Please try again.', 'error');
     btn.disabled = false;
     btn.textContent = 'SEND RESET LINK';
-  } else {
-    showMsg('req-msg', 'Reset link sent! Check your email inbox (and spam folder).', 'success');
-    btn.disabled = true;
-    btn.textContent = 'EMAIL SENT';
   }
 }
 
@@ -143,18 +158,37 @@ async function doNewPassword(e) {
   const pw = document.getElementById('newpw-pw').value;
   const confirm = document.getElementById('newpw-confirm').value;
   const btn = document.getElementById('newpw-btn');
+
   if (pw.length < 6) { showMsg('newpw-msg', 'Password must be at least 6 characters.', 'error'); return; }
   if (pw !== confirm) { showMsg('newpw-msg', 'Passwords do not match.', 'error'); return; }
+  if (!recoveryToken) { showMsg('newpw-msg', 'Session expired. Please request a new reset link.', 'error'); return; }
+
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>UPDATING…';
-  const { error } = await supa.auth.updateUser({ password: pw });
-  if (error) {
-    showMsg('newpw-msg', error.message, 'error');
+
+  try {
+    const res = await fetch(SUPA_URL + '/auth/v1/user', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + recoveryToken
+      },
+      body: JSON.stringify({ password: pw })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      showMsg('newpw-msg', data.error_description || data.msg || 'An error occurred.', 'error');
+      btn.disabled = false;
+      btn.textContent = 'UPDATE PASSWORD';
+    } else {
+      showMsg('newpw-msg', 'Password updated! Redirecting to sign in…', 'success');
+      setTimeout(() => window.location.replace('login.html'), 1500);
+    }
+  } catch(err) {
+    showMsg('newpw-msg', 'Network error. Please try again.', 'error');
     btn.disabled = false;
     btn.textContent = 'UPDATE PASSWORD';
-  } else {
-    showMsg('newpw-msg', 'Password updated! Redirecting to the app…', 'success');
-    setTimeout(() => window.location.replace('app.html'), 1500);
   }
 }
 </script>
