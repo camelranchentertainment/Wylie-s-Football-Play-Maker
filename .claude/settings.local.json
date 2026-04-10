@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:unsplash.com)",
+      "WebFetch(domain:www.pexels.com)",
+      "WebFetch(domain:pixabay.com)",
+      "WebFetch(domain:commons.wikimedia.org)",
+      "WebFetch(domain:oembed.unsplash.com)",
+      "Bash(curl -L \"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js\" -o js/supabase.min.js)",
+      "Bash(curl:*)",
+      "Bash(gh run:*)",
+      "Bash(node -e ':*)",
+      "Bash(vercel --version)",
+      "Bash(npx vercel:*)",
+      "Bash(python3:*)",
+      "Bash(node:*)",
+      "Bash(powershell:*)",
+      "Bash(echo \"exit: $?\")",
+      "WebSearch"
+    ]
+  }
+}

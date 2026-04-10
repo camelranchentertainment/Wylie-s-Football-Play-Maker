@@ -206,6 +206,30 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
 
+/* ── PLAY POPUP MODAL ───────────────────────────────────── */
+#pp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:900;backdrop-filter:blur(5px);animation:fadeIn .18s ease;}
+#pp-modal{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:901;background:var(--panel);
+  border:1px solid var(--border);border-top:3px solid var(--accent);
+  border-radius:14px;width:min(500px,93vw);
+  box-shadow:0 28px 70px rgba(0,0,0,.65);overflow:hidden;
+  animation:popIn .22s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{opacity:0;transform:translate(-50%,-50%) scale(.92);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+#pp-thumb-wrap{position:relative;width:100%;height:210px;overflow:hidden;background:#11211a;}
+#pp-thumb{width:100%;height:100%;object-fit:cover;display:block;}
+#pp-thumb-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(27,43,61,.95) 100%);pointer-events:none;}
+#pp-badges{position:absolute;bottom:10px;left:12px;display:flex;gap:5px;flex-wrap:wrap;}
+#pp-close{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+#pp-close:hover{background:rgba(230,57,70,.7);}
+#pp-body{padding:18px 22px 22px;}
+#pp-name{font-family:'Oswald',sans-serif;font-size:21px;font-weight:700;letter-spacing:1px;color:#fff;margin-bottom:3px;}
+#pp-sub{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--lo);margin-bottom:10px;}
+#pp-desc{font-size:13px;color:var(--mid);line-height:1.55;margin-bottom:18px;min-height:20px;}
+#pp-acts{display:flex;gap:8px;}
+
 /* ── RESPONSIVE ─────────────────────────────────────────── */
 @media(max-width:600px){
   #play-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
@@ -266,7 +290,7 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
   <!-- Tabs -->
   <div class="tab-row">
     <button class="tab-btn act" id="tab-tpl" onclick="switchTab('tpl')">🏈 PLAY LIBRARY</button>
-    <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📚 MY PLAYBOOK</button>
+    <button class="tab-btn ext" onclick="goApp('library')">📚 MY PLAYBOOK</button>
     <div class="tab-div"></div>
     <button class="tab-btn ext" onclick="goApp('ai')">🤖 AI COACH</button>
     <button class="tab-btn ext" onclick="goApp('wb')">📋 WRISTBAND</button>
@@ -302,6 +326,23 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
   </div>
 </div>
 
+<!-- Play Preview Popup -->
+<div id="pp-overlay" style="display:none;" onclick="closeCardPopup()"></div>
+<div id="pp-modal" style="display:none;">
+  <div id="pp-thumb-wrap">
+    <img id="pp-thumb" src="" alt="">
+    <div id="pp-thumb-gradient"></div>
+    <div id="pp-badges"></div>
+    <button id="pp-close" onclick="closeCardPopup()">✕</button>
+  </div>
+  <div id="pp-body">
+    <div id="pp-name"></div>
+    <div id="pp-sub"></div>
+    <div id="pp-desc"></div>
+    <div id="pp-acts"></div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
 <script>
@@ -311,13 +352,34 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 const SUPA_URL   = location.origin + '/supa';
 const SUPA_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
 const SESSION_KEY= 'sb-rvxanoqourdrfmbucvpz-auth-token';
-const LIB_KEY    = 'wfpm-plays';
+const LIB_KEY    = 'gridiron_pro_v3_lib';
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 let currentUser = null;
 
 (async()=>{
-  const {data:{session}} = await supa.auth.getSession();
-  if(!session){ window.location.replace('login.html'); return; }
+  let session = null;
+  try {
+    const { data } = await supa.auth.getSession();
+    session = data?.session || null;
+  } catch(e) {}
+
+  // Fallback: login.html stores session in raw-fetch format; SDK may not recognize it.
+  // Inject it into the SDK so both this page and future SDK calls work correctly.
+  if (!session) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+      if (raw && raw.access_token && raw.refresh_token &&
+          raw.expires_at > Math.floor(Date.now() / 1000)) {
+        const { data: s2 } = await supa.auth.setSession({
+          access_token: raw.access_token,
+          refresh_token: raw.refresh_token
+        });
+        session = s2?.session || null;
+      }
+    } catch(e) {}
+  }
+
+  if (!session) { window.location.replace('login.html'); return; }
   currentUser = session.user;
   updateNavUser(session.user.email, session.user.user_metadata?.name);
   init();
@@ -618,12 +680,18 @@ function makeCard(pl,idx,source){
       </div>
       <div class="pcard-acts">
         <button class="pcbtn${alreadySaved?'':' pri'}" style="flex:2;" onclick="addToLib(${pl.id})">${alreadySaved?'✓ SAVED':'+ ADD TO LIBRARY'}</button>
-        <button class="pcbtn" onclick="openInDesigner(${JSON.stringify(pl).replace(/"/g,'&quot;')})">▶ PREVIEW</button>
+        <button class="pcbtn" onclick="openInDesigner(${JSON.stringify(pl).replace(/"/g,'&quot;')})">✏ DESIGNER</button>
       </div>`;
   }
   d.querySelector('.pcard-name').textContent=pl.name;
   d.querySelector('.pcard-formation').textContent=(pl.formation||'').toUpperCase();
   d.querySelector('.pcard-desc').textContent=pl.description||'';
+  // Click on thumbnail/body opens popup — clicking buttons falls through normally
+  d.addEventListener('click',function(e){
+    if(e.target.closest('.pcard-acts')) return;
+    openCardPopup(pl,source);
+  });
+  d.style.cursor='pointer';
   return d;
 }
 
@@ -663,10 +731,65 @@ async function cloudSave(play){
   if(!currentUser) return;
   try{
     await supa.from('plays').upsert({
-      user_id:currentUser.id, play_id:String(play.id),
-      data:play, updated_at:new Date().toISOString()
+      user_id: currentUser.id,
+      play_id: String(play.id),
+      name: play.name,
+      formation: play.formation || '',
+      type: play.type || '',
+      mode: play.mode || 'offense',
+      players: play.players || [],
+      routes: play.routes || [],
+      labels: play.labels || [],
+      thumb: play.thumb || null,
+      description: play.description || null,
+      ts: play.ts || Date.now()
     },{onConflict:'user_id,play_id'});
   }catch(e){/* silent */}
+}
+
+/* ── CARD POPUP ──────────────────────────────────────────── */
+let _ppPlay=null, _ppSource=null;
+
+function openCardPopup(pl,source){
+  _ppPlay=pl; _ppSource=source;
+  const thumb=genThumb(pl.players,pl.routes);
+  document.getElementById('pp-thumb').src=thumb;
+  document.getElementById('pp-name').textContent=pl.name;
+  const subParts=[];
+  if(pl.formation) subParts.push(pl.formation.toUpperCase());
+  if(pl.category)  subParts.push(pl.category.toUpperCase());
+  document.getElementById('pp-sub').textContent=subParts.join('  ·  ');
+  document.getElementById('pp-desc').textContent=pl.description||'';
+
+  const off=pl.mode!=='defense';
+  const mBadge=off?'<span class="badge badge-off">OFF</span>':'<span class="badge badge-def">DEF</span>';
+  const tKey={Pass:'badge-pass',Run:'badge-run',Defense:'badge-def'};
+  const tBadge=pl.type?`<span class="badge ${tKey[pl.type]||'badge-pass'}">${pl.type.toUpperCase()}</span>`:'';
+  const catBadge=pl.category?`<span class="badge badge-cat">${pl.category.toUpperCase()}</span>`:'';
+  document.getElementById('pp-badges').innerHTML=mBadge+tBadge+catBadge;
+
+  const actsEl=document.getElementById('pp-acts');
+  if(source==='mine'){
+    actsEl.innerHTML=`
+      <button class="pcbtn pri" style="flex:1;" onclick="openInDesigner(_ppPlay);closeCardPopup()">✏ OPEN IN DESIGNER</button>
+      <button class="pcbtn danger" onclick="removeFromLib(_ppPlay.id);closeCardPopup()">REMOVE</button>`;
+  } else {
+    const saved=getMyLib().some(p=>p.name===pl.name&&p.type===pl.type);
+    actsEl.innerHTML=`
+      <button class="pcbtn${saved?'':' pri'}" style="flex:1;" onclick="addToLib(_ppPlay.id)">${saved?'✓ SAVED':'+ ADD TO LIBRARY'}</button>
+      <button class="pcbtn" style="flex:1;" onclick="openInDesigner(_ppPlay);closeCardPopup()">✏ OPEN IN DESIGNER</button>`;
+  }
+
+  document.getElementById('pp-overlay').style.display='block';
+  document.getElementById('pp-modal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+function closeCardPopup(){
+  document.getElementById('pp-overlay').style.display='none';
+  document.getElementById('pp-modal').style.display='none';
+  document.body.style.overflow='';
+  _ppPlay=null;
 }
 
 /* ── TOAST ───────────────────────────────────────────────── */
