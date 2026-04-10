@@ -114,7 +114,12 @@ html:not([data-navto]) #page-designer { display:flex; }
 .rsbtn.act { background:rgba(255,204,0,.1); border-color:var(--route-gold); color:var(--route-gold); }
 .finish-btn { width:100%; padding:8px; margin-top:8px; background:rgba(255,204,0,.1); border:1px solid var(--route-gold); border-radius:6px; color:var(--route-gold); font-family:'Oswald',sans-serif; font-size:12px; font-weight:700; letter-spacing:1.5px; cursor:pointer; transition:all .15s; }
 .finish-btn:hover { background:rgba(255,204,0,.22); }
-#field-wrap { flex:1; display:flex; align-items:center; justify-content:center; background:#18293a; background-image:radial-gradient(ellipse at 50% 45%,rgba(30,100,45,.2) 0%,transparent 62%); position:relative; overflow:hidden; }
+#field-wrap { flex:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  background:
+    linear-gradient(100deg,rgba(8,16,26,.93) 0%,rgba(12,26,18,.86) 45%,rgba(8,14,24,.9) 100%),
+    repeating-linear-gradient(0deg,transparent,transparent 54px,rgba(255,255,255,.04) 54px,rgba(255,255,255,.04) 55px),
+    url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+}
 #canvas-wrap { position:relative; border:1px solid rgba(255,255,255,.05); box-shadow:0 0 100px rgba(0,0,0,.95),0 0 0 1px rgba(240,165,0,.06); border-radius:4px; transform-origin:center center; transition:transform .12s ease; }
 #zoom-ctrl { position:absolute; bottom:14px; right:14px; z-index:10; display:flex; align-items:center; gap:4px; background:rgba(18,30,44,.88); border:1px solid var(--border-bright); border-radius:8px; padding:4px 7px; backdrop-filter:blur(8px); }
 #zoom-ctrl button { width:26px; height:26px; background:var(--bg-card); border:1px solid var(--border); border-radius:5px; color:var(--text-mid); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; transition:all .15s; flex-shrink:0; }
