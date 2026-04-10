@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wylie's Football Play Maker</title>
+<script>
+// Runs before any rendering — prevents flash of wrong page
+(function(){
+  var p = new URLSearchParams(location.search).get('page');
+  if(p && p !== 'designer') document.documentElement.setAttribute('data-navto', p);
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="js/supabase.min.js"></script>
 <script src="js/play-library.js"></script>
@@ -70,6 +77,8 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 #pages { flex:1; overflow:hidden; position:relative; }
 .page { position:absolute; inset:0; display:none; }
 .page.act { display:flex; }
+/* Show designer by default only when NOT navigating to another page */
+html:not([data-navto]) #page-designer { display:flex; }
 
 /* ─── DESIGNER PAGE ───────────────────────────────────────── */
 #page-designer { flex-direction:row; }
@@ -792,7 +801,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 <div id="pages">
 
   <!-- ══ DESIGNER ══ -->
-  <div id="page-designer" class="page act">
+  <div id="page-designer" class="page">
     <div id="sidebar">
       <div class="sb-sec">
         <div class="sb-sec-head">TOOLS</div>
@@ -4211,6 +4220,7 @@ document.getElementById('label-text').addEventListener('keydown',e=>{if(e.key===
 
 // ─── PAGE NAVIGATION ──────────────────────────────────────────
 function switchPage(id){
+  document.documentElement.removeAttribute('data-navto');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
   document.querySelectorAll('.npbtn').forEach(b=>{
     const active=b.dataset.page===id;
