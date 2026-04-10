@@ -563,10 +563,46 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 ::-webkit-scrollbar-thumb { background:var(--border-bright); border-radius:2px; }
 .spin { width:16px; height:16px; border:2px solid rgba(0,0,0,.2); border-top-color:#000; border-radius:50%; animation:rot .65s linear infinite; display:inline-block; }
 @keyframes rot { to { transform:rotate(360deg); } }
-/* ── AUTH ── */
-.auth-btn { padding:5px 14px; height:30px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.2px; cursor:pointer; border:1px solid var(--border-bright); background:transparent; color:var(--text-mid); border-radius:7px; transition:all .18s; white-space:nowrap; }
-.auth-btn:hover { color:var(--accent); border-color:var(--accent); }
-.auth-btn.signed-in { color:var(--accent); border-color:var(--accent); background:var(--accent-glow); }
+/* ── USER CHIP ── */
+.user-chip{position:relative;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 8px;border:1px solid var(--border-bright);border-radius:20px;cursor:pointer;background:transparent;transition:all .18s;font-family:'Oswald',sans-serif;}
+.user-chip:hover{border-color:var(--accent);background:var(--accent-glow);}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;flex-shrink:0;}
+.user-chip-name{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--text-mid);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.user-caret{font-size:8px;color:var(--text-lo);transition:transform .18s;}
+.user-chip.open .user-caret{transform:rotate(180deg);}
+.user-dropdown{display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg-panel);border:1px solid var(--border-bright);border-radius:10px;min-width:200px;box-shadow:0 12px 40px rgba(0,0,0,.55);z-index:999;overflow:hidden;}
+.user-chip.open .user-dropdown{display:block;}
+.udrop-header{padding:12px 16px 10px;border-bottom:1px solid var(--border);}
+.udrop-name{font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px;}
+.udrop-email{font-size:10px;color:var(--text-lo);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.udrop-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-mid);cursor:pointer;transition:background .15s,color .15s;}
+.udrop-item:hover{background:var(--accent-glow);color:var(--accent);}
+.udrop-item.danger:hover{background:rgba(230,57,70,.1);color:#ff6b75;}
+.udrop-sep{height:1px;background:var(--border);margin:2px 0;}
+/* ── SETTINGS MODAL ── */
+#settings-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;align-items:center;justify-content:center;}
+#settings-overlay.show{display:flex;}
+#settings-modal{background:var(--bg-panel);border:1px solid var(--border-bright);border-top:3px solid var(--accent);border-radius:14px;padding:32px 36px 28px;width:100%;max-width:440px;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+.smod-title{font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;letter-spacing:1px;color:#fff;margin-bottom:4px;}
+.smod-sub{font-size:12px;color:var(--text-lo);margin-bottom:24px;}
+.smod-field{margin-bottom:15px;}
+.smod-field label{display:block;font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;color:var(--text-lo);margin-bottom:5px;}
+.smod-field input,.smod-field select{width:100%;padding:10px 13px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+.smod-field input:focus,.smod-field select:focus{border-color:var(--accent);}
+.smod-field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M0 0l6 7 6-7z' fill='%237fa0bc'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.smod-field select option{background:#1b2b3d;}
+.smod-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.smod-msg{display:none;padding:8px 13px;border-radius:7px;font-size:12px;font-family:'Oswald',sans-serif;letter-spacing:.5px;margin-bottom:14px;}
+.smod-msg.error{background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.25);color:#ff6b75;display:block;}
+.smod-msg.success{background:rgba(80,220,120,.1);border:1px solid rgba(80,220,120,.25);color:#50dc78;display:block;}
+.smod-actions{display:flex;gap:10px;margin-top:4px;}
+.smod-btn{flex:1;padding:11px;font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;border:none;border-radius:8px;cursor:pointer;transition:all .18s;}
+.smod-btn.save{background:var(--accent);color:#000;box-shadow:0 4px 16px rgba(240,165,0,.3);}
+.smod-btn.save:hover{background:#ffc62e;}
+.smod-btn.save:disabled{opacity:.6;cursor:not-allowed;}
+.smod-btn.cancel{background:transparent;border:1px solid var(--border-bright);color:var(--text-mid);}
+.smod-btn.cancel:hover{border-color:var(--text-mid);color:#fff;}
+.smod-spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:rot .7s linear infinite;vertical-align:middle;margin-right:5px;}
 #auth-modal .modal { max-width:360px; }
 .auth-tabs { display:flex; border-bottom:1px solid var(--border); margin-bottom:18px; }
 .auth-tab { flex:1; padding:8px; background:none; border:none; font-family:'Oswald',sans-serif; font-size:12px; font-weight:600; letter-spacing:1px; color:var(--text-lo); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .2s; }
@@ -688,7 +724,62 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     <button class="npbtn act" data-page="designer" onclick="switchPage('designer')" aria-current="page">✏ DESIGNER</button>
   </nav>
   <div class="hdiv"></div>
-  <button class="auth-btn" id="auth-nav-btn" onclick="openAuthModal()">👤 SIGN IN</button>
+  <div class="user-chip" id="user-chip" onclick="toggleUserMenu(event)">
+    <div class="user-avatar" id="user-avatar">?</div>
+    <span class="user-chip-name" id="user-chip-name">COACH</span>
+    <span class="user-caret">▼</span>
+    <div class="user-dropdown">
+      <div class="udrop-header">
+        <div class="udrop-name" id="udrop-name">—</div>
+        <div class="udrop-email" id="udrop-email">—</div>
+      </div>
+      <div class="udrop-item" onclick="openSettings(event)">⚙ PROFILE SETTINGS</div>
+      <div class="udrop-sep"></div>
+      <div class="udrop-item danger" onclick="doSignOut(event)">↪ SIGN OUT</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS MODAL ══ -->
+<div id="settings-overlay" onclick="closeSettingsOnBg(event)">
+  <div id="settings-modal">
+    <div class="smod-title">PROFILE SETTINGS</div>
+    <div class="smod-sub">Update your coaching information.</div>
+    <div class="smod-msg" id="smod-msg"></div>
+    <div class="smod-field">
+      <label>FULL NAME</label>
+      <input type="text" id="smod-name" placeholder="Your name">
+    </div>
+    <div class="smod-field-row">
+      <div class="smod-field" style="margin-bottom:0;">
+        <label>COACHING LEVEL</label>
+        <select id="smod-level">
+          <option value="">— select —</option>
+          <option>Youth Flag (6–8)</option>
+          <option>Youth Tackle (9–12)</option>
+          <option>Middle School</option>
+          <option>HS JV</option>
+          <option>HS Varsity</option>
+          <option>College</option>
+          <option>Adult / Semi-Pro</option>
+          <option>Recreational</option>
+          <option>Fan / Enthusiast</option>
+        </select>
+      </div>
+      <div class="smod-field" style="margin-bottom:0;">
+        <label>PHONE (OPTIONAL)</label>
+        <input type="tel" id="smod-phone" placeholder="555-867-5309">
+      </div>
+    </div>
+    <div class="smod-field" style="margin-top:14px;">
+      <label>TEAM NAME (IF APPLICABLE)</label>
+      <input type="text" id="smod-team" placeholder="e.g. Westside Eagles">
+    </div>
+    <div class="smod-actions">
+      <button class="smod-btn cancel" onclick="closeSettings()">CANCEL</button>
+      <button class="smod-btn save" id="smod-save" onclick="saveSettings()">SAVE CHANGES</button>
+    </div>
+  </div>
 </div>
 
 <div id="guest-banner">
@@ -1362,18 +1453,115 @@ function dismissGuestBanner() {
 }
 
 function updateAuthUI() {
-  const btn = document.getElementById('auth-nav-btn');
-  if (!btn) return;
-  if (currentUser) {
-    const name = currentUser.user_metadata?.name || currentUser.email.split('@')[0];
-    btn.textContent = '👤 ' + name.toUpperCase();
-    btn.classList.add('signed-in');
-  } else {
-    btn.textContent = '👤 SIGN IN';
-    btn.classList.remove('signed-in');
-  }
+  const meta = currentUser?.user_metadata || {};
+  const name  = meta.name || (currentUser?.email ? currentUser.email.split('@')[0] : '');
+  const email = currentUser?.email || '';
+  const initials = name ? name.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?';
+
+  const avatarEl   = document.getElementById('user-avatar');
+  const nameEl     = document.getElementById('user-chip-name');
+  const udropName  = document.getElementById('udrop-name');
+  const udropEmail = document.getElementById('udrop-email');
+  if (avatarEl)   avatarEl.textContent   = initials;
+  if (nameEl)     nameEl.textContent     = name ? name.toUpperCase() : 'COACH';
+  if (udropName)  udropName.textContent  = name || '—';
+  if (udropEmail) udropEmail.textContent = email || '—';
+
   const badge = document.getElementById('lib-cloud-badge');
   if (badge) badge.style.display = currentUser ? 'inline' : 'none';
+}
+
+function toggleUserMenu(e) {
+  e.stopPropagation();
+  document.getElementById('user-chip').classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  document.getElementById('user-chip')?.classList.remove('open');
+});
+
+function openSettings(e) {
+  e.stopPropagation();
+  document.getElementById('user-chip').classList.remove('open');
+  const meta = currentUser?.user_metadata || {};
+  document.getElementById('smod-name').value  = meta.name || '';
+  document.getElementById('smod-level').value = meta.coaching_level || '';
+  document.getElementById('smod-phone').value = meta.phone || '';
+  document.getElementById('smod-team').value  = meta.team_name || '';
+  document.getElementById('smod-msg').className = 'smod-msg';
+  document.getElementById('smod-msg').textContent = '';
+  document.getElementById('settings-overlay').classList.add('show');
+}
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('show');
+}
+function closeSettingsOnBg(e) {
+  if (e.target === document.getElementById('settings-overlay')) closeSettings();
+}
+
+async function saveSettings() {
+  const name  = document.getElementById('smod-name').value.trim();
+  const level = document.getElementById('smod-level').value;
+  const phone = document.getElementById('smod-phone').value.trim();
+  const team  = document.getElementById('smod-team').value.trim();
+  const msgEl = document.getElementById('smod-msg');
+  const btn   = document.getElementById('smod-save');
+
+  if (!name) { msgEl.textContent = 'Please enter your name.'; msgEl.className = 'smod-msg error'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="smod-spinner"></span>SAVING…';
+  msgEl.className = 'smod-msg';
+
+  try {
+    const { data: { session } } = await supa.auth.getSession();
+    const token = session?.access_token;
+    if (!token) throw new Error('No session');
+
+    // 1. Update auth user_metadata
+    const res = await fetch(SUPA_URL + '/auth/v1/user', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ data: { name, coaching_level: level, phone: phone || null, team_name: team || null, profile_completed: true } })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || data.message || 'Save failed');
+
+    // 2. UPSERT profiles table
+    const userId = currentUser?.id || data?.id;
+    if (userId) {
+      await fetch(SUPA_URL + '/rest/v1/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token, 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ id: userId, name, coaching_level: level, phone: phone || null, team_name: team || null, profile_completed: true, updated_at: new Date().toISOString() })
+      }).catch(() => {});
+    }
+
+    // 3. Update currentUser in memory
+    if (currentUser) {
+      if (!currentUser.user_metadata) currentUser.user_metadata = {};
+      Object.assign(currentUser.user_metadata, { name, coaching_level: level, phone: phone || null, team_name: team || null });
+    }
+
+    updateAuthUI();
+    updateHeroProfile();
+
+    msgEl.textContent = 'Profile updated!';
+    msgEl.className = 'smod-msg success';
+    btn.disabled = false;
+    btn.textContent = 'SAVE CHANGES';
+    setTimeout(closeSettings, 1200);
+  } catch (err) {
+    msgEl.textContent = err.message || 'Could not save. Please try again.';
+    msgEl.className = 'smod-msg error';
+    btn.disabled = false;
+    btn.textContent = 'SAVE CHANGES';
+  }
+}
+
+async function doSignOut(e) {
+  if (e) e.stopPropagation();
+  await supa.auth.signOut();
+  window.location.replace('login.html');
 }
 
 // ─── TOAST ────────────────────────────────────────────────────
@@ -1517,8 +1705,7 @@ async function authSubmit() {
 }
 
 async function authSignOut() {
-  await supa.auth.signOut();
-  closeAuthModal();
+  await doSignOut();
 }
 
 function showAuthMsg(text, type) {
