@@ -918,8 +918,8 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     <div class="wb-hero">
       <div class="lib-hdr-left">
         <div class="lib-hdr-eyebrow">📋 WRISTBAND BUILDER</div>
-        <div class="lib-hdr-team">PLAY CARD SYSTEM</div>
-        <div class="lib-hdr-coach">Signal # &nbsp;·&nbsp; Formation Code &nbsp;·&nbsp; Snap Count</div>
+        <div class="lib-hdr-team" id="wb-hdr-team">PLAY CARD SYSTEM</div>
+        <div class="lib-hdr-coach" id="wb-hdr-coach">Signal # &nbsp;·&nbsp; Formation Code &nbsp;·&nbsp; Snap Count</div>
       </div>
       <div class="lib-hdr-stats">
         <div class="lib-stat">
@@ -2394,10 +2394,20 @@ function saveRecord(r) { try { localStorage.setItem(RECORD_KEY,JSON.stringify(r)
 
 function updateHeroProfile() {
   const meta = (currentUser && currentUser.user_metadata) || {};
+  const team  = meta.team_name ? meta.team_name.toUpperCase() : '';
+  const coach = meta.name ? 'Coach ' + meta.name : '';
+
+  // My Playbook hero
   const teamEl = document.getElementById('hdr-team-name');
   const coachEl = document.getElementById('hdr-coach-name');
-  if (teamEl) teamEl.textContent = meta.team_name ? meta.team_name.toUpperCase() : 'MY TEAM';
-  if (coachEl) coachEl.textContent = meta.name ? 'Coach ' + meta.name : '';
+  if (teamEl) teamEl.textContent = team || 'MY TEAM';
+  if (coachEl) coachEl.textContent = coach;
+
+  // Wristband hero
+  const wbTeam = document.getElementById('wb-hdr-team');
+  const wbCoach = document.getElementById('wb-hdr-coach');
+  if (wbTeam) wbTeam.textContent = team || 'PLAY CARD SYSTEM';
+  if (wbCoach) wbCoach.textContent = coach ? coach + '  ·  Signal # · Formation Code · Snap Count' : 'Signal # · Formation Code · Snap Count';
   const rec = getRecord();
   const wEl = document.getElementById('lib-stat-wins');
   const lEl = document.getElementById('lib-stat-losses');
@@ -4022,6 +4032,7 @@ function switchPage(id){
   });
   document.getElementById('page-'+id).classList.add('act');
   document.getElementById('designer-ctrls').style.display=id==='designer'?'flex':'none';
+  updateHeroProfile();
   if(id==='library') renderLibrary();
   if(id==='wb'){updateWbSel();renderWbList();}
   if(id==='designer'){ render(); if(window.innerWidth<=768) fitZoom(); }
