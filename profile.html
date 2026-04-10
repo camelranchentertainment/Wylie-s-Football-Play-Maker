@@ -179,6 +179,7 @@ async function doSaveProfile(e) {
     const token = sessionData?.access_token;
     if (!token) throw new Error('No session token');
 
+    // 1. Update auth user_metadata
     const res = await fetch(SUPA_URL + '/auth/v1/user', {
       method: 'PUT',
       headers: {
@@ -203,6 +204,29 @@ async function doSaveProfile(e) {
       btn.disabled = false;
       btn.textContent = 'SAVE & ENTER PLAY LIBRARY →';
     } else {
+      // 2. UPSERT into profiles table so it's visible in Supabase Table Editor
+      const userId = sessionData?.user?.id || data?.id;
+      if (userId) {
+        await fetch(SUPA_URL + '/rest/v1/profiles', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPA_KEY,
+            'Authorization': 'Bearer ' + token,
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify({
+            id: userId,
+            name,
+            coaching_level: level,
+            phone: phone || null,
+            team_name: team || null,
+            profile_completed: true,
+            updated_at: new Date().toISOString()
+          })
+        }).catch(() => {}); // non-fatal — auth metadata already saved
+      }
+
       // Update local session with new metadata
       if (sessionData) {
         if (data && data.id) sessionData.user = data;
