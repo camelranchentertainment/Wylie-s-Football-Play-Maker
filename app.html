@@ -730,6 +730,13 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
           <button class="rsbtn" id="rs-block" onclick="setRouteStyle('block')">Block</button>
         </div>
         <div style="margin-top:10px;">
+          <div class="sb-sec-head">CUT TYPE</div>
+          <div class="rs-grid" style="grid-template-columns:1fr 1fr;">
+            <button class="rsbtn act" id="rc-curve" onclick="setRouteCut(false)" title="Smooth curved turns at each waypoint">⌒ Curved</button>
+            <button class="rsbtn" id="rc-hard" onclick="setRouteCut(true)" title="Sharp crisp angle at each waypoint">⌐ Hard Cut</button>
+          </div>
+        </div>
+        <div style="margin-top:10px;">
           <div class="sb-sec-head">ROUTE COLOR</div>
           <input type="color" id="route-color" value="#ffcc00" style="width:100%;height:28px;border:none;border-radius:6px;cursor:pointer;background:none;">
         </div>
@@ -1652,7 +1659,7 @@ const DEF_TYPES = ['DE','DT','NT','OLB','MLB','ILB','LB','CB','SS','FS','NB','DB
 // ─── STATE ────────────────────────────────────────────────────
 let S = {
   mode:'offense', tool:'select', formation:'Pro Set',
-  placeType:'WR', routeStyle:'solid', routeColor:'#ffcc00', assignType:'rush',
+  placeType:'WR', routeStyle:'solid', routeColor:'#ffcc00', routeCut:false, assignType:'rush',
   players:[], routes:[], labels:[], selectedId:null,
   dragging:false, dragOX:0, dragOY:0,
   drawingRoute:false, routeWpts:[], routeForId:null,
@@ -1722,18 +1729,30 @@ function drawRoute(route,preview){
   const pts=route.waypoints;
   if(!pts||pts.length<2) return;
   const col=route.color||'#ffcc00';
+  const hardCut=route.cut===true;
   ctx.save();
   ctx.strokeStyle=preview?'rgba(255,204,0,0.55)':col;
-  ctx.lineWidth=preview?1.8:2.5; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.lineWidth=preview?1.8:2.5;
+  ctx.lineCap='round';
+  // Hard cuts use miter join for a crisp corner; curves use round
+  ctx.lineJoin=hardCut?'miter':'round';
+  if(hardCut) ctx.miterLimit=10;
   if(route.style==='dashed') ctx.setLineDash([7,4]);
   else if(route.style==='motion') ctx.setLineDash([2,5]);
   else ctx.setLineDash([]);
   ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-  for(let i=1;i<pts.length-1;i++){
-    const mx2=(pts[i].x+pts[i+1].x)/2, my2=(pts[i].y+pts[i+1].y)/2;
-    ctx.quadraticCurveTo(pts[i].x,pts[i].y,mx2,my2);
+  if(hardCut){
+    // Straight lines through every waypoint — crisp 90° angles
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y);
+  } else {
+    // Smooth curve — quadratic bezier through midpoints
+    for(let i=1;i<pts.length-1;i++){
+      const mx2=(pts[i].x+pts[i+1].x)/2, my2=(pts[i].y+pts[i+1].y)/2;
+      ctx.quadraticCurveTo(pts[i].x,pts[i].y,mx2,my2);
+    }
+    ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
   }
-  ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y); ctx.stroke();
+  ctx.stroke();
   ctx.setLineDash([]);
   const n=pts.length, ang=Math.atan2(pts[n-1].y-pts[n-2].y,pts[n-1].x-pts[n-2].x);
   arrowHead(pts[n-1].x,pts[n-1].y,ang,preview?6:8,preview?'rgba(255,204,0,0.55)':col);
@@ -1778,7 +1797,7 @@ function render(){
   ctx.clearRect(0,0,CW,CH); drawField();
   S.routes.forEach(r=>drawRoute(r,false));
   if(S.drawingRoute&&S.routeWpts.length>0){
-    drawRoute({waypoints:[...S.routeWpts,{x:S.mouseX,y:S.mouseY}],style:S.routeStyle,color:S.routeColor},true);
+    drawRoute({waypoints:[...S.routeWpts,{x:S.mouseX,y:S.mouseY}],style:S.routeStyle,color:S.routeColor,cut:S.routeCut},true);
     S.routeWpts.forEach((pt,i)=>{
       ctx.fillStyle=i===0?'rgba(255,204,0,.9)':'rgba(255,204,0,.5)';
       ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2); ctx.fill();
@@ -1955,6 +1974,7 @@ function setMode(m){
 }
 
 function setRouteStyle(s){ S.routeStyle=s; ['solid','dashed','motion','block'].forEach(k=>document.getElementById('rs-'+k)?.classList.toggle('act',k===s)); }
+function setRouteCut(hard){ S.routeCut=hard; document.getElementById('rc-curve')?.classList.toggle('act',!hard); document.getElementById('rc-hard')?.classList.toggle('act',hard); }
 function setAssign(a){ S.assignType=a; ['rush','cover','zone','blitz'].forEach(k=>document.getElementById('as-'+k)?.classList.toggle('act',k===a)); }
 document.getElementById('route-color').addEventListener('input',e=>{ S.routeColor=e.target.value; });
 
@@ -1999,7 +2019,7 @@ function rebuildPlayerTypes(){
 // ─── ROUTE FINISH ─────────────────────────────────────────────
 function finishRoute(){
   if(!S.drawingRoute) return;
-  if(S.routeWpts.length>=2){ pushH(); S.routes=S.routes.filter(r=>r.pid!==S.routeForId); S.routes.push({id:Date.now(),pid:S.routeForId,waypoints:[...S.routeWpts],style:S.routeStyle,color:S.routeColor,assign:S.assignType}); }
+  if(S.routeWpts.length>=2){ pushH(); S.routes=S.routes.filter(r=>r.pid!==S.routeForId); S.routes.push({id:Date.now(),pid:S.routeForId,waypoints:[...S.routeWpts],style:S.routeStyle,color:S.routeColor,cut:S.routeCut,assign:S.assignType}); }
   S.drawingRoute=false; S.routeWpts=[]; S.routeForId=null; render(); setStatus('Route saved');
 }
 
