@@ -123,6 +123,11 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 .pill.act-def{background:var(--defense);border-color:var(--defense);color:#fff;}
 .filter-div{width:1px;height:20px;background:var(--border);flex-shrink:0;}
 .filter-count{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;color:var(--lo);white-space:nowrap;margin-left:auto;flex-shrink:0;}
+.filter-row-lbl{font-family:'Oswald',sans-serif;font-size:8px;font-weight:700;letter-spacing:2.5px;color:var(--lo);opacity:.55;flex-shrink:0;margin-right:2px;}
+.pill.act-off{background:var(--offense);border-color:var(--offense);color:#fff;box-shadow:0 2px 12px rgba(230,57,70,.3);}
+.pill.act-pass{background:rgba(200,120,255,.9);border-color:rgba(200,120,255,.9);color:#fff;box-shadow:0 2px 12px rgba(200,120,255,.3);}
+.pill.act-run{background:rgba(80,220,120,.85);border-color:rgba(80,220,120,.85);color:#000;box-shadow:0 2px 12px rgba(80,220,120,.3);}
+.pill.act-def{background:var(--defense);border-color:var(--defense);color:#fff;box-shadow:0 2px 12px rgba(74,158,255,.3);}
 
 /* ── GRID ────────────────────────────────────────────────── */
 #grid-wrap{max-width:1400px;margin:0 auto;padding:28px 20px 60px;}
@@ -257,6 +262,11 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
   </a>
   <div class="nav-div"></div>
   <span class="nav-tag">PLAY LIBRARY</span>
+  <div class="nav-div"></div>
+  <button class="nbtn" onclick="goApp('library')">📚 MY PLAYBOOK</button>
+  <button class="nbtn" onclick="goApp('designer')">✏ DESIGNER</button>
+  <button class="nbtn" onclick="goApp('wb')">📋 WRISTBAND</button>
+  <button class="nbtn" onclick="goApp('ai')">🤖 AI COACH</button>
   <div class="spacer"></div>
   <span id="nav-user"></span>
   <button class="nbtn" id="btn-signout" onclick="doSignOut()">SIGN OUT</button>
@@ -287,32 +297,25 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 
 <!-- ══ FILTER STRIP ══ -->
 <div id="filter-wrap">
-  <!-- Tabs -->
-  <div class="tab-row">
-    <button class="tab-btn act" id="tab-tpl" onclick="switchTab('tpl')">🏈 PLAY LIBRARY</button>
-    <button class="tab-btn ext" onclick="goApp('library')">📚 MY PLAYBOOK</button>
-    <div class="tab-div"></div>
-    <button class="tab-btn ext" onclick="goApp('ai')">🤖 AI COACH</button>
-    <button class="tab-btn ext" onclick="goApp('wb')">📋 WRISTBAND</button>
-    <button class="tab-btn ext" onclick="goApp('designer')">✏ DESIGNER</button>
-  </div>
 
-  <!-- Mode row (only for templates) -->
-  <div class="filter-row" id="mode-row">
-    <button class="pill act" id="pill-all" onclick="setMode('all')">ALL PLAYS</button>
+  <!-- Row 1: OFFENSE | DEFENSE -->
+  <div class="filter-row" id="mode-row" style="border-bottom:1px solid var(--border);gap:7px;">
+    <span class="filter-row-lbl">SIDE</span>
     <button class="pill" id="pill-off" onclick="setMode('offense')">OFFENSE</button>
     <button class="pill" id="pill-def" onclick="setMode('defense')">DEFENSE</button>
-    <div class="filter-div"></div>
-    <button class="pill act" id="pill-type-all" onclick="setType('')">ALL TYPES</button>
-    <button class="pill" id="pill-pass" onclick="setType('Pass')">PASS</button>
-    <button class="pill" id="pill-run" onclick="setType('Run')">RUN</button>
-    <button class="pill" id="pill-deft" onclick="setType('Defense')">DEFENSE</button>
-    <div class="filter-div"></div>
     <span id="filter-count" class="filter-count"></span>
   </div>
 
-  <!-- Category row -->
-  <div class="filter-row" id="cat-row"></div>
+  <!-- Row 2: PASS | RUN | DEFENSE -->
+  <div class="filter-row" id="type-row" style="border-bottom:1px solid var(--border);gap:7px;">
+    <span class="filter-row-lbl">TYPE</span>
+    <button class="pill" id="pill-pass" onclick="setType('Pass')">PASS</button>
+    <button class="pill" id="pill-run" onclick="setType('Run')">RUN</button>
+    <button class="pill" id="pill-deft" onclick="setType('Defense')">DEFENSE</button>
+  </div>
+
+  <!-- Row 3: Categories -->
+  <div class="filter-row" id="cat-row" style="gap:7px;"></div>
 </div>
 
 <!-- ══ GRID ══ -->
@@ -559,36 +562,34 @@ function buildCatRow(tpls){
     const b=document.createElement('button');
     b.className='pill'+(activeCat===cat?' act':'');
     b.textContent=cat.toUpperCase();
-    b.onclick=()=>{activeCat=cat;renderGrid();};
+    b.onclick=()=>{activeCat=(activeCat===cat?'':cat);buildCatRow(tpls);renderGrid();};
     row.appendChild(b);
   });
 }
 
 function setMode(m){
+  if(activeMode===m) m='all'; // toggle off
   activeMode=m; activeCat=''; activeType='';
-  ['all','offense','defense'].forEach(x=>{
+  const offBtn=document.getElementById('pill-off');
+  const defBtn=document.getElementById('pill-def');
+  if(offBtn) offBtn.className='pill'+(m==='offense'?' act act-off':'');
+  if(defBtn) defBtn.className='pill'+(m==='defense'?' act act-def':'');
+  // Reset type pills when mode changes
+  ['pass','run','deft'].forEach(x=>{
     const el=document.getElementById('pill-'+x);
-    if(!el) return;
-    el.className='pill'+(x===m?(' act'+(m==='offense'?' act-off':m==='defense'?' act-def':'')):'');
+    if(el) el.className='pill';
   });
-  // sync type pills visibility
-  const showPass=m==='all'||m==='offense';
-  const showRun =m==='all'||m==='offense';
-  const showDef =m==='all'||m==='defense';
-  document.getElementById('pill-pass').style.opacity=showPass?'1':'0.3';
-  document.getElementById('pill-run').style.opacity =showRun ?'1':'0.3';
-  document.getElementById('pill-deft').style.opacity=showDef ?'1':'0.3';
-  document.getElementById('pill-type-all').className='pill act';
   buildCatRow(window.PLAY_LIBRARY||[]);
   renderGrid();
 }
 
 function setType(t){
+  if(activeType===t) t=''; // toggle off
   activeType=t; activeCat='';
-  ['','Pass','Run','Defense'].forEach(x=>{
-    const idMap={'':'pill-type-all','Pass':'pill-pass','Run':'pill-run','Defense':'pill-deft'};
-    const el=document.getElementById(idMap[x]);
-    if(el) el.className='pill'+(x===t?' act':'');
+  const map={Pass:{id:'pill-pass',cls:'act-pass'},Run:{id:'pill-run',cls:'act-run'},Defense:{id:'pill-deft',cls:'act-def'}};
+  Object.entries(map).forEach(([k,{id,cls}])=>{
+    const el=document.getElementById(id);
+    if(el) el.className='pill'+(k===t?' act '+cls:'');
   });
   buildCatRow(window.PLAY_LIBRARY||[]);
   renderGrid();
@@ -599,8 +600,8 @@ function switchTab(tab){
   activeTab=tab;
   document.getElementById('tab-tpl').classList.toggle('act',tab==='tpl');
   document.getElementById('tab-mine').classList.toggle('act',tab==='mine');
-  document.getElementById('mode-row').style.display=tab==='tpl'?'':'none';
-  document.getElementById('cat-row').style.display=tab==='tpl'?'':'none';
+  const filterWrap=document.getElementById('filter-wrap');
+  if(filterWrap) filterWrap.style.display=tab==='tpl'?'':'none';
   renderGrid();
 }
 
