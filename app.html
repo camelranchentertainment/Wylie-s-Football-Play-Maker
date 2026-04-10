@@ -64,8 +64,18 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 .hbtn.pri:hover { background:#ffc62e; box-shadow:0 4px 16px rgba(240,165,0,.45); }
 .spacer { flex:1; }
 
-/* ─── DESIGNER HEADER CONTROLS ───────────────────────────── */
-#designer-ctrls { display:flex; align-items:center; gap:10px; }
+/* ─── SIDEBAR PLAY CONTROLS ───────────────────────────────── */
+#sb-play-name { width:100%; padding:8px 10px; font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:600; background:var(--bg-card); border:1px solid var(--border-bright); color:var(--text-hi); border-radius:7px; margin-bottom:8px; transition:border-color .18s; box-sizing:border-box; }
+#sb-play-name:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
+.sb-mode-row { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:8px; }
+.sb-mode-btn { padding:8px 4px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1px; cursor:pointer; border:1px solid var(--border); border-radius:7px; background:var(--bg-card); color:var(--text-mid); transition:all .18s; text-align:center; }
+.sb-mode-btn.on-off { background:var(--offense); border-color:transparent; color:#fff; }
+.sb-mode-btn.on-def { background:var(--defense); border-color:transparent; color:#fff; }
+.sb-action-row { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:5px; }
+.sb-act-btn { padding:7px 4px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:.5px; cursor:pointer; border:1px solid var(--border-bright); background:var(--bg-card); color:var(--text-mid); border-radius:7px; transition:all .18s; text-align:center; }
+.sb-act-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-glow); }
+.sb-save-btn { width:100%; padding:9px; font-family:'Oswald',sans-serif; font-size:11px; font-weight:700; letter-spacing:1.5px; cursor:pointer; background:var(--accent); border:none; border-radius:7px; color:#000; box-shadow:0 2px 10px rgba(240,165,0,.3); transition:all .18s; }
+.sb-save-btn:hover { background:#ffc62e; box-shadow:0 4px 16px rgba(240,165,0,.45); }
 
 /* ─── PAGE NAV ────────────────────────────────────────────── */
 .nav-pages { display:flex; gap:3px; flex-shrink:0; }
@@ -665,10 +675,7 @@ html:not([data-navto]) #page-designer { display:flex; }
   html,body { height:auto; overflow:auto; }
   #hdr { padding:0 10px; gap:6px; height:48px; flex-wrap:nowrap; }
   #logo .logo-sub { display:none; }
-  #designer-ctrls { gap:5px; }
-  #designer-ctrls .hdiv { display:none; }
-  #play-name { width:90px; font-size:12px; padding:4px 7px; }
-  .mode-btn { font-size:9px; padding:4px 7px; }
+  .sb-mode-btn { font-size:9px; padding:4px 7px; }
   .hbtn { font-size:9px; padding:4px 8px; letter-spacing:.5px; }
   .npbtn { font-size:9px; padding:4px 7px; letter-spacing:.5px; }
   .nav-pages { gap:2px; }
@@ -712,18 +719,6 @@ html:not([data-navto]) #page-designer { display:flex; }
 <div id="hdr">
   <button id="mob-sidebar-btn" onclick="toggleMobSidebar()" aria-label="Toggle sidebar">☰</button>
   <div id="logo">🏈 <em>Wylie's</em> <span class="logo-sub">PLAY MAKER</span></div>
-  <div class="hdiv"></div>
-  <div id="designer-ctrls">
-    <div class="mode-toggle" role="group" aria-label="Play mode">
-      <button class="mode-btn on-off" id="btn-off" onclick="setMode('offense')" aria-pressed="true">● OFFENSE</button>
-      <button class="mode-btn" id="btn-def" onclick="setMode('defense')" aria-pressed="false">✕ DEFENSE</button>
-    </div>
-    <div class="hdiv"></div>
-    <input type="text" id="play-name" value="Untitled Play" placeholder="Play name...">
-    <button class="hbtn" onclick="undoLast()" title="Ctrl+Z">↩ UNDO</button>
-    <button class="hbtn" onclick="confirmClear()">⌫ CLEAR</button>
-    <button class="hbtn pri" onclick="openSaveModal()" title="Ctrl+S">💾 SAVE PLAY</button>
-  </div>
   <div class="spacer"></div>
   <nav class="nav-pages" role="navigation" aria-label="Main navigation">
     <button class="npbtn" onclick="window.location.href='library.html'">🏈 PLAY LIBRARY</button>
@@ -803,6 +798,18 @@ html:not([data-navto]) #page-designer { display:flex; }
   <!-- ══ DESIGNER ══ -->
   <div id="page-designer" class="page">
     <div id="sidebar">
+      <div class="sb-sec">
+        <input type="text" id="play-name" value="Untitled Play" placeholder="Play name..." style="width:100%;padding:8px 10px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;background:var(--bg-card);border:1px solid var(--border-bright);color:var(--text-hi);border-radius:7px;margin-bottom:8px;box-sizing:border-box;outline:none;transition:border-color .18s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-bright)'">
+        <div class="sb-mode-row">
+          <button class="sb-mode-btn on-off" id="btn-off" onclick="setMode('offense')" aria-pressed="true">● OFFENSE</button>
+          <button class="sb-mode-btn" id="btn-def" onclick="setMode('defense')" aria-pressed="false">✕ DEFENSE</button>
+        </div>
+        <div class="sb-action-row">
+          <button class="sb-act-btn" onclick="undoLast()" title="Ctrl+Z">↩ UNDO</button>
+          <button class="sb-act-btn" onclick="confirmClear()">⌫ CLEAR</button>
+        </div>
+        <button class="sb-save-btn" onclick="openSaveModal()" title="Ctrl+S">💾 SAVE PLAY</button>
+      </div>
       <div class="sb-sec">
         <div class="sb-sec-head">TOOLS</div>
         <div class="tool-grid">
@@ -2162,9 +2169,9 @@ function setMode(m){
   if(S.drawingRoute){S.drawingRoute=false;S.routeWpts=[];}
   S.mode=m; S.selectedId=null;
   if(!FMTNS[m][S.formation]) S.formation=Object.keys(FMTNS[m])[0];
-  document.getElementById('btn-off').className='mode-btn'+(m==='offense'?' on-off':'');
+  document.getElementById('btn-off').className='sb-mode-btn'+(m==='offense'?' on-off':'');
   document.getElementById('btn-off').setAttribute('aria-pressed', m==='offense');
-  document.getElementById('btn-def').className='mode-btn'+(m==='defense'?' on-def':'');
+  document.getElementById('btn-def').className='sb-mode-btn'+(m==='defense'?' on-def':'');
   document.getElementById('btn-def').setAttribute('aria-pressed', m==='defense');
   rebuildFormations(); rebuildPlayerTypes(); setTool('select');
 }
@@ -4228,7 +4235,6 @@ function switchPage(id){
     b.setAttribute('aria-current', active ? 'page' : 'false');
   });
   document.getElementById('page-'+id).classList.add('act');
-  document.getElementById('designer-ctrls').style.display=id==='designer'?'flex':'none';
   updateHeroProfile();
   if(id==='library') renderLibrary();
   if(id==='wb'){updateWbSel();renderWbList();}
