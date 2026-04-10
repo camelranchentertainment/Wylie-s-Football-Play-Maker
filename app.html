@@ -87,8 +87,8 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 #pages { flex:1; overflow:hidden; position:relative; }
 .page { position:absolute; inset:0; display:none; }
 .page.act { display:flex; }
-/* Show designer by default only when NOT navigating to another page */
-html:not([data-navto]) #page-designer { display:flex; }
+/* Show designer by default only on first load before any switchPage call */
+html:not([data-navto]):not(.navigated) #page-designer { display:flex; }
 
 /* ─── DESIGNER PAGE ───────────────────────────────────────── */
 #page-designer { flex-direction:row; }
@@ -4232,6 +4232,7 @@ document.getElementById('label-text').addEventListener('keydown',e=>{if(e.key===
 
 // ─── PAGE NAVIGATION ──────────────────────────────────────────
 function switchPage(id){
+  document.documentElement.classList.add('navigated'); // disables CSS fallback for designer
   document.documentElement.removeAttribute('data-navto');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
   document.querySelectorAll('.npbtn').forEach(b=>{
