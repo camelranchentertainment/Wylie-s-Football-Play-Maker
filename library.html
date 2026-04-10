@@ -103,6 +103,7 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 @keyframes spin{to{transform:rotate(360deg)}}
 .nbtn{padding:5px 13px;height:30px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.2px;cursor:pointer;border:1px solid var(--border-bright);background:transparent;color:var(--mid);border-radius:7px;transition:all .18s;white-space:nowrap;}
 .nbtn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.nbtn.act{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
 .nbtn.pri{background:var(--accent);border-color:transparent;color:#000;box-shadow:0 2px 12px rgba(240,165,0,.3);}
 .nbtn.pri:hover{background:#ffc62e;box-shadow:0 4px 20px rgba(240,165,0,.45);}
 
@@ -300,14 +301,13 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
     </svg>
     <span class="nav-logo-text"><em>WYLIE'S</em> PLAY MAKER</span>
   </a>
-  <div class="nav-div"></div>
-  <span class="nav-tag">PLAY LIBRARY</span>
-  <div class="nav-div"></div>
+  <div class="spacer"></div>
+  <button class="nbtn act" aria-current="page">🏈 PLAY LIBRARY</button>
   <button class="nbtn" onclick="goApp('library')">📚 MY PLAYBOOK</button>
   <button class="nbtn" onclick="goApp('designer')">✏ DESIGNER</button>
   <button class="nbtn" onclick="goApp('wb')">📋 WRISTBAND</button>
   <button class="nbtn" onclick="goApp('ai')">🤖 AI COACH</button>
-  <div class="spacer"></div>
+  <div class="nav-div"></div>
   <!-- User chip + dropdown -->
   <div class="user-chip" id="user-chip" onclick="toggleUserMenu(event)">
     <div class="user-avatar" id="user-avatar">?</div>
