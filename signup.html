@@ -160,7 +160,7 @@ input.invalid{border-color:var(--off);}
 
   <div class="divider"><hr><span>OR</span><hr></div>
 
-  <div class="switch">
+  <div class="switch" id="switch-link">
     Already have an account? &nbsp;
     <a href="login.html">SIGN IN →</a>
   </div>
@@ -243,15 +243,21 @@ async function doSignup(e) {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>CREATING ACCOUNT…';
 
-  const { error } = await supa.auth.signUp({ email, password });
+  const { data, error } = await supa.auth.signUp({ email, password });
 
   if (error) {
     showMsg(friendlyError(error), 'error');
     btn.disabled = false;
     btn.textContent = 'CREATE MY ACCOUNT';
-  } else {
+  } else if (data.session) {
     showMsg('Account created! Redirecting to your playbook…', 'success');
     setTimeout(() => window.location.replace('app.html'), 1000);
+  } else {
+    showMsg('Account created! Check your inbox for a confirmation email, then sign in.', 'success');
+    btn.disabled = false;
+    btn.textContent = 'CREATE MY ACCOUNT';
+    document.getElementById('switch-link').innerHTML =
+      'Already confirmed? &nbsp;<a href="login.html">SIGN IN →</a>';
   }
 }
 </script>

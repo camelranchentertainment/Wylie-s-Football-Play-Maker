@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Wylie's Play Maker — Design Smarter. Coach Better.</title>
 <meta name="description" content="Professional browser-based football play designer for coaches. Design plays, build wristband cards, and get AI-powered play suggestions — no install required.">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="styles/main.css">
 </head>
@@ -33,8 +33,20 @@
     <a href="#news">QB NEWS</a>
     <a href="#store">STORE</a>
   </div>
-  <a href="app.html" class="nav-cta">▶ LAUNCH APP</a>
+  <div class="nav-right">
+    <a href="app.html" class="nav-cta">▶ LAUNCH APP</a>
+    <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileNav()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </nav>
+<div class="mobile-nav" id="mobile-nav">
+  <a href="#features" onclick="closeMobileNav()">FEATURES</a>
+  <a href="#how" onclick="closeMobileNav()">HOW IT WORKS</a>
+  <a href="#news" onclick="closeMobileNav()">QB NEWS</a>
+  <a href="#store" onclick="closeMobileNav()">STORE</a>
+  <a href="app.html" class="mobile-nav-cta">▶ LAUNCH APP</a>
+</div>
 
 <!-- ══ HERO ══ -->
 <section id="hero">
@@ -99,42 +111,42 @@
   <div class="feat-grid">
 
     <div class="feat-card">
-      <div class="feat-icon">✏️</div>
+      <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
       <div class="feat-name">Interactive Play Designer</div>
       <div class="feat-desc">Place players on a to-scale field with drag-and-drop precision. Draw multi-waypoint routes with solid, dashed, motion, or block styles. Full undo history and keyboard shortcuts keep you moving fast.</div>
       <span class="tag tag-g">OFFENSE + DEFENSE</span>
     </div>
 
     <div class="feat-card">
-      <div class="feat-icon">📋</div>
+      <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
       <div class="feat-name">16 Built-In Formations</div>
       <div class="feat-desc">8 offensive formations (Pro Set, I-Formation, Shotgun, Spread/Trips, Pistol, Singleback, Power I, Wildcat) and 8 defensive schemes (4-3, 3-4, Nickel, Dime, 46 Bear, Cover 2, Zero Blitz, Man Coverage).</div>
       <span class="tag tag-o">OFFENSE</span>&nbsp;<span class="tag tag-d">DEFENSE</span>
     </div>
 
     <div class="feat-card">
-      <div class="feat-icon">💾</div>
+      <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
       <div class="feat-name">Play Library</div>
       <div class="feat-desc">Save unlimited plays with auto-generated thumbnails. Tag by type — Run, Pass, Screen, Trick, Red Zone, Defense, Special. Search, filter, and preview any saved play with a single click.</div>
       <span class="tag tag-g">UNLIMITED STORAGE</span>
     </div>
 
     <div class="feat-card">
-      <div class="feat-icon">🏈</div>
+      <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
       <div class="feat-name">QB Wristband Builder</div>
       <div class="feat-desc">Select up to 24 plays from your library, choose 3–5 columns, set your card title, and watch a live preview update instantly. Print a professional wristband card ready for game day.</div>
       <span class="tag tag-g">GAME DAY READY</span>
     </div>
 
     <div class="feat-card">
-      <div class="feat-icon">🤖</div>
+      <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
       <div class="feat-name">AI Coach</div>
       <div class="feat-desc">Set your team's age group, skill level, and focus area. The AI generates detailed, age-appropriate play suggestions — complete with formation diagrams, execution steps, and coaching points — and saves them straight to your library.</div>
       <span class="tag tag-a">POWERED BY CLAUDE AI</span>
     </div>
 
     <div class="feat-card">
-      <div class="feat-icon">⚡</div>
+      <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg></div>
       <div class="feat-name">Zero Install · Always Free</div>
       <div class="feat-desc">Open in Chrome, Firefox, Safari, or Edge and start drawing. No app to download, no account, no subscription. Your play library is stored privately in your browser and never leaves your device.</div>
       <span class="tag tag-g">FREE FOREVER</span>
@@ -292,17 +304,39 @@
 
 <!-- ══ FOOTER ══ -->
 <footer>
-  <div class="foot-logo">🏈 &nbsp;<em>WYLIE'S</em> PLAY MAKER</div>
-  <div class="foot-links">
-    <a href="app.html">Launch App</a>
-    <a href="#features">Features</a>
-    <a href="#how">How It Works</a>
-    <a href="#news">QB News</a>
-    <a href="#store">Store</a>
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <div class="foot-logo"><em>WYLIE'S</em> PLAY MAKER</div>
+      <div class="foot-tagline">Professional football play design tools for coaches at every level. Free, browser-based, no install required.</div>
+    </div>
+    <div class="foot-col">
+      <div class="foot-col-title">PRODUCT</div>
+      <a href="app.html">Launch App</a>
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+    </div>
+    <div class="foot-col">
+      <div class="foot-col-title">EXPLORE</div>
+      <a href="#news">QB News</a>
+      <a href="#store">Store</a>
+      <a href="login.html">Sign In</a>
+    </div>
   </div>
-  <div class="foot-copy">© 2026 Wylie's Play Maker &nbsp;·&nbsp; Built for coaches, by coaches &nbsp;·&nbsp; MIT License</div>
+  <div class="foot-bottom">
+    <div class="foot-copy">© 2026 Wylie's Play Maker &nbsp;·&nbsp; Built for coaches, by coaches</div>
+  </div>
 </footer>
 
 <script src="js/app.js"></script>
+<script>
+function toggleMobileNav() {
+  document.getElementById('mobile-nav').classList.toggle('open');
+  document.getElementById('nav-hamburger').classList.toggle('open');
+}
+function closeMobileNav() {
+  document.getElementById('mobile-nav').classList.remove('open');
+  document.getElementById('nav-hamburger').classList.remove('open');
+}
+</script>
 </body>
 </html>
