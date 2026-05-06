@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wylie's Football Play Maker</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -28,7 +28,7 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 html,body { height:100vh; overflow:hidden; }
-body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(--text-hi); display:flex; flex-direction:column; }
+body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--text-hi); display:flex; flex-direction:column; }
 
 /* ─── HEADER ─────────────────────────────────────────────── */
 #hdr {
@@ -39,7 +39,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   display:flex; align-items:center; gap:10px;
   flex-shrink:0; box-shadow:0 4px 24px rgba(0,0,0,.7); z-index:20;
 }
-#logo { font-family:'Oswald',sans-serif; font-size:17px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; white-space:nowrap; }
+#logo { font-family:'Oswald',sans-serif; font-size:17px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; white-space:nowrap; display:flex; align-items:center; gap:9px; }
 #logo em { color:var(--accent); font-style:normal; }
 #logo .logo-sub { color:var(--text-mid); font-size:13px; letter-spacing:2px; }
 .hdiv { width:1px; height:28px; background:var(--border-bright); flex-shrink:0; }
@@ -61,7 +61,8 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 
 /* ─── PAGE NAV ────────────────────────────────────────────── */
 .nav-pages { display:flex; gap:3px; flex-shrink:0; }
-.npbtn { padding:5px 13px; height:30px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.2px; cursor:pointer; border:1px solid var(--border-bright); background:transparent; color:var(--text-lo); border-radius:7px; transition:all .18s; white-space:nowrap; }
+.npbtn { padding:5px 13px; height:30px; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.2px; cursor:pointer; border:1px solid var(--border-bright); background:transparent; color:var(--text-lo); border-radius:7px; transition:all .18s; white-space:nowrap; display:inline-flex; align-items:center; gap:5px; }
+.npbtn svg { width:11px; height:11px; flex-shrink:0; opacity:.8; }
 .npbtn:hover { color:var(--text-mid); border-color:var(--border-bright); background:var(--bg-hover); }
 .npbtn.act { background:var(--accent-glow); border-color:var(--accent); color:var(--accent); }
 
@@ -257,7 +258,17 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
 
 <!-- ═══ HEADER ═══ -->
 <div id="hdr">
-  <div id="logo">🏈 <em>Wylie's</em> <span class="logo-sub">PLAY MAKER</span></div>
+  <div id="logo">
+    <svg width="22" height="22" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+      <path d="M22 3L40 10.5V23C40 33.5 32 41 22 44C12 41 4 33.5 4 23V10.5L22 3Z" fill="#1b2b3d" stroke="#f0a500" stroke-width="1.8"/>
+      <ellipse cx="22" cy="20" rx="12" ry="7.5" fill="none" stroke="#f0a500" stroke-width="1.8" transform="rotate(-18 22 20)"/>
+      <line x1="22" y1="12" x2="22" y2="28" stroke="#f0a500" stroke-width="1" opacity=".65"/>
+      <line x1="16.5" y1="17" x2="27.5" y2="17" stroke="#f0a500" stroke-width=".9" opacity=".55"/>
+      <line x1="16.5" y1="20" x2="27.5" y2="20" stroke="#f0a500" stroke-width=".9" opacity=".55"/>
+      <line x1="16.5" y1="23" x2="27.5" y2="23" stroke="#f0a500" stroke-width=".9" opacity=".55"/>
+    </svg>
+    <em>Wylie's</em> <span class="logo-sub">PLAY MAKER</span>
+  </div>
   <div class="hdiv"></div>
   <div id="designer-ctrls">
     <div class="mode-toggle">
@@ -266,19 +277,19 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
     </div>
     <div class="hdiv"></div>
     <input type="text" id="play-name" value="Untitled Play" placeholder="Play name...">
-    <button class="hbtn" onclick="undoLast()" title="Ctrl+Z">↩ UNDO</button>
-    <button class="hbtn" onclick="confirmClear()">⌫ CLEAR</button>
-    <button class="hbtn pri" onclick="openSaveModal()" title="Ctrl+S">💾 SAVE PLAY</button>
+    <button class="hbtn" onclick="undoLast()" title="Ctrl+Z">UNDO</button>
+    <button class="hbtn" onclick="confirmClear()">CLEAR</button>
+    <button class="hbtn pri" onclick="openSaveModal()" title="Ctrl+S">SAVE PLAY</button>
   </div>
   <div class="spacer"></div>
   <nav class="nav-pages">
-    <button class="npbtn act" data-page="designer" onclick="switchPage('designer')">✏ DESIGNER</button>
-    <button class="npbtn" data-page="ai" onclick="switchPage('ai')">🤖 AI COACH</button>
-    <button class="npbtn" data-page="wb" onclick="switchPage('wb')">🏈 WRISTBAND</button>
-    <button class="npbtn" data-page="library" onclick="switchPage('library')">📚 LIBRARY</button>
+    <button class="npbtn act" data-page="designer" onclick="switchPage('designer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>DESIGNER</button>
+    <button class="npbtn" data-page="ai" onclick="switchPage('ai')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI COACH</button>
+    <button class="npbtn" data-page="wb" onclick="switchPage('wb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>WRISTBAND</button>
+    <button class="npbtn" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>LIBRARY</button>
   </nav>
   <div class="hdiv"></div>
-  <button class="auth-btn" id="auth-nav-btn" onclick="openAuthModal()">👤 SIGN IN</button>
+  <button class="auth-btn" id="auth-nav-btn" onclick="openAuthModal()">SIGN IN</button>
 </div>
 
 <!-- ═══ PAGES ═══ -->
@@ -347,7 +358,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <!-- ══ LIBRARY ══ -->
   <div id="page-library" class="page">
     <div class="page-topbar">
-      <h2>📚 Play Library <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">☁ CLOUD</span></h2>
+      <h2>Play Library <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">CLOUD</span></h2>
       <input type="text" class="rp-input" placeholder="Search plays..." id="lib-search" oninput="renderLibrary()">
       <select class="rp-select" id="lib-filter" style="width:110px;" onchange="renderLibrary()">
         <option value="all">All Plays</option>
@@ -362,7 +373,7 @@ body { font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(-
   <!-- ══ AI COACH ══ -->
   <div id="page-ai" class="page">
     <div id="ai-controls-col">
-      <h2>🤖 AI Coach</h2>
+      <h2>AI Coach</h2>
       <div class="rp-group">
         <label class="rp-label">Side</label>
         <div class="mode-toggle" style="width:100%;">
