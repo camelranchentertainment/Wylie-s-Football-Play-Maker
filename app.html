@@ -2122,8 +2122,37 @@ function init(){
 }
 init();
 
-// Boot auth on page load
-initAuth();
+// Boot auth on page load, then handle deep-link routing
+initAuth().then(() => {
+  // Handle ?page= deep-link from library.html goApp() navigation
+  const urlPage = new URLSearchParams(location.search).get('page');
+  if (urlPage) {
+    const validPages = ['designer','ai','wb','signals','library'];
+    if (validPages.includes(urlPage)) switchPage(urlPage);
+  }
+
+  // Handle wfpm-open-play from library.html openInDesigner()
+  try {
+    const pending = sessionStorage.getItem('wfpm-open-play');
+    if (pending) {
+      sessionStorage.removeItem('wfpm-open-play');
+      const play = JSON.parse(pending);
+      if (play && play.players) {
+        pushH();
+        S.players = play.players || [];
+        S.routes  = play.routes  || [];
+        S.labels  = play.labels  || [];
+        S.mode    = play.mode    || 'offense';
+        S.formation = play.formation || S.formation;
+        S.selectedId = null;
+        document.getElementById('play-name').value = play.name || 'Untitled Play';
+        setMode(S.mode); render();
+        setStatus(`"${play.name}" loaded — hit SAVE PLAY to keep it`);
+        switchPage('designer');
+      }
+    }
+  } catch(e) { /* ignore */ }
+});
 </script>
 <script src="js/signals/signalEncoder.js"></script>
 <script src="js/signals/signalStorage.js"></script>

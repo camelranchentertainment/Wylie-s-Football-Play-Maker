@@ -250,8 +250,8 @@ async function doSignup(e) {
     btn.disabled = false;
     btn.textContent = 'CREATE MY ACCOUNT';
   } else if (data.session) {
-    showMsg('Account created! Redirecting to your playbook…', 'success');
-    setTimeout(() => window.location.replace('app.html'), 1000);
+    showMsg('Account created! Setting up your profile…', 'success');
+    setTimeout(() => window.location.replace('profile.html'), 1000);
   } else {
     showMsg('Account created! Check your inbox for a confirmation email, then sign in.', 'success');
     btn.disabled = false;
