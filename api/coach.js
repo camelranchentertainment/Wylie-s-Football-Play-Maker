@@ -1,14 +1,41 @@
 export const config = { runtime: 'edge' };
 
+// Allowed origins: the production domain, any *.vercel.app preview, and localhost dev.
+// Set ALLOWED_ORIGIN env var in Vercel to lock down to a single custom domain.
+function getAllowedOrigin(req) {
+  const origin = req.headers.get('origin') || '';
+  const allowed = process.env.ALLOWED_ORIGIN;
+  if (allowed) {
+    return origin === allowed ? origin : null;
+  }
+  if (
+    origin === 'http://localhost:3000' ||
+    origin === 'http://localhost:8765' ||
+    /^https:\/\/[\w-]+\.vercel\.app$/.test(origin)
+  ) {
+    return origin;
+  }
+  return null;
+}
+
 export default async function handler(req) {
+  const allowedOrigin = getAllowedOrigin(req);
   const cors = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': allowedOrigin || 'null',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Vary': 'Origin',
   };
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: cors });
+  }
+
+  if (!allowedOrigin) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   if (req.method !== 'POST') {
