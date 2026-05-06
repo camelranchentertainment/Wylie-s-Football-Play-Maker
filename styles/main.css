@@ -90,7 +90,7 @@ img{display:block;}
 .fc-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.13;z-index:0;border-radius:12px;transition:opacity .3s;}
 /* All direct children of feat-card stack above the bg */
 .feat-card>*:not(.fc-bg){position:relative;z-index:1;}
-.feat-icon{font-size:30px;margin-bottom:14px;}
+.feat-icon{width:46px;height:46px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;background:rgba(240,165,0,.1);border:1px solid rgba(240,165,0,.22);border-radius:10px;padding:11px;flex-shrink:0;}.feat-icon svg{width:100%;height:100%;stroke:#f0a500;}
 .feat-name{font-family:'Oswald',sans-serif;font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:.3px;}
 .feat-desc{font-size:12.5px;color:var(--mid);line-height:1.65;}
 .tag{display:inline-block;margin-top:14px;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1.5px;font-family:'Oswald',sans-serif;}
@@ -138,7 +138,7 @@ img{display:block;}
 .store-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;max-width:900px;margin:48px auto 0;position:relative;z-index:1;}
 .store-item{background:rgba(255,255,255,.03);border:1px dashed rgba(240,165,0,.18);border-radius:10px;padding:26px 12px;transition:all .2s;}
 .store-item:hover{background:rgba(240,165,0,.06);border-color:rgba(240,165,0,.35);}
-.si-icon{font-size:36px;margin-bottom:10px;}
+.si-icon{width:42px;height:42px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.18);border-radius:9px;padding:10px;margin:0 auto 10px;}.si-icon svg{width:100%;height:100%;stroke:#f0a500;}
 .si-name{font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;color:var(--mid);letter-spacing:1.5px;}
 .si-soon{font-size:9px;color:var(--lo);margin-top:4px;letter-spacing:1px;}
 .notify-wrap{margin:42px auto 0;max-width:440px;position:relative;z-index:1;}
@@ -153,7 +153,7 @@ img{display:block;}
 
 /* ── FOOTER ────────────────────────────────────── */
 footer{background:var(--panel);border-top:1px solid var(--border);padding:40px 40px 32px;display:flex;flex-direction:column;align-items:center;gap:18px;}
-.foot-logo{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:3px;}
+.foot-logo{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:3px;display:flex;align-items:center;}
 .foot-logo em{color:var(--accent);font-style:normal;}
 .foot-links{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;}
 .foot-links a{color:var(--lo);font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1.5px;transition:color .2s;}
