@@ -254,6 +254,61 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   body > *:not(#wristband-print) { display:none !important; }
   #wristband-print { display:block !important; font-family:Arial,sans-serif; }
 }
+
+/* ─── MOBILE RESPONSIVE ───────────────────────────────────── */
+@media(max-width:700px) {
+  html,body { height:auto; overflow:auto; }
+
+  /* Header: stack into two rows */
+  #hdr {
+    height:auto; padding:6px 10px; gap:6px;
+    flex-wrap:wrap; align-items:center;
+  }
+  #logo .logo-sub { display:none; }
+  #logo { font-size:14px; gap:6px; }
+  .hdiv { display:none; }
+  .spacer { display:none; }
+
+  /* Designer controls row */
+  #designer-ctrls { flex-wrap:wrap; gap:6px; order:3; width:100%; }
+  #play-name { min-width:0; flex:1; font-size:13px; }
+  .mode-toggle { flex-shrink:0; }
+  .mode-btn { padding:4px 10px; font-size:10px; }
+  .hbtn { padding:4px 10px; font-size:10px; height:28px; }
+
+  /* Nav: scrollable row */
+  .nav-pages { order:2; width:100%; overflow-x:auto; gap:4px; padding-bottom:2px; }
+  .nav-pages::-webkit-scrollbar { display:none; }
+  .npbtn { font-size:9px; padding:4px 9px; height:28px; }
+  .npbtn svg { display:none; }
+
+  /* Auth button */
+  .auth-btn { order:1; margin-left:auto; padding:4px 10px; font-size:10px; }
+
+  /* Pages fill available height */
+  #pages { position:static; overflow:visible; flex:none; }
+  .page { position:static; display:none; flex-direction:column; }
+  .page.act { display:flex; }
+
+  /* Designer: sidebar above canvas */
+  #page-designer { flex-direction:column; }
+  #sidebar { width:100%; min-width:0; border-right:none; border-bottom:1px solid var(--border); max-height:220px; }
+
+  /* AI Coach: stack columns */
+  #page-ai { flex-direction:column; }
+  #ai-controls-col { width:100%; min-width:0; border-right:none; border-bottom:1px solid var(--border); }
+
+  /* Wristband: stack columns */
+  #page-wb { flex-direction:column; }
+  #wb-controls-col { width:100%; min-width:0; border-right:none; border-bottom:1px solid var(--border); }
+
+  /* AI play card: stack canvas and info */
+  .ai-play-card { flex-direction:column; height:auto; }
+  .ai-play-card-canvas-col { width:100%; height:200px; }
+
+  /* Library grid: single column on small screens */
+  #lib-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); padding:12px; gap:10px; }
+}
 </style>
 </head>
 <body>
