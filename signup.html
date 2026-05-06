@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Create Account — Wylie's Play Maker</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="js/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root{
   --bg:#14202e;--panel:#1b2b3d;--card:#22304a;
@@ -15,60 +15,96 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;}
 body{
-  font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg);
+  color:var(--hi);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:100vh;padding:24px 16px;
+  min-height:100vh;
+  padding:24px 16px;
   background-image:
     repeating-linear-gradient(0deg,transparent,transparent 54px,rgba(255,255,255,.03) 54px,rgba(255,255,255,.03) 55px),
     radial-gradient(ellipse at 50% 0%,rgba(240,165,0,.08) 0%,transparent 60%);
 }
+
 .brand{display:flex;align-items:center;gap:12px;margin-bottom:36px;}
 .brand svg{width:40px;height:40px;}
 .brand-text .top{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:3px;}
 .brand-text .top em{color:var(--accent);font-style:normal;}
 .brand-text .sub{font-size:8px;letter-spacing:3px;color:var(--lo);margin-top:1px;}
+
 .card{
-  background:var(--panel);border:1px solid var(--border);
-  border-top:3px solid var(--accent);border-radius:14px;
-  padding:36px 40px 32px;width:100%;max-width:420px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-top:3px solid var(--accent);
+  border-radius:14px;
+  padding:36px 40px 32px;
+  width:100%;max-width:420px;
   box-shadow:0 24px 60px rgba(0,0,0,.5);
 }
-.card-title{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px;color:#fff;margin-bottom:6px;}
+.card-title{
+  font-family:'Oswald',sans-serif;
+  font-size:22px;font-weight:700;letter-spacing:1px;
+  color:#fff;margin-bottom:6px;
+}
 .card-sub{font-size:13px;color:var(--lo);margin-bottom:28px;line-height:1.5;}
+
 .field{margin-bottom:18px;}
 label{display:block;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--lo);margin-bottom:6px;}
 input[type=email],input[type=password],input[type=text]{
-  width:100%;padding:12px 14px;background:rgba(255,255,255,.06);
-  border:1px solid var(--border);border-radius:8px;color:#fff;
-  font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;
-  transition:border-color .2s,background .2s;
+  width:100%;padding:12px 14px;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;
+  outline:none;transition:border-color .2s,background .2s;
 }
-input[type=email]:focus,input[type=password]:focus,input[type=text]:focus{border-color:var(--accent);background:rgba(255,255,255,.09);}
+input[type=email]:focus,input[type=password]:focus,input[type=text]:focus{
+  border-color:var(--accent);background:rgba(255,255,255,.09);
+}
 input::placeholder{color:var(--lo);}
 input.invalid{border-color:var(--off);}
+
 .hint{font-size:10.5px;color:var(--lo);margin-top:5px;}
 .hint.err{color:#ff6b75;}
+
 .btn-gold{
-  width:100%;padding:13px;background:var(--accent);color:#000;
+  width:100%;padding:13px;
+  background:var(--accent);color:#000;
   font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;
   border:none;border-radius:8px;cursor:pointer;
-  transition:all .2s;box-shadow:0 4px 22px rgba(240,165,0,.3);margin-top:4px;
+  transition:all .2s;box-shadow:0 4px 22px rgba(240,165,0,.3);
+  margin-top:4px;
 }
 .btn-gold:hover{background:#ffc62e;box-shadow:0 8px 30px rgba(240,165,0,.45);transform:translateY(-1px);}
 .btn-gold:disabled{opacity:.6;cursor:not-allowed;transform:none;}
-.msg{display:none;padding:10px 14px;border-radius:7px;font-size:12.5px;font-family:'Oswald',sans-serif;letter-spacing:.5px;margin-bottom:18px;line-height:1.45;}
+
+.msg{
+  display:none;
+  padding:10px 14px;border-radius:7px;
+  font-size:12.5px;font-family:'Oswald',sans-serif;letter-spacing:.5px;
+  margin-bottom:18px;line-height:1.45;
+}
 .msg.error{background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.25);color:#ff6b75;}
 .msg.success{background:rgba(80,220,120,.1);border:1px solid rgba(80,220,120,.25);color:#50dc78;}
 .msg.show{display:block;}
+
 .divider{display:flex;align-items:center;gap:12px;margin:22px 0;}
 .divider hr{flex:1;border:none;border-top:1px solid var(--border);}
 .divider span{font-family:'Oswald',sans-serif;font-size:9px;color:var(--lo);letter-spacing:2px;}
+
 .switch{text-align:center;font-size:12px;color:var(--lo);}
 .switch a{color:var(--accent);font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-decoration:none;}
 .switch a:hover{color:#ffc62e;}
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.perks{display:flex;flex-direction:column;gap:7px;margin-bottom:24px;padding:14px 16px;background:rgba(240,165,0,.05);border:1px solid rgba(240,165,0,.12);border-radius:8px;}
+
+.perks{
+  display:flex;flex-direction:column;gap:7px;
+  margin-bottom:24px;padding:14px 16px;
+  background:rgba(240,165,0,.05);border:1px solid rgba(240,165,0,.12);
+  border-radius:8px;
+}
 .perk{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mid);}
 .perk-icon{color:var(--accent);font-size:13px;flex-shrink:0;}
 </style>
@@ -93,35 +129,38 @@ input.invalid{border-color:var(--off);}
 <div class="card">
   <div class="card-title">CREATE ACCOUNT</div>
   <div class="card-sub">Join thousands of coaches designing smarter playbooks.</div>
+
   <div class="perks">
     <div class="perk"><span class="perk-icon">☁</span> Cloud-synced play library across all devices</div>
     <div class="perk"><span class="perk-icon">🤖</span> AI Coach powered by Claude for play suggestions</div>
     <div class="perk"><span class="perk-icon">📋</span> Build and print wristband cards instantly</div>
   </div>
+
   <div class="msg" id="msg"></div>
+
   <form id="signup-form" onsubmit="doSignup(event)">
-    <div class="field">
-      <label>FULL NAME</label>
-      <input type="text" id="fullname" placeholder="Your name" required autocomplete="name">
-    </div>
     <div class="field">
       <label>EMAIL ADDRESS</label>
       <input type="email" id="email" placeholder="coach@example.com" required autocomplete="email">
     </div>
     <div class="field">
       <label>PASSWORD</label>
-      <input type="password" id="password" placeholder="At least 6 characters" required autocomplete="new-password" oninput="checkPw()">
+      <input type="password" id="password" placeholder="At least 6 characters" required autocomplete="new-password"
+             oninput="checkPw()">
       <div class="hint" id="pw-hint"></div>
     </div>
     <div class="field">
       <label>CONFIRM PASSWORD</label>
-      <input type="password" id="confirm" placeholder="Re-enter password" required autocomplete="new-password" oninput="checkConfirm()">
+      <input type="password" id="confirm" placeholder="Re-enter password" required autocomplete="new-password"
+             oninput="checkConfirm()">
       <div class="hint" id="confirm-hint"></div>
     </div>
     <button type="submit" class="btn-gold" id="submit-btn">CREATE MY ACCOUNT</button>
   </form>
+
   <div class="divider"><hr><span>OR</span><hr></div>
-  <div class="switch">
+
+  <div class="switch" id="switch-link">
     Already have an account? &nbsp;
     <a href="login.html">SIGN IN →</a>
   </div>
@@ -130,19 +169,25 @@ input.invalid{border-color:var(--off);}
 <script>
 const SUPA_URL = 'https://rvxanoqourdrfmbucvpz.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
-const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-// If already signed in, skip to app
-_supa.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.replace('library.html');
+// If already signed in, skip to index
+supa.auth.getSession().then(({ data }) => {
+  if (data.session) window.location.replace('app.html');
 });
 
 function checkPw() {
   const pw = document.getElementById('password').value;
   const hint = document.getElementById('pw-hint');
   if (!pw) { hint.textContent = ''; return; }
-  if (pw.length < 6) { hint.textContent = 'Password must be at least 6 characters.'; hint.className = 'hint err'; }
-  else { hint.textContent = 'Looks good!'; hint.className = 'hint'; hint.style.color = '#50dc78'; }
+  if (pw.length < 6) {
+    hint.textContent = 'Password must be at least 6 characters.';
+    hint.className = 'hint err';
+  } else {
+    hint.textContent = 'Looks good!';
+    hint.className = 'hint';
+    hint.style.color = '#50dc78';
+  }
 }
 
 function checkConfirm() {
@@ -150,8 +195,14 @@ function checkConfirm() {
   const cf = document.getElementById('confirm').value;
   const hint = document.getElementById('confirm-hint');
   if (!cf) { hint.textContent = ''; return; }
-  if (pw !== cf) { hint.textContent = 'Passwords do not match.'; hint.className = 'hint err'; }
-  else { hint.textContent = 'Passwords match!'; hint.className = 'hint'; hint.style.color = '#50dc78'; }
+  if (pw !== cf) {
+    hint.textContent = 'Passwords do not match.';
+    hint.className = 'hint err';
+  } else {
+    hint.textContent = 'Passwords match!';
+    hint.className = 'hint';
+    hint.style.color = '#50dc78';
+  }
 }
 
 function showMsg(text, type) {
@@ -160,55 +211,53 @@ function showMsg(text, type) {
   el.className = 'msg show ' + type;
 }
 
-function friendlyError(msg) {
-  const m = (msg || '').toLowerCase();
+function friendlyError(err) {
+  const m = (err.message || '').toLowerCase();
   if (m.includes('already registered') || m.includes('user already exists'))
     return 'An account with this email already exists. Try signing in instead.';
   if (m.includes('password') && m.includes('short'))
     return 'Password must be at least 6 characters.';
   if (m.includes('invalid email'))
     return 'Please enter a valid email address.';
-  if (m.includes('too many requests') || m.includes('rate limit'))
+  if (m.includes('too many requests'))
     return 'Too many attempts. Please wait a moment and try again.';
-  if (m.includes('fetch') || m.includes('network') || m.includes('failed'))
-    return 'Cannot reach the server. Check your connection or try again shortly.';
-  return msg || 'An error occurred. Please try again.';
+  return err.message || 'An error occurred. Please try again.';
 }
 
 async function doSignup(e) {
   e.preventDefault();
-  const fullname = document.getElementById('fullname').value.trim();
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
   const confirm = document.getElementById('confirm').value;
   const btn = document.getElementById('submit-btn');
 
-  if (!fullname) { showMsg('Please enter your name.', 'error'); return; }
-  if (password.length < 6) { showMsg('Password must be at least 6 characters.', 'error'); return; }
-  if (password !== confirm) { showMsg('Passwords do not match.', 'error'); return; }
+  if (password.length < 6) {
+    showMsg('Password must be at least 6 characters.', 'error');
+    return;
+  }
+  if (password !== confirm) {
+    showMsg('Passwords do not match.', 'error');
+    return;
+  }
 
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>CREATING ACCOUNT…';
 
-  const { data, error } = await _supa.auth.signUp({
-    email, password,
-    options: { data: { name: fullname } }
-  });
+  const { data, error } = await supa.auth.signUp({ email, password });
 
   if (error) {
-    showMsg(friendlyError(error.message), 'error');
+    showMsg(friendlyError(error), 'error');
     btn.disabled = false;
     btn.textContent = 'CREATE MY ACCOUNT';
-    return;
-  }
-
-  if (data.session) {
-    showMsg('Account created! Setting up your profile…', 'success');
-    setTimeout(() => window.location.replace('profile.html'), 800);
+  } else if (data.session) {
+    showMsg('Account created! Redirecting to your playbook…', 'success');
+    setTimeout(() => window.location.replace('app.html'), 1000);
   } else {
-    showMsg('Account created! Check your email to confirm your account, then sign in.', 'success');
+    showMsg('Account created! Check your inbox for a confirmation email, then sign in.', 'success');
     btn.disabled = false;
     btn.textContent = 'CREATE MY ACCOUNT';
+    document.getElementById('switch-link').innerHTML =
+      'Already confirmed? &nbsp;<a href="login.html">SIGN IN →</a>';
   }
 }
 </script>

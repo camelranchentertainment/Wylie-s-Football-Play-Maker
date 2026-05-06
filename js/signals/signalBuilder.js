@@ -7,7 +7,9 @@ let _sigModalCell  = null;   // { row, col } currently in edit
 
 // ── Bootstrap ─────────────────────────────────────────────────
 async function initSignals() {
+  console.log('[initSignals] loading signal assignments…');
   sigAssignments = await sigLoadAll();
+  console.log('[initSignals] loaded', sigAssignments.length, 'assignments');
   renderSigGrid();
   renderSigPreviews();
 }
