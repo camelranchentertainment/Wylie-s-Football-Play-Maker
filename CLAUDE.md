@@ -4,6 +4,12 @@
 
 Use the `/browse` skill from gstack for all web browsing tasks. Never use `mcp__claude-in-chrome__*` tools.
 
+### Setup (first-time / teammates)
+
+```bash
+git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack && ~/.claude/skills/gstack/setup
+```
+
 ### Available gstack skills
 
 - `/office-hours` — Collaborative planning session
