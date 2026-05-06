@@ -80,7 +80,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 .tbtn { padding:8px 4px; background:var(--bg-card); border:1px solid var(--border); border-radius:7px; color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:all .15s; }
 .tbtn:hover { border-color:var(--border-bright); color:var(--text-hi); background:var(--bg-hover); }
 .tbtn.act { background:var(--accent); border-color:transparent; color:#000; box-shadow:0 2px 10px rgba(240,165,0,.3); }
-.tbtn .ti { font-size:15px; line-height:1; }
+.tbtn .ti { width:16px; height:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.tbtn .ti svg { width:100%; height:100%; }
 .tbtn.wide { grid-column:span 2; flex-direction:row; justify-content:center; gap:6px; }
 .fbtn { width:100%; padding:6px 10px; margin-bottom:3px; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:600; cursor:pointer; text-align:left; transition:all .15s; display:flex; align-items:center; gap:8px; }
 .fbtn:hover { border-color:var(--border-bright); color:var(--text-hi); background:var(--bg-hover); }
@@ -272,8 +273,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   <div class="hdiv"></div>
   <div id="designer-ctrls">
     <div class="mode-toggle">
-      <button class="mode-btn on-off" id="btn-off" onclick="setMode('offense')">● OFFENSE</button>
-      <button class="mode-btn" id="btn-def" onclick="setMode('defense')">✕ DEFENSE</button>
+      <button class="mode-btn on-off" id="btn-off" onclick="setMode('offense')">OFFENSE</button>
+      <button class="mode-btn" id="btn-def" onclick="setMode('defense')">DEFENSE</button>
     </div>
     <div class="hdiv"></div>
     <input type="text" id="play-name" value="Untitled Play" placeholder="Play name...">
@@ -301,11 +302,11 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <div class="sb-sec">
         <div class="sb-title">Tools</div>
         <div class="tool-grid">
-          <button class="tbtn act" id="t-select" onclick="setTool('select')" title="S"><span class="ti">↖</span>Select</button>
-          <button class="tbtn" id="t-place" onclick="setTool('place')" title="P"><span class="ti">＋</span>Place</button>
-          <button class="tbtn" id="t-route" onclick="setTool('route')" title="R"><span class="ti">⤴</span>Route</button>
-          <button class="tbtn" id="t-delete" onclick="setTool('delete')" title="X"><span class="ti">✕</span>Delete</button>
-          <button class="tbtn wide" id="t-label" onclick="setTool('label')" title="L"><span class="ti">T</span>Add Label</button>
+          <button class="tbtn act" id="t-select" onclick="setTool('select')" title="S"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-7 1-4 7-3-17z"/></svg></span>Select</button>
+          <button class="tbtn" id="t-place" onclick="setTool('place')" title="P"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>Place</button>
+          <button class="tbtn" id="t-route" onclick="setTool('route')" title="R"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 Q5 5 19 5"/><polyline points="14 5 19 5 19 10"/></svg></span>Route</button>
+          <button class="tbtn" id="t-delete" onclick="setTool('delete')" title="X"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></span>Delete</button>
+          <button class="tbtn wide" id="t-label" onclick="setTool('label')" title="L"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span>Add Label</button>
         </div>
       </div>
       <div class="sb-sec" id="sec-ptypes" style="display:none;">
@@ -377,8 +378,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <div class="rp-group">
         <label class="rp-label">Side</label>
         <div class="mode-toggle" style="width:100%;">
-          <button class="mode-btn on-off" id="ai-side-off" onclick="setAiSide('offense')" style="flex:1;">● OFFENSE</button>
-          <button class="mode-btn" id="ai-side-def" onclick="setAiSide('defense')" style="flex:1;">✕ DEFENSE</button>
+          <button class="mode-btn on-off" id="ai-side-off" onclick="setAiSide('offense')" style="flex:1;">OFFENSE</button>
+          <button class="mode-btn" id="ai-side-def" onclick="setAiSide('defense')" style="flex:1;">DEFENSE</button>
         </div>
         <input type="hidden" id="ai-side" value="offense">
       </div>
@@ -430,11 +431,11 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       </div>
       <div class="upload-zone" onclick="document.getElementById('ai-upload').click()">
         <input type="file" id="ai-upload" accept=".txt,.json" multiple style="display:none" onchange="handleAiUpload(event)">
-        📂 Upload Prior Season Data
+        Upload Prior Season Data
         <div style="font-size:10px;margin-top:2px;color:var(--text-lo)">TXT / JSON accepted</div>
         <div id="ai-file-label" style="font-size:10px;color:var(--accent);margin-top:3px;"></div>
       </div>
-      <button class="ai-btn" id="ai-btn" onclick="runAi()">⚡ GET AI SUGGESTIONS</button>
+      <button class="ai-btn" id="ai-btn" onclick="runAi()">GET AI SUGGESTIONS</button>
     </div>
     <div id="ai-results-col">
       <h3>SUGGESTIONS</h3>
@@ -447,7 +448,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   <!-- ══ WRISTBAND ══ -->
   <div id="page-wb" class="page">
     <div id="wb-controls-col">
-      <h2>🏈 Wristband Builder</h2>
+      <h2>Wristband Builder</h2>
       <div class="rp-group">
         <label class="rp-label">Card Title</label>
         <input type="text" class="rp-input" id="wb-title" value="Game Plan" oninput="renderWbPreview()">
@@ -472,7 +473,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         </div>
         <div id="wb-list"><div style="text-align:center;color:var(--text-lo);font-size:12px;padding:16px 0;">No plays added yet</div></div>
       </div>
-      <button class="wb-print-btn" onclick="printWb()">🖨 PRINT WRISTBAND CARD</button>
+      <button class="wb-print-btn" onclick="printWb()">PRINT WRISTBAND CARD</button>
     </div>
     <div id="wb-preview-col">
       <h3>CARD PREVIEW</h3>
@@ -485,7 +486,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 <!-- ═══ SAVE PLAY MODAL ═══ -->
 <div class="modal-overlay" id="save-modal" onclick="if(event.target===this)closeSaveModal()">
   <div class="modal">
-    <h2>💾 Save Play</h2>
+    <h2>Save Play</h2>
     <p class="modal-subtitle">Name your play and tag it for easy filtering in the library.</p>
     <input type="text" class="modal-input" id="sv-name" placeholder="Play name (e.g. 22 Power Right)">
     <select class="modal-select" id="sv-formation"><option value="">Formation...</option></select>
@@ -508,7 +509,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 <!-- ═══ LABEL MODAL ═══ -->
 <div class="modal-overlay" id="label-modal" onclick="if(event.target===this)closeLabelModal()">
   <div class="modal">
-    <h2>✏️ Add Label</h2>
+    <h2>Add Label</h2>
     <p class="modal-subtitle">Type a label to place at the clicked position on the field.</p>
     <input type="text" class="modal-input" id="label-text" placeholder="e.g. Inside Zone, Cover 2 Read...">
     <div class="modal-actions">
@@ -532,7 +533,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <div id="pm-desc"></div>
     <div class="modal-actions">
       <button class="mbtn cancel" onclick="closePlayModal()">Close</button>
-      <button class="mbtn ok" id="pm-load-btn" onclick="loadPlayFromModal()">📂 Load to Designer</button>
+      <button class="mbtn ok" id="pm-load-btn" onclick="loadPlayFromModal()">Load to Designer</button>
     </div>
   </div>
 </div>
@@ -541,7 +542,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 <div class="modal-overlay" id="auth-modal" onclick="if(event.target===this)closeAuthModal()">
   <div class="modal" style="max-width:360px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-      <h2 id="auth-modal-title">🔐 Account</h2>
+      <h2 id="auth-modal-title">Account</h2>
       <button onclick="closeAuthModal()" style="background:none;border:none;color:var(--text-mid);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;">✕</button>
     </div>
     <!-- Signed-out view -->
