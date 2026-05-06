@@ -12,6 +12,7 @@
 })();
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/signals.css">
 <script src="js/supabase.min.js"></script>
 <script src="js/play-library.js"></script>
 <style>
@@ -731,6 +732,7 @@ html:not([data-navto]):not(.navigated) #page-designer { display:flex; }
     <button class="npbtn act" data-page="designer" onclick="switchPage('designer')" aria-current="page">✏ DESIGNER</button>
     <button class="npbtn" data-page="wb" onclick="switchPage('wb')">📋 WRISTBAND</button>
     <button class="npbtn" data-page="ai" onclick="switchPage('ai')">🤖 AI COACH</button>
+    <button class="npbtn" data-page="signals" onclick="switchPage('signals')">⚡ SIGNALS</button>
   </nav>
   <div class="hdiv"></div>
   <div class="user-chip" id="user-chip" onclick="toggleUserMenu(event)">
@@ -1135,6 +1137,174 @@ html:not([data-navto]):not(.navigated) #page-designer { display:flex; }
     </div>
   </div>
 
+  <!-- ══ SIGNALS ══ -->
+  <div id="page-signals" class="page">
+
+    <!-- Hero -->
+    <div class="wb-hero">
+      <div class="lib-hdr-left">
+        <div class="lib-hdr-eyebrow">⚡ HAND SIGNAL SYSTEM</div>
+        <div class="lib-hdr-team">SIGNAL WRISTBAND</div>
+        <div class="lib-hdr-coach">Assign plays to a 4×4 grid · Print wristband &amp; key card</div>
+      </div>
+      <div class="lib-hdr-stats">
+        <div class="sig-rot-controls">
+          <button class="sig-rot-btn" onclick="sigRotate(-1)" title="Rotate back">◀</button>
+          <span id="sig-rot-label" class="sig-rot-label">ORIGINAL</span>
+          <button class="sig-rot-btn" onclick="sigRotate(1)" title="Rotate forward">▶</button>
+          <button class="sig-rot-btn sig-rot-reset" onclick="sigRotation=0;document.getElementById('sig-rot-label').textContent='ORIGINAL';renderSigGrid();renderSigPreviews();" title="Reset rotation">↺</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-column body -->
+    <div id="page-signals-body">
+
+      <!-- Left: Grid -->
+      <div id="sig-grid-col">
+
+        <div class="sig-panel-sec">
+          <div class="sig-panel-sec-hdr">SIGNAL GRID</div>
+          <div id="sig-grid"></div>
+        </div>
+
+        <div class="sig-panel-sec">
+          <div class="sig-panel-sec-hdr">COLOR KEY</div>
+          <div class="sig-legend-grid">
+            <span class="sig-legend-dot" style="background:#22c55e"></span><span class="sig-legend-lbl">Green — Base / Pro Set</span>
+            <span class="sig-legend-dot" style="background:#4a9eff"></span><span class="sig-legend-lbl">Blue — Shotgun / Spread</span>
+            <span class="sig-legend-dot" style="background:#e63946"></span><span class="sig-legend-lbl">Red — Goal Line / Power</span>
+            <span class="sig-legend-dot" style="background:#f0a500"></span><span class="sig-legend-lbl">Gold — Trick / Special</span>
+          </div>
+        </div>
+
+        <div class="sig-panel-sec">
+          <div class="sig-panel-sec-hdr">ENCODING GUIDE</div>
+          <div class="sig-encode-grid">
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Head</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 1</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Shoulder</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 2</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Chest</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 3</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Waist</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 4</span></div>
+            <div class="sig-encode-divider"></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">1 Finger</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Row A</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">2 Fingers</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Row B</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">3 Fingers</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Row C</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">4 Fingers</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Row D</span></div>
+          </div>
+        </div>
+
+      </div><!-- /#sig-grid-col -->
+
+      <!-- Right: Previews -->
+      <div id="sig-preview-col">
+
+        <div class="sig-panel-sec">
+          <div class="sig-panel-sec-hdr" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>WRISTBAND PREVIEW</span>
+            <button class="hbtn pri" onclick="printSigWristband()">🖨 Print Wristband</button>
+          </div>
+          <div id="sig-wb-preview"></div>
+        </div>
+
+        <div class="sig-panel-sec">
+          <div class="sig-panel-sec-hdr" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>SIGNAL KEY CARD</span>
+            <button class="hbtn pri" onclick="printSigKeyCard()">🖨 Print Key Card</button>
+          </div>
+          <div id="sig-key-preview"></div>
+        </div>
+
+      </div><!-- /#sig-preview-col -->
+
+    </div><!-- /#page-signals-body -->
+
+  </div><!-- /#page-signals -->
+
+</div>
+
+<!-- ═══ SIGNAL CELL MODAL ═══ -->
+<div class="modal-overlay" id="sig-cell-modal" onclick="if(event.target===this)closeSigModal()">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <span id="sig-modal-title">CELL A1</span>
+      <button class="modal-close" onclick="closeSigModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="sig-modal-sub" style="font-size:11px;color:var(--text-lo);margin-bottom:14px;letter-spacing:.5px;"></div>
+
+      <div class="rp-group">
+        <label class="rp-label">PLAY</label>
+        <select id="sig-modal-play" class="rp-input"></select>
+      </div>
+
+      <div class="rp-group">
+        <label class="rp-label">COLOR FAMILY</label>
+        <div class="sig-color-row">
+          <button class="sig-color-btn" data-color="green" onclick="sigPickColor('green')" title="Base / Pro Set"></button>
+          <button class="sig-color-btn" data-color="blue"  onclick="sigPickColor('blue')"  title="Shotgun / Spread"></button>
+          <button class="sig-color-btn" data-color="red"   onclick="sigPickColor('red')"   title="Goal Line / Power"></button>
+          <button class="sig-color-btn" data-color="gold"  onclick="sigPickColor('gold')"  title="Trick / Special"></button>
+        </div>
+        <input type="hidden" id="sig-modal-color" value="green">
+      </div>
+
+      <div class="sig-modal-row">
+        <div class="rp-group" style="flex:1;">
+          <label class="rp-label">BODY ZONE</label>
+          <select id="sig-modal-zone" class="rp-input">
+            <option value="head">Head</option>
+            <option value="shoulder">Shoulder</option>
+            <option value="chest">Chest</option>
+            <option value="waist">Waist</option>
+          </select>
+        </div>
+        <div class="rp-group" style="flex:1;">
+          <label class="rp-label">FINGERS</label>
+          <select id="sig-modal-fingers" class="rp-input">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sig-modal-row">
+        <div class="rp-group" style="flex:1;">
+          <label class="rp-label">LIVE CALLER</label>
+          <select id="sig-modal-caller" class="rp-input">
+            <option value="OC">OC</option>
+            <option value="QB">QB</option>
+            <option value="HC">HC</option>
+          </select>
+        </div>
+        <div class="rp-group" style="flex:1;">
+          <label class="rp-label">SERIES ACTIVE</label>
+          <select id="sig-modal-series" class="rp-input">
+            <option value="0">All Quarters</option>
+            <option value="1">Q1 Only</option>
+            <option value="2">Q2 Only</option>
+            <option value="3">Q3 Only</option>
+            <option value="4">Q4 Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="rp-group">
+        <label class="sig-dummy-row">
+          <input type="checkbox" id="sig-modal-dummy">
+          <span>Mark as Decoy signal (dummy cell)</span>
+        </label>
+      </div>
+
+      <div id="sig-modal-err" class="sig-modal-err"></div>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="sig-modal-clear-btn" id="sig-modal-clear" onclick="clearSigCell()" style="display:none;margin-right:auto;">🗑 Clear Cell</button>
+      <button class="hbtn" onclick="closeSigModal()">Cancel</button>
+      <button class="hbtn pri" onclick="saveSigCell()">Save Signal</button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ SAVE PLAY MODAL ═══ -->
@@ -4245,6 +4415,10 @@ function switchPage(id){
   if(id==='library') renderLibrary();
   if(id==='wb'){updateWbSel();renderWbList();}
   if(id==='designer'){ render(); if(window.innerWidth<=768) fitZoom(); }
+  if(id==='signals' && typeof initSignals === 'function' && !window._sigInitDone){
+    window._sigInitDone = true;
+    initSignals();
+  }
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
@@ -4267,5 +4441,11 @@ window.addEventListener('resize',debounce(()=>{ if(window.innerWidth<=768) fitZo
 // Boot auth on page load
 initAuth();
 </script>
+<script src="js/signals/signalEncoder.js"></script>
+<script src="js/signals/signalStorage.js"></script>
+<script src="js/signals/signalValidator.js"></script>
+<script src="js/signals/signalBuilder.js"></script>
+<script src="js/signals/wristbandPrinter.js"></script>
+<script src="js/signals/signalKeyPrinter.js"></script>
 </body>
 </html>
