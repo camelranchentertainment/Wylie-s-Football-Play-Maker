@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Reset Password — Wylie's Play Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="js/supabase.min.js"></script>
+<style>
+:root{--bg:#14202e;--panel:#1b2b3d;--accent:#f0a500;--hi:#f5f7fb;--mid:#c0d4e8;--lo:#7fa0bc;--border:#2a3d55;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px 16px;background-image:repeating-linear-gradient(0deg,transparent,transparent 54px,rgba(255,255,255,.03) 54px,rgba(255,255,255,.03) 55px),radial-gradient(ellipse at 50% 0%,rgba(240,165,0,.08) 0%,transparent 60%);}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:36px;}
+.brand svg{width:40px;height:40px;}
+.brand-text .top{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:3px;}
+.brand-text .top em{color:var(--accent);font-style:normal;}
+.brand-text .sub{font-size:8px;letter-spacing:3px;color:var(--lo);margin-top:1px;}
+.card{background:var(--panel);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:14px;padding:36px 40px 32px;width:100%;max-width:420px;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.card-title{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px;color:#fff;margin-bottom:6px;}
+.card-sub{font-size:13px;color:var(--lo);margin-bottom:28px;line-height:1.5;}
+.field{margin-bottom:18px;}
+label{display:block;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--lo);margin-bottom:6px;}
+input[type=email],input[type=password]{width:100%;padding:12px 14px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;transition:border-color .2s,background .2s;}
+input[type=email]:focus,input[type=password]:focus{border-color:var(--accent);background:rgba(255,255,255,.09);}
+input::placeholder{color:var(--lo);}
+.btn-gold{width:100%;padding:13px;background:var(--accent);color:#000;font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;transition:all .2s;box-shadow:0 4px 22px rgba(240,165,0,.3);margin-top:4px;}
+.btn-gold:hover{background:#ffc62e;box-shadow:0 8px 30px rgba(240,165,0,.45);transform:translateY(-1px);}
+.btn-gold:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.msg{display:none;padding:10px 14px;border-radius:7px;font-size:12.5px;font-family:'Oswald',sans-serif;letter-spacing:.5px;margin-bottom:18px;line-height:1.45;}
+.msg.error{background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.25);color:#ff6b75;}
+.msg.success{background:rgba(80,220,120,.1);border:1px solid rgba(80,220,120,.25);color:#50dc78;}
+.msg.show{display:block;}
+.switch{text-align:center;font-size:12px;color:var(--lo);margin-top:18px;}
+.switch a{color:var(--accent);font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-decoration:none;}
+.switch a:hover{color:#ffc62e;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hint{font-size:10.5px;color:var(--lo);margin-top:5px;}
+@media(max-width:480px){
+  body{padding:20px 12px;}
+  .card{padding:28px 20px 24px;}
+  .brand{margin-bottom:24px;}
+}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22 3L40 10.5V23C40 33.5 32 41 22 44C12 41 4 33.5 4 23V10.5L22 3Z" fill="#1b2b3d" stroke="#f0a500" stroke-width="1.4"/>
+    <ellipse cx="22" cy="20" rx="12" ry="7.5" fill="none" stroke="#f0a500" stroke-width="1.6" transform="rotate(-18 22 20)"/>
+    <line x1="22" y1="12" x2="22" y2="28" stroke="#f0a500" stroke-width=".9" opacity=".65"/>
+    <line x1="16.5" y1="17" x2="27.5" y2="17" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+    <line x1="16.5" y1="20" x2="27.5" y2="20" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+    <line x1="16.5" y1="23" x2="27.5" y2="23" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+  </svg>
+  <div class="brand-text">
+    <div class="top"><em>WYLIE'S</em> PLAY MAKER</div>
+    <div class="sub">FOOTBALL COACHING TOOLS</div>
+  </div>
+</div>
+
+<!-- Request reset form -->
+<div class="card" id="request-card">
+  <div class="card-title">RESET PASSWORD</div>
+  <div class="card-sub">Enter your email and we'll send you a link to reset your password.</div>
+  <div class="msg" id="req-msg"></div>
+  <form id="request-form" onsubmit="doRequest(event)">
+    <div class="field">
+      <label>EMAIL ADDRESS</label>
+      <input type="email" id="req-email" placeholder="coach@example.com" required autocomplete="email">
+    </div>
+    <button type="submit" class="btn-gold" id="req-btn">SEND RESET LINK</button>
+  </form>
+  <div class="switch"><a href="login.html">← Back to Sign In</a></div>
+</div>
+
+<!-- New password form (shown after clicking email link) -->
+<div class="card" id="newpw-card" style="display:none;">
+  <div class="card-title">SET NEW PASSWORD</div>
+  <div class="card-sub">Choose a new password for your account.</div>
+  <div class="msg" id="newpw-msg"></div>
+  <form id="newpw-form" onsubmit="doNewPassword(event)">
+    <div class="field">
+      <label>NEW PASSWORD</label>
+      <input type="password" id="newpw-pw" placeholder="At least 6 characters" required autocomplete="new-password" oninput="checkNewPw()">
+      <div class="hint" id="newpw-hint"></div>
+    </div>
+    <div class="field">
+      <label>CONFIRM PASSWORD</label>
+      <input type="password" id="newpw-confirm" placeholder="Re-enter password" required autocomplete="new-password">
+    </div>
+    <button type="submit" class="btn-gold" id="newpw-btn">UPDATE PASSWORD</button>
+  </form>
+</div>
+
+<script>
+const SUPA_URL = 'https://rvxanoqourdrfmbucvpz.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
+
+// Use implicit flow so the SDK processes the #access_token hash the email link contains
+const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: { flowType: 'implicit' }
+});
+
+function showResetForm() {
+  document.getElementById('request-card').style.display = 'none';
+  document.getElementById('newpw-card').style.display = 'block';
+  history.replaceState(null, '', window.location.pathname);
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg show ' + type;
+}
+
+function checkNewPw() {
+  const pw = document.getElementById('newpw-pw').value;
+  const hint = document.getElementById('newpw-hint');
+  if (!pw) { hint.textContent = ''; return; }
+  if (pw.length < 6) { hint.textContent = 'Must be at least 6 characters.'; hint.style.color = '#ff6b75'; }
+  else { hint.textContent = 'Looks good!'; hint.style.color = '#50dc78'; }
+}
+
+// The SDK fires PASSWORD_RECOVERY when it detects #access_token&type=recovery in the URL
+_supa.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') showResetForm();
+});
+
+async function doRequest(e) {
+  e.preventDefault();
+  const email = document.getElementById('req-email').value.trim();
+  const btn = document.getElementById('req-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>SENDING…';
+
+  const { error } = await _supa.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/reset.html'
+  });
+
+  if (error) {
+    showMsg('req-msg', error.message || 'An error occurred.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'SEND RESET LINK';
+  } else {
+    showMsg('req-msg', 'Reset link sent! Check your email inbox (and spam folder).', 'success');
+    btn.disabled = true;
+    btn.textContent = 'EMAIL SENT';
+  }
+}
+
+async function doNewPassword(e) {
+  e.preventDefault();
+  const pw = document.getElementById('newpw-pw').value;
+  const confirm = document.getElementById('newpw-confirm').value;
+  const btn = document.getElementById('newpw-btn');
+
+  if (pw.length < 6) { showMsg('newpw-msg', 'Password must be at least 6 characters.', 'error'); return; }
+  if (pw !== confirm) { showMsg('newpw-msg', 'Passwords do not match.', 'error'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>UPDATING…';
+
+  const { error } = await _supa.auth.updateUser({ password: pw });
+
+  if (error) {
+    showMsg('newpw-msg', error.message || 'Session expired — please request a new reset link.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'UPDATE PASSWORD';
+  } else {
+    await _supa.auth.signOut();
+    showMsg('newpw-msg', 'Password updated! Redirecting to sign in…', 'success');
+    setTimeout(() => window.location.replace('login.html'), 1500);
+  }
+}
+</script>
+</body>
+</html>

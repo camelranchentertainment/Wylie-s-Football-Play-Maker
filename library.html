@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Play Library — Wylie's Play Maker</title>
+<script>
+// Synchronous auth gate — runs before any HTML renders to prevent flash
+(function(){
+  try {
+    var s = JSON.parse(localStorage.getItem('sb-rvxanoqourdrfmbucvpz-auth-token') || 'null');
+    if (!s || !s.access_token || s.expires_at <= Math.floor(Date.now() / 1000)) {
+      window.location.replace('login.html'); return;
+    }
+    // Profile gate using localStorage flag (reliable — doesn't depend on stale SDK session)
+    var done = localStorage.getItem('wpm_profile_done') === '1' ||
+               localStorage.getItem('wpm_profile_skipped') === '1';
+    if (!done) { window.location.replace('profile.html'); return; }
+  } catch(e) { window.location.replace('login.html'); }
+})();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="js/supabase.min.js"></script>
+<script src="js/play-library.js"></script>
+<style>
+:root{
+  --bg:#0d1821;
+  --panel:#1b2b3d;
+  --card:#1e3248;
+  --card-hover:#243d58;
+  --accent:#f0a500;
+  --accent-dim:rgba(240,165,0,.15);
+  --accent-glow:rgba(240,165,0,.35);
+  --offense:#e63946;
+  --defense:#4a9eff;
+  --hi:#f5f7fb;
+  --mid:#c0d4e8;
+  --lo:#7fa0bc;
+  --border:#2a3d55;
+  --border-bright:#3d5a7a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-height:100vh;overflow-x:hidden;}
+
+/* ── NAVBAR ─────────────────────────────────────────────── */
+#navbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(13,24,33,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  border-top:2px solid var(--accent);
+  height:52px;padding:0 20px;
+  display:flex;align-items:center;gap:12px;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo svg{width:34px;height:34px;flex-shrink:0;}
+.nav-logo-text{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;color:var(--hi);}
+.nav-logo-text em{color:var(--accent);font-style:normal;}
+.nav-div{width:1px;height:24px;background:var(--border-bright);flex-shrink:0;}
+.nav-tag{font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;letter-spacing:2.5px;color:var(--lo);}
+.spacer{flex:1;}
+/* ── USER MENU ───────────────────────────────────────────── */
+.user-chip{position:relative;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 8px;border:1px solid var(--border-bright);border-radius:20px;cursor:pointer;background:transparent;transition:all .18s;font-family:'Oswald',sans-serif;}
+.user-chip:hover{border-color:var(--accent);background:var(--accent-dim);}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;flex-shrink:0;}
+.user-name{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--mid);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.user-caret{font-size:8px;color:var(--lo);transition:transform .18s;}
+.user-chip.open .user-caret{transform:rotate(180deg);}
+.user-dropdown{display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--panel);border:1px solid var(--border-bright);border-radius:10px;min-width:200px;box-shadow:0 12px 40px rgba(0,0,0,.55);z-index:999;overflow:hidden;}
+.user-chip.open .user-dropdown{display:block;}
+.udrop-header{padding:12px 16px 10px;border-bottom:1px solid var(--border);}
+.udrop-name{font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px;}
+.udrop-email{font-size:10px;color:var(--lo);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.udrop-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--mid);cursor:pointer;transition:background .15s,color .15s;}
+.udrop-item:hover{background:var(--accent-dim);color:var(--accent);}
+.udrop-item.danger:hover{background:rgba(230,57,70,.1);color:#ff6b75;}
+.udrop-sep{height:1px;background:var(--border);margin:2px 0;}
+/* ── SETTINGS MODAL ─────────────────────────────────────── */
+#settings-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;align-items:center;justify-content:center;}
+#settings-overlay.show{display:flex;}
+#settings-modal{background:var(--panel);border:1px solid var(--border-bright);border-top:3px solid var(--accent);border-radius:14px;padding:32px 36px 28px;width:100%;max-width:440px;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+.smod-title{font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;letter-spacing:1px;color:#fff;margin-bottom:4px;}
+.smod-sub{font-size:12px;color:var(--lo);margin-bottom:24px;}
+.smod-field{margin-bottom:15px;}
+.smod-field label{display:block;font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;color:var(--lo);margin-bottom:5px;}
+.smod-field input,.smod-field select{width:100%;padding:10px 13px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+.smod-field input:focus,.smod-field select:focus{border-color:var(--accent);}
+.smod-field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M0 0l6 7 6-7z' fill='%237fa0bc'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.smod-field select option{background:#1b2b3d;}
+.smod-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.smod-msg{display:none;padding:8px 13px;border-radius:7px;font-size:12px;font-family:'Oswald',sans-serif;letter-spacing:.5px;margin-bottom:14px;}
+.smod-msg.error{background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.25);color:#ff6b75;display:block;}
+.smod-msg.success{background:rgba(80,220,120,.1);border:1px solid rgba(80,220,120,.25);color:#50dc78;display:block;}
+.smod-actions{display:flex;gap:10px;margin-top:4px;}
+.smod-btn{flex:1;padding:11px;font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;border:none;border-radius:8px;cursor:pointer;transition:all .18s;}
+.smod-btn.save{background:var(--accent);color:#000;box-shadow:0 4px 16px rgba(240,165,0,.3);}
+.smod-btn.save:hover{background:#ffc62e;}
+.smod-btn.save:disabled{opacity:.6;cursor:not-allowed;}
+.smod-btn.cancel{background:transparent;border:1px solid var(--border-bright);color:var(--mid);}
+.smod-btn.cancel:hover{border-color:var(--mid);color:#fff;}
+.smod-spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nbtn{padding:5px 13px;height:30px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.2px;cursor:pointer;border:1px solid var(--border-bright);background:transparent;color:var(--mid);border-radius:7px;transition:all .18s;white-space:nowrap;}
+.nbtn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.nbtn.act{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+.nbtn.pri{background:var(--accent);border-color:transparent;color:#000;box-shadow:0 2px 12px rgba(240,165,0,.3);}
+.nbtn.pri:hover{background:#ffc62e;box-shadow:0 4px 20px rgba(240,165,0,.45);}
+
+/* ── HERO ────────────────────────────────────────────────── */
+#hero{
+  position:relative;overflow:hidden;
+  padding:52px 32px 44px;
+  background:
+    linear-gradient(100deg,rgba(8,16,26,.93) 0%,rgba(12,26,18,.86) 45%,rgba(8,14,24,.9) 100%),
+    repeating-linear-gradient(0deg,transparent,transparent 54px,rgba(255,255,255,.04) 54px,rgba(255,255,255,.04) 55px),
+    url('https://images.unsplash.com/photo-1566577739112-5180d4bf9390?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+  border-bottom:2px solid rgba(240,165,0,.18);
+}
+#hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 60%,rgba(28,70,36,.38) 0%,transparent 62%);
+  pointer-events:none;
+}
+#hero::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),rgba(240,165,0,.3),transparent);
+  pointer-events:none;
+}
+#hero-canvas{display:none;}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0;text-align:left;}
+.hero-eyebrow{font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--accent);margin-bottom:10px;text-align:left;}
+.hero-title{font-family:'Oswald',sans-serif;font-size:clamp(36px,6vw,72px);font-weight:700;letter-spacing:3px;line-height:1;color:#fff;margin-bottom:8px;text-align:left;text-shadow:0 2px 16px rgba(0,0,0,.7);}
+.hero-title em{color:var(--accent);font-style:normal;}
+.hero-sub{font-size:14px;color:var(--mid);margin-bottom:32px;letter-spacing:.5px;text-align:left;}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap;justify-content:flex-start;}
+.stat-block{display:flex;flex-direction:column;gap:2px;align-items:flex-start;}
+.stat-num{font-family:'Oswald',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:700;color:var(--accent);line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.6);}
+.stat-label{font-family:'Oswald',sans-serif;font-size:9px;font-weight:600;letter-spacing:2.5px;color:rgba(192,212,232,.75);}
+
+/* ── FILTER STRIP ────────────────────────────────────────── */
+#filter-wrap{
+  position:sticky;top:52px;z-index:90;
+  background:rgba(13,24,33,.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+}
+.filter-row{display:flex;align-items:center;gap:8px;padding:10px 0;overflow-x:auto;scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
+.tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.tab-row::-webkit-scrollbar{display:none;}
+.tab-btn{padding:12px 18px;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;border:none;background:none;color:var(--lo);position:relative;transition:color .2s;flex-shrink:0;white-space:nowrap;}
+.tab-btn::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform .25s cubic-bezier(.4,0,.2,1);}
+.tab-btn.act{color:var(--accent);}
+.tab-btn.act::after{transform:scaleX(1);}
+.tab-btn.ext{color:var(--lo);}
+.tab-btn.ext:hover{color:var(--mid);}
+.tab-div{width:1px;height:20px;background:var(--border);align-self:center;flex-shrink:0;margin:0 4px;}
+.pill{padding:5px 13px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.2px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--lo);border-radius:20px;white-space:nowrap;transition:all .18s;flex-shrink:0;}
+.pill:hover{border-color:var(--border-bright);color:var(--mid);}
+.pill.act{background:var(--accent);border-color:var(--accent);color:#000;box-shadow:0 2px 12px rgba(240,165,0,.3);}
+.pill.act-off{background:var(--offense);border-color:var(--offense);color:#fff;}
+.pill.act-def{background:var(--defense);border-color:var(--defense);color:#fff;}
+.filter-div{width:1px;height:20px;background:var(--border);flex-shrink:0;}
+.filter-count{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;color:var(--lo);white-space:nowrap;margin-left:auto;flex-shrink:0;}
+.filter-row-lbl{font-family:'Oswald',sans-serif;font-size:8px;font-weight:700;letter-spacing:2.5px;color:var(--lo);opacity:.55;flex-shrink:0;margin-right:2px;}
+.pill.act-off{background:var(--offense);border-color:var(--offense);color:#fff;box-shadow:0 2px 12px rgba(230,57,70,.3);}
+.pill.act-pass{background:rgba(200,120,255,.9);border-color:rgba(200,120,255,.9);color:#fff;box-shadow:0 2px 12px rgba(200,120,255,.3);}
+.pill.act-run{background:rgba(80,220,120,.85);border-color:rgba(80,220,120,.85);color:#000;box-shadow:0 2px 12px rgba(80,220,120,.3);}
+.pill.act-def{background:var(--defense);border-color:var(--defense);color:#fff;box-shadow:0 2px 12px rgba(74,158,255,.3);}
+
+/* ── GRID ────────────────────────────────────────────────── */
+#grid-wrap{max-width:1400px;margin:0 auto;padding:28px 20px 60px;}
+#play-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:18px;
+}
+.empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--lo);}
+.empty-state .ei{font-size:48px;margin-bottom:16px;}
+.empty-state p{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;}
+
+/* ── PLAY CARD ───────────────────────────────────────────── */
+.pcard{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  cursor:default;
+  transition:transform .22s cubic-bezier(.4,0,.2,1), box-shadow .22s cubic-bezier(.4,0,.2,1), border-color .22s;
+  animation:cardIn .35s both;
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(18px) scale(.97);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+.pcard:hover{
+  transform:translateY(-5px) scale(1.01);
+  border-color:rgba(240,165,0,.5);
+  box-shadow:0 8px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(240,165,0,.2), 0 0 30px rgba(240,165,0,.12);
+}
+.pcard-thumb-wrap{
+  position:relative;overflow:hidden;background:#11211a;line-height:0;
+}
+.pcard-thumb-wrap::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 60%,rgba(30,50,72,.9) 100%);
+  pointer-events:none;
+}
+.pcard-thumb{width:100%;aspect-ratio:16/9;display:block;object-fit:cover;}
+.pcard-badges{
+  position:absolute;bottom:0;left:0;right:0;z-index:1;
+  padding:6px 10px;display:flex;gap:5px;align-items:center;
+}
+.badge{padding:2px 7px;border-radius:4px;font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;}
+.badge-off{background:rgba(230,57,70,.85);color:#fff;}
+.badge-def{background:rgba(74,158,255,.85);color:#fff;}
+.badge-pass{background:rgba(240,165,0,.2);border:1px solid rgba(240,165,0,.4);color:var(--accent);}
+.badge-run{background:rgba(80,220,120,.15);border:1px solid rgba(80,220,120,.3);color:#50dc78;}
+.badge-cat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--mid);font-size:8px;letter-spacing:1px;}
+.pcard-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:4px;}
+.pcard-name{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:.5px;line-height:1.2;}
+.pcard-formation{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1.5px;color:var(--lo);}
+.pcard-desc{font-size:11.5px;color:var(--mid);line-height:1.45;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pcard-acts{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--border);}
+.pcbtn{flex:1;padding:7px 6px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid var(--border-bright);background:transparent;color:var(--mid);border-radius:7px;cursor:pointer;transition:all .16s;white-space:nowrap;}
+.pcbtn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.pcbtn.pri{background:var(--accent);border-color:transparent;color:#000;box-shadow:0 2px 10px rgba(240,165,0,.25);}
+.pcbtn.pri:hover{background:#ffc62e;box-shadow:0 4px 16px rgba(240,165,0,.4);}
+.pcbtn.danger{border-color:rgba(230,57,70,.4);color:#ff6b75;}
+.pcbtn.danger:hover{background:rgba(230,57,70,.12);border-color:#e63946;}
+
+/* ── MY LIBRARY EMPTY ────────────────────────────────────── */
+#my-empty{display:none;text-align:center;padding:80px 20px;color:var(--lo);}
+#my-empty .ei{font-size:48px;margin-bottom:16px;}
+#my-empty p{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;margin-bottom:24px;}
+.btn-gold{padding:11px 28px;background:var(--accent);color:#000;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 20px rgba(240,165,0,.3);transition:all .2s;}
+.btn-gold:hover{background:#ffc62e;box-shadow:0 6px 28px rgba(240,165,0,.45);transform:translateY(-1px);}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+#toast-container{position:fixed;bottom:28px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{padding:10px 16px;background:#1b2b3d;border:1px solid var(--border-bright);border-radius:8px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.5px;color:var(--hi);box-shadow:0 8px 32px rgba(0,0,0,.5);animation:toastIn .3s ease,toastOut .3s ease 2.2s both;pointer-events:none;display:flex;align-items:center;gap:8px;}
+.toast.ok{border-left:3px solid var(--accent);}
+.toast.err{border-left:3px solid #e63946;color:#ff6b75;}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:none;}}
+@keyframes toastOut{to{opacity:0;transform:translateX(20px);}}
+
+/* ── SCROLLBAR ───────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
+
+/* ── PLAY POPUP MODAL ───────────────────────────────────── */
+#pp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:900;backdrop-filter:blur(5px);animation:fadeIn .18s ease;}
+#pp-modal{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:901;background:var(--panel);
+  border:1px solid var(--border);border-top:3px solid var(--accent);
+  border-radius:14px;width:min(500px,93vw);
+  box-shadow:0 28px 70px rgba(0,0,0,.65);overflow:hidden;
+  animation:popIn .22s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{opacity:0;transform:translate(-50%,-50%) scale(.92);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+#pp-thumb-wrap{position:relative;width:100%;height:210px;overflow:hidden;background:#11211a;}
+#pp-thumb{width:100%;height:100%;object-fit:cover;display:block;}
+#pp-thumb-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(27,43,61,.95) 100%);pointer-events:none;}
+#pp-badges{position:absolute;bottom:10px;left:12px;display:flex;gap:5px;flex-wrap:wrap;}
+#pp-close{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+#pp-close:hover{background:rgba(230,57,70,.7);}
+#pp-body{padding:18px 22px 22px;}
+#pp-name{font-family:'Oswald',sans-serif;font-size:21px;font-weight:700;letter-spacing:1px;color:#fff;margin-bottom:3px;}
+#pp-sub{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--lo);margin-bottom:10px;}
+#pp-desc{font-size:13px;color:var(--mid);line-height:1.55;margin-bottom:18px;min-height:20px;}
+#pp-acts{display:flex;gap:8px;}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:600px){
+  #play-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+  .hero-stats{gap:20px;}
+  .hero-title{font-size:32px;}
+  #navbar{padding:0 12px;height:auto;min-height:52px;flex-wrap:wrap;gap:8px;padding-top:8px;padding-bottom:8px;}
+  .nav-logo-text{font-size:13px;}
+  .nav-div{display:none;}
+  .nav-tag{display:none;}
+  .spacer{flex:none;width:100%;order:10;display:none;}
+  #grid-wrap{padding:16px 12px 40px;}
+  .smod-field-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<nav id="navbar">
+  <a class="nav-logo" href="library.html">
+    <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 3L40 10.5V23C40 33.5 32 41 22 44C12 41 4 33.5 4 23V10.5L22 3Z" fill="#1b2b3d" stroke="#f0a500" stroke-width="1.4"/>
+      <ellipse cx="22" cy="20" rx="12" ry="7.5" fill="none" stroke="#f0a500" stroke-width="1.6" transform="rotate(-18 22 20)"/>
+      <line x1="22" y1="12" x2="22" y2="28" stroke="#f0a500" stroke-width=".9" opacity=".65"/>
+      <line x1="16.5" y1="17" x2="27.5" y2="17" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+      <line x1="16.5" y1="20" x2="27.5" y2="20" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+      <line x1="16.5" y1="23" x2="27.5" y2="23" stroke="#f0a500" stroke-width=".75" opacity=".55"/>
+    </svg>
+    <span class="nav-logo-text"><em>WYLIE'S</em> PLAY MAKER</span>
+  </a>
+  <div class="spacer"></div>
+  <button class="nbtn act" aria-current="page">🏈 PLAY LIBRARY</button>
+  <button class="nbtn" onclick="goApp('library')">📚 MY PLAYBOOK</button>
+  <button class="nbtn" onclick="goApp('designer')">✏ DESIGNER</button>
+  <button class="nbtn" onclick="goApp('wb')">📋 WRISTBAND</button>
+  <button class="nbtn" onclick="goApp('ai')">🤖 AI COACH</button>
+  <div class="nav-div"></div>
+  <!-- User chip + dropdown -->
+  <div class="user-chip" id="user-chip" onclick="toggleUserMenu(event)">
+    <div class="user-avatar" id="user-avatar">?</div>
+    <span class="user-name" id="user-name">COACH</span>
+    <span class="user-caret">▼</span>
+    <div class="user-dropdown" id="user-dropdown">
+      <div class="udrop-header">
+        <div class="udrop-name" id="udrop-name">—</div>
+        <div class="udrop-email" id="udrop-email">—</div>
+      </div>
+      <div class="udrop-item" onclick="openSettings(event)">⚙ PROFILE SETTINGS</div>
+      <div class="udrop-sep"></div>
+      <div class="udrop-item danger" onclick="doSignOut(event)">↪ SIGN OUT</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ SETTINGS MODAL ══ -->
+<div id="settings-overlay" onclick="closeSettingsOnBg(event)">
+  <div id="settings-modal">
+    <div class="smod-title">PROFILE SETTINGS</div>
+    <div class="smod-sub">Update your coaching information.</div>
+    <div class="smod-msg" id="smod-msg"></div>
+    <div class="smod-field">
+      <label>FULL NAME</label>
+      <input type="text" id="smod-name" placeholder="Your name">
+    </div>
+    <div class="smod-field-row">
+      <div class="smod-field" style="margin-bottom:0;">
+        <label>COACHING LEVEL</label>
+        <select id="smod-level">
+          <option value="">— select —</option>
+          <option>Youth Flag (6–8)</option>
+          <option>Youth Tackle (9–12)</option>
+          <option>Middle School</option>
+          <option>HS JV</option>
+          <option>HS Varsity</option>
+          <option>College</option>
+          <option>Adult / Semi-Pro</option>
+          <option>Recreational</option>
+          <option>Fan / Enthusiast</option>
+        </select>
+      </div>
+      <div class="smod-field" style="margin-bottom:0;">
+        <label>PHONE (OPTIONAL)</label>
+        <input type="tel" id="smod-phone" placeholder="555-867-5309">
+      </div>
+    </div>
+    <div class="smod-field" style="margin-top:14px;">
+      <label>TEAM NAME (IF APPLICABLE)</label>
+      <input type="text" id="smod-team" placeholder="e.g. Westside Eagles">
+    </div>
+    <div class="smod-actions">
+      <button class="smod-btn cancel" onclick="closeSettings()">CANCEL</button>
+      <button class="smod-btn save" id="smod-save" onclick="saveSettings()">SAVE CHANGES</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">COACHING TOOLS</div>
+    <h1 class="hero-title"><em>PLAY</em> LIBRARY</h1>
+    <p class="hero-sub">Browse, preview, and add plays to your personal playbook</p>
+    <div class="hero-stats">
+      <div class="stat-block">
+        <span class="stat-num" id="stat-plays">0</span>
+        <span class="stat-label">TEMPLATE PLAYS</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-num" id="stat-cats">0</span>
+        <span class="stat-label">CATEGORIES</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-num" id="stat-mine">0</span>
+        <span class="stat-label">MY PLAYS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FILTER STRIP ══ -->
+<div id="filter-wrap">
+
+  <!-- Tab row: Template Library | My Plays -->
+  <div class="tab-row">
+    <button class="tab-btn act" id="tab-tpl" onclick="switchTab('tpl')">TEMPLATE LIBRARY</button>
+    <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">MY PLAYS</button>
+  </div>
+
+  <!-- Row 1: OFFENSE | DEFENSE -->
+  <div class="filter-row" id="mode-row" style="border-bottom:1px solid var(--border);gap:7px;">
+    <span class="filter-row-lbl">SIDE</span>
+    <button class="pill" id="pill-off" onclick="setMode('offense')">OFFENSE</button>
+    <button class="pill" id="pill-def" onclick="setMode('defense')">DEFENSE</button>
+    <span id="filter-count" class="filter-count"></span>
+  </div>
+
+  <!-- Row 2: PASS | RUN | DEFENSE -->
+  <div class="filter-row" id="type-row" style="border-bottom:1px solid var(--border);gap:7px;">
+    <span class="filter-row-lbl">TYPE</span>
+    <button class="pill" id="pill-pass" onclick="setType('Pass')">PASS</button>
+    <button class="pill" id="pill-run" onclick="setType('Run')">RUN</button>
+    <button class="pill" id="pill-deft" onclick="setType('Defense')">DEFENSE</button>
+  </div>
+
+  <!-- Row 3: Categories -->
+  <div class="filter-row" id="cat-row" style="gap:7px;"></div>
+</div>
+
+<!-- ══ GRID ══ -->
+<div id="grid-wrap">
+  <div id="play-grid"></div>
+  <div id="my-empty">
+    <div class="ei">📋</div>
+    <p>YOUR LIBRARY IS EMPTY</p>
+    <p style="font-size:12px;font-family:'Rajdhani',sans-serif;color:var(--lo);margin-bottom:20px;">Add plays from the Template Library to build your playbook.</p>
+    <button class="btn-gold" onclick="switchTab('tpl')">BROWSE PLAY LIBRARY</button>
+  </div>
+</div>
+
+<!-- Play Preview Popup -->
+<div id="pp-overlay" style="display:none;" onclick="closeCardPopup()"></div>
+<div id="pp-modal" style="display:none;">
+  <div id="pp-thumb-wrap">
+    <img id="pp-thumb" src="" alt="">
+    <div id="pp-thumb-gradient"></div>
+    <div id="pp-badges"></div>
+    <button id="pp-close" onclick="closeCardPopup()">✕</button>
+  </div>
+  <div id="pp-body">
+    <div id="pp-name"></div>
+    <div id="pp-sub"></div>
+    <div id="pp-desc"></div>
+    <div id="pp-acts"></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+'use strict';
+
+/* ── AUTH ────────────────────────────────────────────────── */
+const SUPA_URL   = location.origin + '/supa';
+const SUPA_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
+const SESSION_KEY= 'sb-rvxanoqourdrfmbucvpz-auth-token';
+const LIB_KEY    = 'gridiron_pro_v3_lib';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+let currentUser = null;
+
+(async()=>{
+  let session = null;
+  try {
+    const { data } = await supa.auth.getSession();
+    session = data?.session || null;
+  } catch(e) {}
+
+  // Fallback: login.html stores session in raw-fetch format; SDK may not recognize it.
+  // Inject it into the SDK so both this page and future SDK calls work correctly.
+  if (!session) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+      if (raw && raw.access_token && raw.refresh_token &&
+          raw.expires_at > Math.floor(Date.now() / 1000)) {
+        const { data: s2 } = await supa.auth.setSession({
+          access_token: raw.access_token,
+          refresh_token: raw.refresh_token
+        });
+        session = s2?.session || null;
+      }
+    } catch(e) {}
+  }
+
+  if (!session) { window.location.replace('login.html'); return; }
+  currentUser = session.user;
+  updateNavUser(session.user.email, session.user.user_metadata?.name);
+  init();
+})();
+
+function updateNavUser(email, name){
+  const display = name || (email ? email.split('@')[0] : '');
+  const initials = display ? display.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?';
+  const nameEl = document.getElementById('user-name');
+  const avatarEl = document.getElementById('user-avatar');
+  const udropName = document.getElementById('udrop-name');
+  const udropEmail = document.getElementById('udrop-email');
+  if(nameEl) nameEl.textContent = display || 'COACH';
+  if(avatarEl) avatarEl.textContent = initials;
+  if(udropName) udropName.textContent = name || display || '—';
+  if(udropEmail) udropEmail.textContent = email || '—';
+}
+
+function toggleUserMenu(e){
+  e.stopPropagation();
+  document.getElementById('user-chip').classList.toggle('open');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', () => {
+  document.getElementById('user-chip')?.classList.remove('open');
+});
+
+function openSettings(e){
+  e.stopPropagation();
+  document.getElementById('user-chip').classList.remove('open');
+  // Pre-fill from current session
+  const s = (() => { try{ return JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); }catch{return null;} })();
+  const meta = s?.user?.user_metadata || {};
+  document.getElementById('smod-name').value  = meta.name || '';
+  document.getElementById('smod-level').value = meta.coaching_level || '';
+  document.getElementById('smod-phone').value = meta.phone || '';
+  document.getElementById('smod-team').value  = meta.team_name || '';
+  document.getElementById('smod-msg').className = 'smod-msg';
+  document.getElementById('smod-msg').textContent = '';
+  document.getElementById('settings-overlay').classList.add('show');
+}
+
+function closeSettings(){
+  document.getElementById('settings-overlay').classList.remove('show');
+}
+
+function closeSettingsOnBg(e){
+  if(e.target === document.getElementById('settings-overlay')) closeSettings();
+}
+
+async function saveSettings(){
+  const name  = document.getElementById('smod-name').value.trim();
+  const level = document.getElementById('smod-level').value;
+  const phone = document.getElementById('smod-phone').value.trim();
+  const team  = document.getElementById('smod-team').value.trim();
+  const msgEl = document.getElementById('smod-msg');
+  const btn   = document.getElementById('smod-save');
+
+  if(!name){ msgEl.textContent='Please enter your name.'; msgEl.className='smod-msg error'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="smod-spinner"></span>SAVING…';
+  msgEl.className = 'smod-msg';
+
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
+    const token = s?.access_token;
+    if(!token) throw new Error('No session');
+
+    // 1. Update auth user_metadata
+    const res = await fetch(SUPA_URL+'/auth/v1/user', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+token},
+      body: JSON.stringify({ data:{ name, coaching_level:level, phone:phone||null, team_name:team||null, profile_completed:true } })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error_description || data.message || 'Save failed');
+
+    // 2. UPSERT profiles table
+    const userId = s?.user?.id || data?.id;
+    if(userId){
+      await fetch(SUPA_URL+'/rest/v1/profiles', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+token,'Prefer':'resolution=merge-duplicates'},
+        body: JSON.stringify({ id:userId, name, coaching_level:level, phone:phone||null, team_name:team||null, profile_completed:true, updated_at:new Date().toISOString() })
+      }).catch(()=>{});
+    }
+
+    // 3. Update localStorage session
+    if(s){ s.user = data && data.id ? data : s.user; if(s.user?.user_metadata) Object.assign(s.user.user_metadata,{name,coaching_level:level,phone:phone||null,team_name:team||null}); try{localStorage.setItem(SESSION_KEY,JSON.stringify(s));}catch{} }
+
+    // 4. Refresh nav display
+    updateNavUser(s?.user?.email || data?.email, name);
+
+    msgEl.textContent = 'Profile updated!';
+    msgEl.className = 'smod-msg success';
+    btn.disabled = false;
+    btn.textContent = 'SAVE CHANGES';
+    setTimeout(closeSettings, 1200);
+  } catch(err){
+    msgEl.textContent = err.message || 'Could not save. Please try again.';
+    msgEl.className = 'smod-msg error';
+    btn.disabled = false;
+    btn.textContent = 'SAVE CHANGES';
+  }
+}
+
+async function doSignOut(e){
+  if(e) e.stopPropagation();
+  await supa.auth.signOut();
+  localStorage.removeItem(SESSION_KEY);
+  window.location.replace('login.html');
+}
+
+function goApp(page){
+  window.location.href = page === 'designer' ? 'app.html' : 'app.html?page='+page;
+}
+
+/* ── HERO CANVAS ANIMATION ───────────────────────────────── */
+(()=>{
+  const cv = document.getElementById('hero-canvas');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  let raf, ox=0, oy=0;
+  function resize(){ cv.width=cv.offsetWidth; cv.height=cv.offsetHeight; }
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    const sp=44;
+    ctx.strokeStyle='rgba(240,165,0,0.055)';
+    ctx.lineWidth=0.8;
+    for(let x=(ox%sp)-sp;x<cv.width+sp;x+=sp){
+      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();
+    }
+    for(let y=(oy%sp)-sp;y<cv.height+sp;y+=sp){
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();
+    }
+    // LOS-style line
+    const my=cv.height*0.62;
+    ctx.strokeStyle='rgba(255,255,255,0.06)';
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([8,8]);
+    ctx.beginPath();ctx.moveTo(0,my);ctx.lineTo(cv.width,my);ctx.stroke();
+    ctx.setLineDash([]);
+    ox+=0.25; oy+=0.1;
+    raf=requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',()=>{resize();});
+  resize(); draw();
+})();
+
+/* ── COUNT-UP ────────────────────────────────────────────── */
+function countUp(id,target,dur=900){
+  const el=document.getElementById(id);
+  const start=performance.now();
+  function step(now){
+    const p=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(ease*target);
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ── THUMBNAIL RENDERER ──────────────────────────────────── */
+function genThumb(players,routes){
+  const TW=400,TH=252, SW=700,SH=570;
+  const sx=TW/SW, sy=TH/SH;
+  const c=document.createElement('canvas');
+  c.width=TW; c.height=TH;
+  const g=c.getContext('2d');
+
+  // Field
+  const fg=g.createLinearGradient(0,0,0,TH);
+  fg.addColorStop(0,'#142a18'); fg.addColorStop(1,'#0e1f12');
+  g.fillStyle=fg; g.fillRect(0,0,TW,TH);
+
+  // Yard lines
+  g.strokeStyle='rgba(255,255,255,0.055)'; g.lineWidth=0.8;
+  for(let y=0;y<SH;y+=57){g.beginPath();g.moveTo(0,y*sy);g.lineTo(TW,y*sy);g.stroke();}
+  for(let x=0;x<SW;x+=65.6){g.beginPath();g.moveTo(x*sx,0);g.lineTo(x*sx,TH);g.stroke();}
+
+  // LOS
+  const LY=300*sy;
+  g.strokeStyle='rgba(255,255,255,0.22)'; g.lineWidth=1;
+  g.setLineDash([5,5]);
+  g.beginPath();g.moveTo(0,LY);g.lineTo(TW,LY);g.stroke();
+  g.setLineDash([]);
+
+  // Routes
+  routes.forEach(r=>{
+    const pl=players.find(p=>p.id===r.pid);
+    if(!pl||!r.waypoints||!r.waypoints.length) return;
+    const pts=[{x:pl.x*sx,y:pl.y*sy},...r.waypoints.map(w=>({x:w.x*sx,y:w.y*sy}))];
+    g.beginPath(); g.moveTo(pts[0].x,pts[0].y);
+    pts.slice(1).forEach(p=>g.lineTo(p.x,p.y));
+    g.strokeStyle=r.color||'#ffcc00';
+    g.lineWidth=1.8;
+    if(r.style==='dashed') g.setLineDash([4,4]);
+    else if(r.style==='motion') g.setLineDash([1,4]);
+    else g.setLineDash([]);
+    g.stroke(); g.setLineDash([]);
+    const last=pts[pts.length-1];
+    if(r.style==='block'){
+      g.beginPath();g.arc(last.x,last.y,3.5,0,Math.PI*2);
+      g.fillStyle=r.color||'#ffcc00';g.fill();
+    } else if(pts.length>1){
+      const prev=pts[pts.length-2];
+      const a=Math.atan2(last.y-prev.y,last.x-prev.x);
+      g.beginPath();g.moveTo(last.x,last.y);
+      g.lineTo(last.x-7*Math.cos(a-.45),last.y-7*Math.sin(a-.45));
+      g.lineTo(last.x-7*Math.cos(a+.45),last.y-7*Math.sin(a+.45));
+      g.closePath();g.fillStyle=r.color||'#ffcc00';g.fill();
+    }
+  });
+
+  // Players
+  players.forEach(p=>{
+    const x=p.x*sx, y=p.y*sy;
+    const off=p.side!=='defense';
+    const r=off?7:6.5;
+    g.beginPath();g.arc(x,y,r,0,Math.PI*2);
+    g.fillStyle=off?'#c5202c':'#2d78cc'; g.fill();
+    g.strokeStyle=off?'rgba(255,100,100,.7)':'rgba(100,180,255,.7)';
+    g.lineWidth=1.2; g.stroke();
+    const lbl=(p.lbl||p.pos||'').substring(0,2);
+    g.fillStyle='#fff';
+    g.font=`bold ${off?6:5.5}px Arial`;
+    g.textAlign='center'; g.textBaseline='middle';
+    g.fillText(lbl,x,y);
+  });
+
+  return c.toDataURL('image/jpeg',.88);
+}
+
+/* ── STATE ───────────────────────────────────────────────── */
+let activeTab  = 'tpl';   // 'tpl' | 'mine'
+let activeMode = 'all';
+let activeType = '';
+let activeCat  = '';
+
+/* ── LOCAL LIBRARY ───────────────────────────────────────── */
+function getMyLib(){ try{return JSON.parse(localStorage.getItem(LIB_KEY)||'[]');}catch{return[];} }
+function saveMyLib(arr){ localStorage.setItem(LIB_KEY,JSON.stringify(arr)); }
+
+/* ── INIT ────────────────────────────────────────────────── */
+function init(){
+  const tpls = window.PLAY_LIBRARY||[];
+  const cats  = [...new Set(tpls.map(p=>p.category||'').filter(Boolean))];
+  countUp('stat-plays',tpls.length);
+  countUp('stat-cats',cats.length,700);
+  countUp('stat-mine',getMyLib().length,600);
+  buildCatRow(tpls);
+  renderGrid();
+}
+
+/* ── FILTER BUILDERS ─────────────────────────────────────── */
+function buildCatRow(tpls){
+  const row=document.getElementById('cat-row');
+  row.innerHTML='';
+  const filtered=tpls.filter(p=>{
+    if(activeMode!=='all'&&p.mode!==activeMode) return false;
+    if(activeType&&p.type!==activeType) return false;
+    return true;
+  });
+  const cats=[...new Set(filtered.map(p=>p.category||'').filter(Boolean))];
+  if(!cats.length){row.style.display='none';return;}
+  row.style.display='flex';
+  const all=document.createElement('button');
+  all.className='pill'+(activeCat===''?' act':'');
+  all.textContent='ALL CATEGORIES';
+  all.onclick=()=>{activeCat='';renderGrid();};
+  row.appendChild(all);
+  cats.forEach(cat=>{
+    const b=document.createElement('button');
+    b.className='pill'+(activeCat===cat?' act':'');
+    b.textContent=cat.toUpperCase();
+    b.onclick=()=>{activeCat=(activeCat===cat?'':cat);buildCatRow(tpls);renderGrid();};
+    row.appendChild(b);
+  });
+}
+
+function setMode(m){
+  if(activeMode===m) m='all'; // toggle off
+  activeMode=m; activeCat=''; activeType='';
+  const offBtn=document.getElementById('pill-off');
+  const defBtn=document.getElementById('pill-def');
+  if(offBtn) offBtn.className='pill'+(m==='offense'?' act act-off':'');
+  if(defBtn) defBtn.className='pill'+(m==='defense'?' act act-def':'');
+  // Reset type pills when mode changes
+  ['pass','run','deft'].forEach(x=>{
+    const el=document.getElementById('pill-'+x);
+    if(el) el.className='pill';
+  });
+  buildCatRow(window.PLAY_LIBRARY||[]);
+  renderGrid();
+}
+
+function setType(t){
+  if(activeType===t) t=''; // toggle off
+  activeType=t; activeCat='';
+  const map={Pass:{id:'pill-pass',cls:'act-pass'},Run:{id:'pill-run',cls:'act-run'},Defense:{id:'pill-deft',cls:'act-def'}};
+  Object.entries(map).forEach(([k,{id,cls}])=>{
+    const el=document.getElementById(id);
+    if(el) el.className='pill'+(k===t?' act '+cls:'');
+  });
+  buildCatRow(window.PLAY_LIBRARY||[]);
+  renderGrid();
+}
+
+/* ── TAB SWITCH ──────────────────────────────────────────── */
+function switchTab(tab){
+  activeTab=tab;
+  document.getElementById('tab-tpl').classList.toggle('act',tab==='tpl');
+  document.getElementById('tab-mine').classList.toggle('act',tab==='mine');
+  const filterWrap=document.getElementById('filter-wrap');
+  if(filterWrap) filterWrap.style.display=tab==='tpl'?'':'none';
+  renderGrid();
+}
+
+/* ── MAIN RENDER ─────────────────────────────────────────── */
+function renderGrid(){
+  const grid=document.getElementById('play-grid');
+  const myEmpty=document.getElementById('my-empty');
+  grid.innerHTML=''; myEmpty.style.display='none';
+
+  if(activeTab==='mine'){
+    const plays=getMyLib();
+    if(!plays.length){ myEmpty.style.display='block'; return; }
+    plays.forEach((p,i)=>grid.appendChild(makeCard(p,i,'mine')));
+    document.getElementById('filter-count').textContent='';
+    return;
+  }
+
+  // Template plays
+  const tpls=(window.PLAY_LIBRARY||[]).filter(p=>{
+    if(activeMode!=='all'&&p.mode!==activeMode) return false;
+    if(activeType&&p.type!==activeType) return false;
+    if(activeCat&&(p.category||'')!==activeCat) return false;
+    return true;
+  });
+
+  document.getElementById('filter-count').textContent=tpls.length+' PLAY'+(tpls.length!==1?'S':'');
+
+  if(!tpls.length){
+    grid.innerHTML='<div class="empty-state"><div class="ei">🔍</div><p>NO PLAYS MATCH YOUR FILTERS</p></div>';
+    return;
+  }
+
+  tpls.forEach((p,i)=>grid.appendChild(makeCard(p,i,'tpl')));
+}
+
+/* ── CARD BUILDER ────────────────────────────────────────── */
+function makeCard(pl,idx,source){
+  const thumb=genThumb(pl.players,pl.routes);
+  const off=pl.mode!=='defense';
+  const mBadge=off
+    ?'<span class="badge badge-off">OFF</span>'
+    :'<span class="badge badge-def">DEF</span>';
+  const tKey={Pass:'badge-pass',Run:'badge-run',Defense:'badge-def'};
+  const tBadge=pl.type?`<span class="badge ${tKey[pl.type]||'badge-pass'}">${pl.type.toUpperCase()}</span>`:'';
+  const catBadge=pl.category?`<span class="badge badge-cat">${pl.category.toUpperCase()}</span>`:'';
+
+  const d=document.createElement('div');
+  d.className='pcard';
+  d.style.animationDelay=(idx*28)+'ms';
+
+  if(source==='mine'){
+    d.innerHTML=`
+      <div class="pcard-thumb-wrap">
+        <img class="pcard-thumb" src="${thumb}" alt="${pl.name}">
+        <div class="pcard-badges">${mBadge}${tBadge}${catBadge}</div>
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-name"></div>
+        <div class="pcard-formation"></div>
+        <div class="pcard-desc"></div>
+      </div>
+      <div class="pcard-acts">
+        <button class="pcbtn pri" style="flex:2;" onclick="openInDesigner(${JSON.stringify(pl).replace(/"/g,'&quot;')})">✏ OPEN IN DESIGNER</button>
+        <button class="pcbtn danger" onclick="removeFromLib(${JSON.stringify(pl.id)})">✕</button>
+      </div>`;
+  } else {
+    const alreadySaved=getMyLib().some(p=>p.name===pl.name&&p.type===pl.type);
+    d.innerHTML=`
+      <div class="pcard-thumb-wrap">
+        <img class="pcard-thumb" src="${thumb}" alt="${pl.name}">
+        <div class="pcard-badges">${mBadge}${tBadge}${catBadge}</div>
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-name"></div>
+        <div class="pcard-formation"></div>
+        <div class="pcard-desc"></div>
+      </div>
+      <div class="pcard-acts">
+        <button class="pcbtn${alreadySaved?'':' pri'}" style="flex:2;" onclick="addToLib(${pl.id})">${alreadySaved?'✓ SAVED':'+ ADD TO LIBRARY'}</button>
+        <button class="pcbtn" onclick="openInDesigner(${JSON.stringify(pl).replace(/"/g,'&quot;')})">✏ DESIGNER</button>
+      </div>`;
+  }
+  d.querySelector('.pcard-name').textContent=pl.name;
+  d.querySelector('.pcard-formation').textContent=(pl.formation||'').toUpperCase();
+  d.querySelector('.pcard-desc').textContent=pl.description||'';
+  // Click on thumbnail/body opens popup — clicking buttons falls through normally
+  d.addEventListener('click',function(e){
+    if(e.target.closest('.pcard-acts')) return;
+    openCardPopup(pl,source);
+  });
+  d.style.cursor='pointer';
+  return d;
+}
+
+/* ── ACTIONS ─────────────────────────────────────────────── */
+function addToLib(id){
+  const tpl=(window.PLAY_LIBRARY||[]).find(p=>p.id===id);
+  if(!tpl) return;
+  const idMap={};
+  const players=tpl.players.map(p=>{const nid=Date.now()+Math.random();idMap[p.id]=nid;return{...p,id:nid};});
+  const routes=tpl.routes.map(r=>({...r,id:Date.now()+Math.random(),pid:idMap[r.pid]}));
+  const play={...tpl,id:Date.now()+Math.random(),ts:Date.now(),players,routes};
+  const lib=[play,...getMyLib()];
+  saveMyLib(lib);
+  // Cloud save
+  if(currentUser) cloudSave(play);
+  showToast('"'+play.name+'" added to your Playbook','ok');
+  // Recount
+  countUp('stat-mine',lib.length,400);
+  renderGrid();
+}
+
+function removeFromLib(id){
+  const lib=getMyLib().filter(p=>p.id!==id);
+  saveMyLib(lib);
+  countUp('stat-mine',lib.length,400);
+  renderGrid();
+  showToast('Play removed','ok');
+}
+
+function openInDesigner(play){
+  sessionStorage.setItem('wfpm-open-play',JSON.stringify(play));
+  window.location.href='app.html';
+}
+
+/* ── CLOUD SAVE (best-effort) ────────────────────────────── */
+async function cloudSave(play){
+  if(!currentUser) return;
+  try{
+    await supa.from('plays').upsert({
+      user_id: currentUser.id,
+      play_id: String(play.id),
+      name: play.name,
+      formation: play.formation || '',
+      type: play.type || '',
+      mode: play.mode || 'offense',
+      players: play.players || [],
+      routes: play.routes || [],
+      labels: play.labels || [],
+      thumb: play.thumb || null,
+      description: play.description || null,
+      ts: play.ts || Date.now()
+    },{onConflict:'user_id,play_id'});
+  }catch(e){/* silent */}
+}
+
+/* ── CARD POPUP ──────────────────────────────────────────── */
+let _ppPlay=null, _ppSource=null;
+
+function openCardPopup(pl,source){
+  _ppPlay=pl; _ppSource=source;
+  const thumb=genThumb(pl.players,pl.routes);
+  document.getElementById('pp-thumb').src=thumb;
+  document.getElementById('pp-name').textContent=pl.name;
+  const subParts=[];
+  if(pl.formation) subParts.push(pl.formation.toUpperCase());
+  if(pl.category)  subParts.push(pl.category.toUpperCase());
+  document.getElementById('pp-sub').textContent=subParts.join('  ·  ');
+  document.getElementById('pp-desc').textContent=pl.description||'';
+
+  const off=pl.mode!=='defense';
+  const mBadge=off?'<span class="badge badge-off">OFF</span>':'<span class="badge badge-def">DEF</span>';
+  const tKey={Pass:'badge-pass',Run:'badge-run',Defense:'badge-def'};
+  const tBadge=pl.type?`<span class="badge ${tKey[pl.type]||'badge-pass'}">${pl.type.toUpperCase()}</span>`:'';
+  const catBadge=pl.category?`<span class="badge badge-cat">${pl.category.toUpperCase()}</span>`:'';
+  document.getElementById('pp-badges').innerHTML=mBadge+tBadge+catBadge;
+
+  const actsEl=document.getElementById('pp-acts');
+  if(source==='mine'){
+    actsEl.innerHTML=`
+      <button class="pcbtn pri" style="flex:1;" onclick="openInDesigner(_ppPlay);closeCardPopup()">✏ OPEN IN DESIGNER</button>
+      <button class="pcbtn danger" onclick="removeFromLib(_ppPlay.id);closeCardPopup()">REMOVE</button>`;
+  } else {
+    const saved=getMyLib().some(p=>p.name===pl.name&&p.type===pl.type);
+    actsEl.innerHTML=`
+      <button class="pcbtn${saved?'':' pri'}" style="flex:1;" onclick="addToLib(_ppPlay.id)">${saved?'✓ SAVED':'+ ADD TO LIBRARY'}</button>
+      <button class="pcbtn" style="flex:1;" onclick="openInDesigner(_ppPlay);closeCardPopup()">✏ OPEN IN DESIGNER</button>`;
+  }
+
+  document.getElementById('pp-overlay').style.display='block';
+  document.getElementById('pp-modal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+function closeCardPopup(){
+  document.getElementById('pp-overlay').style.display='none';
+  document.getElementById('pp-modal').style.display='none';
+  document.body.style.overflow='';
+  _ppPlay=null;
+}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+function showToast(msg,type='ok'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className='toast '+type;
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(),2600);
+}
+</script>
+</body>
+</html>
