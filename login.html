@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Sign In — Wylie's Play Maker</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="js/supabase.min.js"></script>
 <style>
 :root{
   --bg:#14202e;--panel:#1b2b3d;--card:#22304a;
@@ -113,15 +114,12 @@ input::placeholder{color:var(--lo);}
 <script>
 const SUPA_URL = 'https://rvxanoqourdrfmbucvpz.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
-const SESSION_KEY = 'sb-rvxanoqourdrfmbucvpz-auth-token';
+const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // If already signed in, skip to app
-try {
-  const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-  if (s && s.expires_at > Math.floor(Date.now() / 1000)) {
-    window.location.replace('library.html');
-  }
-} catch(e) {}
+_supa.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.replace('library.html');
+});
 
 function showMsg(text, type) {
   const el = document.getElementById('msg');
@@ -135,8 +133,10 @@ function friendlyError(msg) {
     return 'Incorrect email or password. Please try again.';
   if (m.includes('email not confirmed'))
     return 'Please check your email and confirm your account first.';
-  if (m.includes('too many requests'))
+  if (m.includes('too many requests') || m.includes('rate limit'))
     return 'Too many attempts. Please wait a moment and try again.';
+  if (m.includes('fetch') || m.includes('network') || m.includes('failed'))
+    return 'Cannot reach the server. Check your connection or try again shortly.';
   return msg || 'An error occurred. Please try again.';
 }
 
@@ -148,44 +148,22 @@ async function doLogin(e) {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>SIGNING IN…';
 
-  try {
-    const res = await fetch(SUPA_URL + '/auth/v1/token?grant_type=password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      showMsg(friendlyError(data.error_description || data.msg || data.message), 'error');
-      btn.disabled = false;
-      btn.textContent = 'SIGN IN TO MY PLAYBOOK';
-    } else {
-      // Store session in the same format Supabase SDK expects
-      localStorage.setItem(SESSION_KEY, JSON.stringify({
-        access_token: data.access_token,
-        token_type: data.token_type,
-        expires_in: data.expires_in,
-        expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
-        refresh_token: data.refresh_token,
-        user: data.user
-      }));
-      showMsg('Signed in! Redirecting…', 'success');
-      // Check if profile already complete (by flag or by having metadata from a previous session)
-      const alreadyFlagged = localStorage.getItem('wpm_profile_done') === '1' ||
-                             localStorage.getItem('wpm_profile_skipped') === '1';
-      const hasMetadata = !!(data.user?.user_metadata?.coaching_level);
-      if (hasMetadata) {
-        // Mark done so we never prompt them again on this device
-        try { localStorage.setItem('wpm_profile_done', '1'); } catch {}
-      }
-      const profileDone = alreadyFlagged || hasMetadata;
-      setTimeout(() => window.location.replace(profileDone ? 'library.html' : 'profile.html'), 800);
-    }
-  } catch(err) {
-    showMsg('Network error. Please try again.', 'error');
+  const { data, error } = await _supa.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    showMsg(friendlyError(error.message), 'error');
     btn.disabled = false;
     btn.textContent = 'SIGN IN TO MY PLAYBOOK';
+    return;
   }
+
+  showMsg('Signed in! Redirecting…', 'success');
+  const hasMetadata = !!(data.user?.user_metadata?.coaching_level);
+  if (hasMetadata) try { localStorage.setItem('wpm_profile_done', '1'); } catch {}
+  const profileDone = localStorage.getItem('wpm_profile_done') === '1' ||
+                      localStorage.getItem('wpm_profile_skipped') === '1' ||
+                      hasMetadata;
+  setTimeout(() => window.location.replace(profileDone ? 'library.html' : 'profile.html'), 800);
 }
 </script>
 </body>

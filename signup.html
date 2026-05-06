@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Create Account — Wylie's Play Maker</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="js/supabase.min.js"></script>
 <style>
 :root{
   --bg:#14202e;--panel:#1b2b3d;--card:#22304a;
@@ -129,15 +130,12 @@ input.invalid{border-color:var(--off);}
 <script>
 const SUPA_URL = 'https://rvxanoqourdrfmbucvpz.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2eGFub3FvdXJkcmZtYnVjdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDg2NDksImV4cCI6MjA5MDU4NDY0OX0.7YOW4HtsI-VjgjYZTfAt2tZIUbw_O4NE8oRiTKEbGWY';
-const SESSION_KEY = 'sb-rvxanoqourdrfmbucvpz-auth-token';
+const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // If already signed in, skip to app
-try {
-  const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-  if (s && s.expires_at > Math.floor(Date.now() / 1000)) {
-    window.location.replace('library.html');
-  }
-} catch(e) {}
+_supa.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.replace('library.html');
+});
 
 function checkPw() {
   const pw = document.getElementById('password').value;
@@ -170,8 +168,10 @@ function friendlyError(msg) {
     return 'Password must be at least 6 characters.';
   if (m.includes('invalid email'))
     return 'Please enter a valid email address.';
-  if (m.includes('too many requests'))
+  if (m.includes('too many requests') || m.includes('rate limit'))
     return 'Too many attempts. Please wait a moment and try again.';
+  if (m.includes('fetch') || m.includes('network') || m.includes('failed'))
+    return 'Cannot reach the server. Check your connection or try again shortly.';
   return msg || 'An error occurred. Please try again.';
 }
 
@@ -190,37 +190,23 @@ async function doSignup(e) {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>CREATING ACCOUNT…';
 
-  try {
-    const res = await fetch(SUPA_URL + '/auth/v1/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
-      body: JSON.stringify({ email, password, data: { name: fullname } })
-    });
-    const data = await res.json();
+  const { data, error } = await _supa.auth.signUp({
+    email, password,
+    options: { data: { name: fullname } }
+  });
 
-    if (!res.ok) {
-      showMsg(friendlyError(data.error_description || data.msg || data.message), 'error');
-      btn.disabled = false;
-      btn.textContent = 'CREATE MY ACCOUNT';
-    } else if (data.session) {
-      // Email confirmation disabled — session returned immediately
-      localStorage.setItem(SESSION_KEY, JSON.stringify({
-        access_token: data.session.access_token,
-        token_type: data.session.token_type,
-        expires_in: data.session.expires_in,
-        expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in,
-        refresh_token: data.session.refresh_token,
-        user: data.user
-      }));
-      showMsg('Account created! Setting up your profile…', 'success');
-      setTimeout(() => window.location.replace('profile.html'), 800);
-    } else {
-      showMsg('Account created! Check your email to confirm your account, then sign in.', 'success');
-      btn.disabled = false;
-      btn.textContent = 'CREATE MY ACCOUNT';
-    }
-  } catch(err) {
-    showMsg('Network error. Please try again.', 'error');
+  if (error) {
+    showMsg(friendlyError(error.message), 'error');
+    btn.disabled = false;
+    btn.textContent = 'CREATE MY ACCOUNT';
+    return;
+  }
+
+  if (data.session) {
+    showMsg('Account created! Setting up your profile…', 'success');
+    setTimeout(() => window.location.replace('profile.html'), 800);
+  } else {
+    showMsg('Account created! Check your email to confirm your account, then sign in.', 'success');
     btn.disabled = false;
     btn.textContent = 'CREATE MY ACCOUNT';
   }
