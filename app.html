@@ -160,6 +160,14 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 .pcbtn.red:hover { color:#ff4455; border-color:#ff4455; background:rgba(255,68,85,.08); }
 .lib-empty { text-align:center; color:var(--text-lo); font-size:12px; padding:40px 16px; line-height:1.8; grid-column:1/-1; }
 .lib-empty strong { color:var(--text-mid); display:block; margin-bottom:6px; font-family:'Oswald',sans-serif; font-size:15px; }
+.lib-tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+.lib-tab { flex:1; padding:9px 16px; background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-1px; font-family:'Oswald',sans-serif; font-size:11px; font-weight:700; letter-spacing:1.5px; color:var(--text-lo); cursor:pointer; transition:all .18s; }
+.lib-tab:hover { color:var(--text-mid); }
+.lib-tab.act { color:var(--accent); border-bottom-color:var(--accent); }
+.lib-tab-badge { display:inline-block; background:var(--bg-hover); border-radius:8px; padding:1px 7px; font-size:9px; margin-left:6px; color:var(--text-lo); }
+.lib-tab.act .lib-tab-badge { background:var(--accent-glow); color:var(--accent); }
+.pcbtn.pri { background:var(--accent-glow); border-color:var(--accent); color:var(--accent); }
+.pcbtn.pri:hover { background:var(--accent); color:#000; }
 
 /* ─── AI PLAY CARD ─────────────────────────────────────────── */
 .ai-play-card { background:var(--bg-card); border:1px solid var(--border-bright); border-radius:10px; overflow:hidden; box-shadow:var(--shadow-sm); display:flex; flex-direction:row; height:260px; }
@@ -391,6 +399,24 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   width:88px;height:88px;
   border:1px solid rgba(167,139,250,.2);
 }
+/* Play Database — green field rows */
+.hcard[data-page=playdb] .hcard-bg {
+  background:linear-gradient(145deg,#0a2010 0%,#0d2c18 55%,#081a10 100%);
+}
+.hcard[data-page=playdb] .hcard-bg::before {
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 1px,transparent 18%);
+}
+.hcard[data-page=playdb] .hcard-bg::after {
+  content:'';position:absolute;
+  left:50%;top:28%;transform:translate(-50%,-50%);
+  width:70px;height:70px;
+  border:1.5px solid rgba(34,197,94,.2);
+  border-radius:50%;
+}
+.hcard[data-page=playdb]       .hcard-icon { background:rgba(34,197,94,.15);color:#22c55e; }
+.hcard[data-page=playdb]:hover { border-color:rgba(34,197,94,.4); }
+
 /* Library — stacked play cards */
 .hcard[data-page=library] .hcard-bg {
   background:linear-gradient(145deg,#1a1206 0%,#221800 55%,#161000 100%);
@@ -552,6 +578,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   <div class="spacer"></div>
   <nav class="nav-pages">
     <button class="npbtn act" data-page="home" onclick="switchPage('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</button>
+    <button class="npbtn" data-page="playdb" onclick="switchPage('playdb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>PLAY DATABASE</button>
     <button class="npbtn" data-page="wb" onclick="switchPage('wb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>WRISTBAND</button>
     <button class="npbtn" data-page="signals" onclick="switchPage('signals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>SIGNALS</button>
     <button class="npbtn" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>LIBRARY</button>
@@ -565,6 +592,31 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 <!-- ═══ PAGES ═══ -->
 <div id="pages">
 
+  <!-- ══ PLAY DATABASE ══ -->
+  <div id="page-playdb" class="page">
+    <div class="page-topbar">
+      <h2>Play Database <span class="cloud-badge" style="display:inline;">60 PLAYS</span></h2>
+      <input type="text" class="rp-input" placeholder="Search plays..." id="pdb-search" oninput="renderPlayDb()">
+      <select class="rp-select" id="pdb-filter-side" style="width:110px;" onchange="renderPlayDb()">
+        <option value="all">All Sides</option>
+        <option value="offense">Offense</option>
+        <option value="defense">Defense</option>
+      </select>
+      <select class="rp-select" id="pdb-filter-type" style="width:120px;" onchange="renderPlayDb()">
+        <option value="">All Types</option>
+        <option value="run">Run</option>
+        <option value="pass">Pass</option>
+        <option value="screen">Screen</option>
+        <option value="trick">Trick</option>
+        <option value="redzone">Red Zone</option>
+        <option value="special">Special</option>
+        <option value="defense">Defense</option>
+      </select>
+      <span id="pdb-count"></span>
+    </div>
+    <div id="pdb-grid" style="flex:1;overflow-y:auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;align-content:start;"></div>
+  </div>
+
   <!-- ══ HOME ══ -->
   <div id="page-home" class="page act">
     <div class="home-hero">
@@ -573,6 +625,17 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <div class="home-hero-sub">Everything you need to build smarter plays, prep your team, and win on game day. Select a tool to get started.</div>
     </div>
     <div class="home-cards">
+
+      <div class="hcard" data-page="playdb" onclick="switchPage('playdb')">
+        <div class="hcard-bg"></div>
+        <div class="hcard-overlay"></div>
+        <div class="hcard-body">
+          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+          <div class="hcard-label">PLAY DATABASE</div>
+          <div class="hcard-desc">Browse 60 professionally designed plays available to all coaches. Filter by formation, type, or side of the ball. Load any play straight to the Designer or save it to your personal library.</div>
+          <div class="hcard-arrow">BROWSE DATABASE <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
 
       <div class="hcard" data-page="wb" onclick="switchPage('wb')">
         <div class="hcard-bg"></div>
@@ -601,9 +664,9 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         <div class="hcard-overlay"></div>
         <div class="hcard-body">
           <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
-          <div class="hcard-label">PLAY LIBRARY</div>
-          <div class="hcard-desc">Browse and manage your saved plays. Filter by formation, type, or side of the ball. Load any play back into the designer to edit or send to your wristband.</div>
-          <div class="hcard-arrow">OPEN LIBRARY <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="hcard-label">MY PLAYS</div>
+          <div class="hcard-desc">Your personal play library — every play you've saved or imported. Filter, load into the Designer, add to a wristband, or delete plays you no longer need.</div>
+          <div class="hcard-arrow">MY PLAYS <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
       </div>
 
@@ -695,7 +758,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   <!-- ══ LIBRARY ══ -->
   <div id="page-library" class="page">
     <div class="page-topbar">
-      <h2>Play Library <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">CLOUD</span></h2>
+      <h2>My Plays <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">CLOUD</span></h2>
       <input type="text" class="rp-input" placeholder="Search plays..." id="lib-search" oninput="renderLibrary()">
       <select class="rp-select" id="lib-filter" style="width:110px;" onchange="renderLibrary()">
         <option value="all">All Plays</option>
@@ -1758,47 +1821,128 @@ function saveLib(l){
 }
 
 function renderLibrary(){
-  const allPlays = getLib();
-  console.log('[renderLibrary] total plays:', allPlays.length, '| cloudLib:', cloudLib ? cloudLib.length : 'null', '| user:', currentUser?.email || 'none');
-  const grid=document.getElementById('lib-grid');
-  const q=(document.getElementById('lib-search')?.value||'').toLowerCase();
-  const f=document.getElementById('lib-filter')?.value||'all';
-  const lib=allPlays.filter(p=>{
-    const ms=!q||p.name.toLowerCase().includes(q)||(p.formation||'').toLowerCase().includes(q);
-    const mf=f==='all'||p.mode===f; return ms&&mf;
+  const grid = document.getElementById('lib-grid');
+  const q = (document.getElementById('lib-search')?.value||'').toLowerCase();
+  const f = document.getElementById('lib-filter')?.value||'all';
+  const typeColor = {run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
+  const myPlays = getLib();
+  const countEl = document.getElementById('lib-count');
+
+  const lib = myPlays.filter(p=>{
+    const ms = !q || p.name.toLowerCase().includes(q) || (p.formation||'').toLowerCase().includes(q);
+    const mf = f==='all' || p.mode===f;
+    return ms && mf;
   });
-  const countEl=document.getElementById('lib-count');
-  if(countEl) countEl.textContent=lib.length+' play'+(lib.length!==1?'s':'');
+  if(countEl) countEl.textContent = lib.length+' play'+(lib.length!==1?'s':'');
   if(!lib.length){
-    const msg = allPlays.length
+    const msg = myPlays.length
       ? 'No plays match your current filter.'
-      : 'No plays saved yet — design a play in the Designer, then hit SAVE PLAY.';
-    grid.innerHTML=`<div class="lib-empty"><strong>${allPlays.length ? 'No Results' : 'Your Library is Empty'}</strong>${msg}</div>`;
+      : 'No plays saved yet — design a play in the Designer and hit SAVE PLAY, or browse the Play Database to add templates.';
+    grid.innerHTML=`<div class="lib-empty"><strong>${myPlays.length?'No Results':'Your Library is Empty'}</strong>${msg}</div>`;
     return;
   }
-  const typeColor={run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
   grid.innerHTML='';
   lib.forEach(pl=>{
-    const mTag=pl.mode==='offense'?'<span class="ptag ptag-o">OFF</span>':'<span class="ptag ptag-d">DEF</span>';
-    const tyKey=typeColor[pl.type]||typeColor.default;
-    const tyTag=pl.type?`<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>`:'';
-    const d=document.createElement('div'); d.className='pcard';
+    const mTag = pl.mode==='offense'?'<span class="ptag ptag-o">OFF</span>':'<span class="ptag ptag-d">DEF</span>';
+    const tyKey = typeColor[pl.type]||typeColor.default;
+    const tyTag = pl.type?`<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>`:'';
+    const d = document.createElement('div'); d.className='pcard';
     d.innerHTML=`
-      ${pl.thumb?`<img class="pcard-thumb" src="${pl.thumb}" loading="lazy">`:'<div class="pcard-thumb"></div>'}
+      ${pl.thumb?`<img class="pcard-thumb" src="${pl.thumb}" loading="lazy">`:'<div class="pcard-thumb" style="height:80px;background:var(--green-dark);"></div>'}
       <div class="pcard-body">
         <div class="pcard-name"></div>
         <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta"></span></div>
       </div>
       <div class="pcard-acts">
-        <button class="pcbtn" onclick="event.stopPropagation();loadPlay(${pl.id});switchPage('designer')">📂 Load</button>
+        <button class="pcbtn" onclick="event.stopPropagation();loadPlay(${pl.id});switchPage('designer')">✏ LOAD</button>
         <button class="pcbtn" onclick="event.stopPropagation();wbAddById(${pl.id})">+ WB</button>
         <button class="pcbtn red" onclick="event.stopPropagation();deletePlay(${pl.id})">🗑</button>
       </div>`;
-    d.querySelector('.pcard-name').textContent=pl.name;
-    d.querySelector('.pcard-fmeta').textContent=pl.formation||'';
-    d.addEventListener('click',()=>openPlayModal(pl.id));
+    d.querySelector('.pcard-name').textContent = pl.name;
+    d.querySelector('.pcard-fmeta').textContent = pl.formation||'';
+    d.addEventListener('click', ()=>openPlayModal(pl.id));
     grid.appendChild(d);
   });
+}
+
+function renderPlayDb() {
+  const grid = document.getElementById('pdb-grid');
+  if(!grid) return;
+  const q    = (document.getElementById('pdb-search')?.value||'').toLowerCase();
+  const side = document.getElementById('pdb-filter-side')?.value||'all';
+  const type = document.getElementById('pdb-filter-type')?.value||'';
+  const typeColor = {run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
+  const myPlays = getLib();
+
+  const tpls = (window.PLAY_LIBRARY||[]).filter(p=>{
+    if(side!=='all' && p.mode!==side) return false;
+    if(type && p.type!==type) return false;
+    if(q && !p.name.toLowerCase().includes(q) && !(p.formation||'').toLowerCase().includes(q) && !(p.description||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const countEl = document.getElementById('pdb-count');
+  if(countEl) countEl.textContent = tpls.length+' play'+(tpls.length!==1?'s':'');
+
+  if(!tpls.length){
+    grid.innerHTML='<div class="lib-empty"><strong>No Results</strong>No plays match your filters.</div>';
+    return;
+  }
+  grid.innerHTML='';
+  tpls.forEach(pl=>{
+    const alreadySaved = myPlays.some(p=>p.name===pl.name && p.type===pl.type);
+    const mTag  = pl.mode==='offense'?'<span class="ptag ptag-o">OFF</span>':'<span class="ptag ptag-d">DEF</span>';
+    const tyKey = typeColor[pl.type]||typeColor.default;
+    const tyTag = pl.type?`<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>`:'';
+    const d = document.createElement('div'); d.className='pcard';
+    d.innerHTML=`
+      <div class="pcard-thumb" style="background:var(--green-dark);height:80px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.15);font-size:10px;font-family:Oswald,sans-serif;letter-spacing:2px;"></div>
+      <div class="pcard-body">
+        <div class="pcard-name"></div>
+        <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta"></span></div>
+        <div class="pcard-desc2" style="font-size:10px;color:var(--text-lo);margin-top:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></div>
+      </div>
+      <div class="pcard-acts">
+        <button class="pcbtn${alreadySaved?'':' pri'}" onclick="event.stopPropagation();addTplToMyLib(${pl.id})">${alreadySaved?'✓ SAVED':'+ MY PLAYS'}</button>
+        <button class="pcbtn" onclick="event.stopPropagation();loadTplToDesigner(${pl.id})">✏ DESIGN</button>
+      </div>`;
+    d.querySelector('.pcard-name').textContent = pl.name;
+    d.querySelector('.pcard-fmeta').textContent = pl.formation||'';
+    d.querySelector('.pcard-desc2').textContent = pl.description||'';
+    d.querySelector('.pcard-thumb').textContent = (pl.formation||'').toUpperCase();
+    grid.appendChild(d);
+  });
+}
+
+function addTplToMyLib(id) {
+  const tpl = (window.PLAY_LIBRARY||[]).find(p=>p.id===id);
+  if(!tpl) return;
+  const idMap = {};
+  const players = tpl.players.map(p=>{ const nid=Date.now()+Math.random(); idMap[p.id]=nid; return{...p,id:nid}; });
+  const routes  = tpl.routes.map(r=>({...r,id:Date.now()+Math.random(),pid:idMap[r.pid]}));
+  const play = {...tpl, id:Date.now()+Math.random(), ts:Date.now(), players, routes};
+  const lib = [play, ...getLib()];
+  saveLib(lib);
+  if(currentUser) savePlayToCloud(play);
+  setStatus(`"${tpl.name}" added to My Plays`);
+  renderLibrary();
+}
+
+function loadTplToDesigner(id) {
+  const tpl = (window.PLAY_LIBRARY||[]).find(p=>p.id===id);
+  if(!tpl) return;
+  const idMap = {};
+  pushH();
+  S.players   = tpl.players.map(p=>{ const nid=Date.now()+Math.random(); idMap[p.id]=nid; return{...p,id:nid}; });
+  S.routes    = tpl.routes.map(r=>({...r,id:Date.now()+Math.random(),pid:idMap[r.pid]}));
+  S.labels    = [];
+  S.mode      = tpl.mode||'offense';
+  S.formation = tpl.formation||S.formation;
+  S.selectedId= null;
+  document.getElementById('play-name').value = tpl.name;
+  setMode(S.mode); render();
+  setStatus(`"${tpl.name}" loaded — hit SAVE PLAY to add to your library`);
+  switchPage('designer');
 }
 
 function loadPlay(id){
@@ -2435,6 +2579,7 @@ function switchPage(id){
   pageEl.classList.add('act');
   document.getElementById('designer-ctrls').style.display=id==='designer'?'flex':'none';
   if(id==='library') renderLibrary();
+  if(id==='playdb') renderPlayDb();
   if(id==='wb'){updateWbSel();renderWbList();}
   if(id==='designer') render();
   if(id==='signals' && typeof initSignals === 'function' && !window._sigInitDone){
@@ -2462,7 +2607,7 @@ initAuth().then(() => {
   // Handle ?page= deep-link from library.html goApp() navigation
   const urlPage = new URLSearchParams(location.search).get('page');
   if (urlPage) {
-    const validPages = ['home','designer','ai','wb','signals','library'];
+    const validPages = ['home','playdb','designer','ai','wb','signals','library'];
     if (validPages.includes(urlPage)) switchPage(urlPage);
   }
 
@@ -2489,6 +2634,7 @@ initAuth().then(() => {
   } catch(e) { /* ignore */ }
 });
 </script>
+<script src="js/play-library.js"></script>
 <script src="js/signals/signalEncoder.js"></script>
 <script src="js/signals/signalStorage.js"></script>
 <script src="js/signals/signalValidator.js"></script>
