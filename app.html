@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wylie's Football Play Maker</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/signals.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -287,6 +288,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <button class="npbtn act" data-page="designer" onclick="switchPage('designer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>DESIGNER</button>
     <button class="npbtn" data-page="ai" onclick="switchPage('ai')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI COACH</button>
     <button class="npbtn" data-page="wb" onclick="switchPage('wb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>WRISTBAND</button>
+    <button class="npbtn" data-page="signals" onclick="switchPage('signals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>SIGNALS</button>
     <button class="npbtn" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>LIBRARY</button>
   </nav>
   <div class="hdiv"></div>
@@ -440,7 +442,10 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <div id="ai-results-col">
       <h3>SUGGESTIONS</h3>
       <div id="ai-output">
-        <div style="text-align:center;color:var(--text-lo);font-size:12px;padding:40px 0;">Configure your team profile and click GET AI SUGGESTIONS.</div>
+        <div style="text-align:center;padding:48px 24px;border:1px dashed var(--border-bright);border-radius:10px;margin:4px;">
+          <div style="font-family:'Oswald',sans-serif;font-size:15px;color:var(--text-mid);letter-spacing:1px;margin-bottom:10px;">READY FOR YOUR TEAM</div>
+          <div style="font-size:12px;color:var(--text-lo);line-height:1.7;">Configure your team profile on the left,<br>then click <strong style="color:var(--accent);">GET AI SUGGESTIONS</strong>.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -481,6 +486,140 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     </div>
   </div>
 
+  <!-- ══ SIGNALS ══ -->
+  <div id="page-signals" class="page">
+    <div id="sig-grid-col">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <h2 style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;color:var(--text-hi);margin:0;">Signal Grid</h2>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="sig-rot-btn" onclick="sigRotate(-1)" title="Rotate back">◀</button>
+          <span id="sig-rot-label" class="sig-rot-label">ORIGINAL</span>
+          <button class="sig-rot-btn" onclick="sigRotate(1)" title="Rotate forward">▶</button>
+          <button class="sig-rot-btn sig-rot-reset" onclick="sigRotation=0;document.getElementById('sig-rot-label').textContent='ORIGINAL';renderSigGrid();renderSigPreviews();" title="Reset">↺</button>
+        </div>
+      </div>
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;">
+        <div class="sig-panel-sec">
+          <div class="sig-panel-sec-hdr">SIGNAL GRID</div>
+          <div id="sig-grid"></div>
+        </div>
+        <div class="sig-panel-sec">
+          <div class="sig-panel-sec-hdr">COLOR KEY</div>
+          <div class="sig-legend-grid">
+            <span class="sig-legend-dot" style="background:#22c55e"></span><span class="sig-legend-lbl">Green — Base / Pro Set</span>
+            <span class="sig-legend-dot" style="background:#4a9eff"></span><span class="sig-legend-lbl">Blue — Shotgun / Spread</span>
+            <span class="sig-legend-dot" style="background:#e63946"></span><span class="sig-legend-lbl">Red — Goal Line / Power</span>
+            <span class="sig-legend-dot" style="background:#f0a500"></span><span class="sig-legend-lbl">Gold — Trick / Special</span>
+          </div>
+        </div>
+        <div class="sig-panel-sec">
+          <div class="sig-panel-sec-hdr">ENCODING GUIDE</div>
+          <div class="sig-encode-grid">
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Head</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 1</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Shoulder</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 2</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Chest</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 3</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Waist</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 4</span></div>
+            <div class="sig-encode-divider"></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">1 Finger</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Row A</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">2 Fingers</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Row B</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">3 Fingers</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Row C</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Fist</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Row D</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="sig-preview-col">
+      <div class="sig-preview-section">
+        <div class="sig-preview-hdr">
+          <h3>WRISTBAND PREVIEW</h3>
+          <button class="sig-print-btn" onclick="printSigWristband()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> PRINT</button>
+        </div>
+        <div id="sig-wb-preview"><div class="sig-preview-empty">Assign plays to grid cells to see the wristband preview.</div></div>
+      </div>
+      <div class="sig-preview-section">
+        <div class="sig-preview-hdr">
+          <h3>KEY CARD PREVIEW</h3>
+          <button class="sig-print-btn" onclick="printSigKeyCard()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> PRINT</button>
+        </div>
+        <div id="sig-key-preview"><div class="sig-preview-empty">Assign plays to grid cells to see the key card preview.</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ SIGNAL CELL MODAL ═══ -->
+<div class="modal-overlay" id="sig-cell-modal" onclick="if(event.target===this)closeSigModal()">
+  <div class="modal" style="max-width:500px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+      <div>
+        <h2 id="sig-modal-title">ASSIGN CELL</h2>
+        <div class="modal-subtitle" id="sig-modal-sub" style="margin-bottom:0;"></div>
+      </div>
+      <button onclick="closeSigModal()" style="background:none;border:none;color:var(--text-mid);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin:16px 0 0;">
+      <div class="rp-group">
+        <label class="rp-label">PLAY</label>
+        <select class="rp-select" id="sig-modal-play"></select>
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">COLOR FAMILY</label>
+        <input type="hidden" id="sig-modal-color" value="green">
+        <div class="sig-color-row">
+          <button class="sig-color-btn" data-color="green" onclick="sigPickColor('green')">GREEN</button>
+          <button class="sig-color-btn" data-color="blue" onclick="sigPickColor('blue')">BLUE</button>
+          <button class="sig-color-btn" data-color="red" onclick="sigPickColor('red')">RED</button>
+          <button class="sig-color-btn" data-color="gold" onclick="sigPickColor('gold')">GOLD</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div class="rp-group">
+          <label class="rp-label">BODY ZONE</label>
+          <select class="rp-select" id="sig-modal-zone">
+            <option value="head">Head</option>
+            <option value="shoulder">Shoulder</option>
+            <option value="chest">Chest</option>
+            <option value="waist">Waist</option>
+          </select>
+        </div>
+        <div class="rp-group">
+          <label class="rp-label">FINGERS</label>
+          <select class="rp-select" id="sig-modal-fingers">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">Fist</option>
+          </select>
+        </div>
+        <div class="rp-group">
+          <label class="rp-label">CALLER</label>
+          <select class="rp-select" id="sig-modal-caller">
+            <option value="OC">OC</option>
+            <option value="QB">QB</option>
+            <option value="HC">HC</option>
+            <option value="WR">WR</option>
+          </select>
+        </div>
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">SERIES</label>
+        <select class="rp-select" id="sig-modal-series">
+          <option value="0">Always Live</option>
+          <option value="1">Series 1</option>
+          <option value="2">Series 2</option>
+          <option value="3">Series 3</option>
+        </select>
+      </div>
+      <label class="sig-dummy-row"><input type="checkbox" id="sig-modal-dummy"> Mark as Dummy / Decoy (no play assigned)</label>
+      <div class="sig-modal-err" id="sig-modal-err"></div>
+    </div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button id="sig-modal-clear" class="mbtn" style="display:none;flex:0;background:rgba(230,57,70,.12);color:#ff6b75;border:1px solid rgba(230,57,70,.3);padding:10px 14px;white-space:nowrap;" onclick="clearSigCell()">CLEAR</button>
+      <button class="mbtn cancel" onclick="closeSigModal()">Cancel</button>
+      <button class="mbtn ok" onclick="saveSigCell()">Save</button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ SAVE PLAY MODAL ═══ -->
@@ -588,13 +727,18 @@ let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
 
 // Called on page load — restore session if one exists
 async function initAuth() {
-  const { data: { session } } = await supa.auth.getSession();
+  console.log('[initAuth] checking session…');
+  const { data: { session }, error: sessErr } = await supa.auth.getSession();
+  if (sessErr) console.error('[initAuth] getSession error:', sessErr);
   if (!session) {
+    console.log('[initAuth] no session — redirecting to login');
     window.location.replace('login.html');
     return;
   }
+  console.log('[initAuth] session found for', session.user?.email);
   currentUser = session.user;
   await loadCloudLib();
+  console.log('[initAuth] cloudLib loaded —', cloudLib ? cloudLib.length + ' plays' : 'null (error)');
   updateAuthUI();
   // Listen for auth state changes (sign-in / sign-out in other tabs)
   supa.auth.onAuthStateChange(async (event, session) => {
@@ -1280,17 +1424,22 @@ function saveLib(l){
 }
 
 function renderLibrary(){
+  const allPlays = getLib();
+  console.log('[renderLibrary] total plays:', allPlays.length, '| cloudLib:', cloudLib ? cloudLib.length : 'null', '| user:', currentUser?.email || 'none');
   const grid=document.getElementById('lib-grid');
   const q=(document.getElementById('lib-search')?.value||'').toLowerCase();
   const f=document.getElementById('lib-filter')?.value||'all';
-  const lib=getLib().filter(p=>{
+  const lib=allPlays.filter(p=>{
     const ms=!q||p.name.toLowerCase().includes(q)||(p.formation||'').toLowerCase().includes(q);
     const mf=f==='all'||p.mode===f; return ms&&mf;
   });
   const countEl=document.getElementById('lib-count');
   if(countEl) countEl.textContent=lib.length+' play'+(lib.length!==1?'s':'');
   if(!lib.length){
-    grid.innerHTML='<div class="lib-empty"><strong>No plays saved yet</strong>Design a play in the Designer, then hit 💾 SAVE PLAY.</div>';
+    const msg = allPlays.length
+      ? 'No plays match your current filter.'
+      : 'No plays saved yet — design a play in the Designer, then hit SAVE PLAY.';
+    grid.innerHTML=`<div class="lib-empty"><strong>${allPlays.length ? 'No Results' : 'Your Library is Empty'}</strong>${msg}</div>`;
     return;
   }
   const typeColor={run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
@@ -1664,11 +1813,14 @@ Keep language and complexity appropriate for the age and skill level. Separate e
     }
   }
   if(lastErr){
-    const isOverload=lastErr.message.toLowerCase().includes('overload');
-    const msg=isOverload
-      ? 'The AI service is temporarily busy. Please wait 10–15 seconds and try again.'
-      : lastErr.message;
-    out.innerHTML=`<div style="background:rgba(255,68,85,.08);border:1px solid rgba(255,68,85,.3);border-radius:10px;padding:18px 20px;"><h4 style="color:#ff4455;font-family:'Oswald',sans-serif;margin:0 0 8px;">⚠ Error</h4><p style="color:var(--text-mid);font-size:12px;margin:0;line-height:1.6;">${msg}</p></div>`;
+    const m=lastErr.message.toLowerCase();
+    const isOverload=m.includes('overload');
+    const isApiKey=m.includes('anthropic_api_key') || m.includes('api key') || m.includes('not set on the server');
+    let msg;
+    if(isOverload) msg='The AI service is temporarily busy. Please wait 10–15 seconds and try again.';
+    else if(isApiKey) msg='AI Coach is not yet configured on this server. The site owner needs to add the ANTHROPIC_API_KEY to Vercel environment variables.';
+    else msg=lastErr.message;
+    out.innerHTML=`<div style="background:rgba(255,68,85,.08);border:1px solid rgba(255,68,85,.3);border-radius:10px;padding:18px 20px;"><h4 style="color:#ff4455;font-family:'Oswald',sans-serif;margin:0 0 8px;">Error</h4><p style="color:var(--text-mid);font-size:12px;margin:0;line-height:1.6;">${msg}</p></div>`;
   }
   btn.disabled=false; btn.innerHTML='⚡ GET AI SUGGESTIONS';
 }
@@ -1941,13 +2093,21 @@ document.getElementById('label-text').addEventListener('keydown',e=>{if(e.key===
 
 // ─── PAGE NAVIGATION ──────────────────────────────────────────
 function switchPage(id){
+  console.log('[switchPage] navigating to:', id);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
   document.querySelectorAll('.npbtn').forEach(b=>b.classList.toggle('act',b.dataset.page===id));
-  document.getElementById('page-'+id).classList.add('act');
+  const pageEl = document.getElementById('page-'+id);
+  if (!pageEl) { console.warn('[switchPage] page element not found: page-'+id); return; }
+  pageEl.classList.add('act');
   document.getElementById('designer-ctrls').style.display=id==='designer'?'flex':'none';
   if(id==='library') renderLibrary();
   if(id==='wb'){updateWbSel();renderWbList();}
   if(id==='designer') render();
+  if(id==='signals' && typeof initSignals === 'function' && !window._sigInitDone){
+    window._sigInitDone = true;
+    console.log('[switchPage] initializing Signals module');
+    initSignals();
+  }
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
@@ -1965,5 +2125,11 @@ init();
 // Boot auth on page load
 initAuth();
 </script>
+<script src="js/signals/signalEncoder.js"></script>
+<script src="js/signals/signalStorage.js"></script>
+<script src="js/signals/signalValidator.js"></script>
+<script src="js/signals/signalBuilder.js"></script>
+<script src="js/signals/wristbandPrinter.js"></script>
+<script src="js/signals/signalKeyPrinter.js"></script>
 </body>
 </html>
