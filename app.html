@@ -286,8 +286,9 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   max-width:500px;margin:0 auto;line-height:1.6;
 }
 .home-cards {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
   gap:18px;
   padding:0 24px 36px;
   max-width:1200px;
@@ -302,6 +303,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   border:1px solid var(--border);
   transition:transform .2s,box-shadow .2s,border-color .2s;
   min-height:230px;
+  flex:1 1 280px;
+  max-width:388px;
   display:flex;flex-direction:column;justify-content:flex-end;
 }
 .hcard:hover {
@@ -508,7 +511,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 
   /* Home page */
   .home-hero { padding:28px 16px 20px; }
-  .home-cards { grid-template-columns:1fr; padding:0 14px 28px; gap:12px; }
+  .home-cards { padding:0 14px 28px; gap:12px; }
+  .hcard { flex-basis:100%; max-width:none; }
   .hcard { min-height:170px; }
 }
 </style>
