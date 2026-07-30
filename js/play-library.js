@@ -1590,7 +1590,7 @@
   /* ── SPECIALTY / GOAL LINE ────────────────────────────────────── */
 
   {
-    id:317, name:'Goal Line 6-2', formation:'Goal Line', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:317, name:'Goal Line 6-2', formation:'Goal Line', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'Goal-line: six defenders on the line of scrimmage; two LBs fill the gaps; two CBs man up.',
     players:[
       {pos:'DE', lbl:'DE', x:-5,   y:-0.5, side:'defense'},
@@ -1620,7 +1620,7 @@
     ]
   },
   {
-    id:318, name:'4-4 Stack', formation:'4-4', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:318, name:'4-4 Stack', formation:'4-4', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'Eight-man front stacking four LBs behind four linemen. Strong run-stop base for short yardage.',
     players:[
       {pos:'DE', lbl:'DE', x:-6,  y:-1,  side:'defense'},
@@ -1650,7 +1650,7 @@
     ]
   },
   {
-    id:319, name:'Prevent Defense', formation:'Dime', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:319, name:'Prevent Defense', formation:'Dime', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'Late-game deep protection. Rushes only 3; drops 8 into deep coverage preventing the big play.',
     players: DDM,
     routes:[
@@ -1668,7 +1668,7 @@
     ]
   },
   {
-    id:320, name:'Bear Front', formation:'4-3', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:320, name:'Bear Front', formation:'4-3', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'Historically dominant Buddy Ryan front. NT shaded on center; DEs on guards; OLBs walk inside.',
     players:[
       {pos:'OLB',lbl:'OLB',x:-7,  y:-1,  side:'defense'},
@@ -1963,7 +1963,7 @@
   /* ── SPECIALTY / GOAL LINE (cont.) ───────────────────────────── */
 
   {
-    id:335, name:'5-2 Monster', formation:'5-2', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:335, name:'5-2 Monster', formation:'5-2', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'Classic 5-2 with a "monster" safety walked up to the strong side. Dominant run-stop formation.',
     players:[
       {pos:'DE', lbl:'DE', x:-6,  y:-1,  side:'defense'},
@@ -1993,7 +1993,7 @@
     ]
   },
   {
-    id:336, name:'46 Defense', formation:'46', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:336, name:'46 Defense', formation:'46', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'Buddy Ryan\'s famous 46: eight defenders in the box, overloading one side. Suffocates the run.',
     players:[
       {pos:'NT', lbl:'NT', x:-1,  y:-1,  side:'defense'},
@@ -2023,7 +2023,7 @@
     ]
   },
   {
-    id:337, name:'3-3-5 Stack', formation:'3-3-5', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:337, name:'3-3-5 Stack', formation:'3-3-5', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'Three DL, three stacked LBs, five DBs. Versatile against spread formations — can blitz or drop all 8.',
     players:[
       {pos:'DE', lbl:'DE', x:-5,  y:-1,  side:'defense'},
@@ -2053,7 +2053,7 @@
     ]
   },
   {
-    id:338, name:'Cover 3 Cloud Variant', formation:'3-4', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:338, name:'Cover 3 Cloud Variant', formation:'3-4', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'Boundary CB plays cloud (short flat); SS rotates to cover boundary deep third; field CB owns his third.',
     players: D34,
     routes:[
@@ -2071,7 +2071,7 @@
     ]
   },
   {
-    id:339, name:'Two-Gap 3-4', formation:'3-4', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:339, name:'Two-Gap 3-4', formation:'3-4', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'NT controls both A-gaps by reading and shedding; DEs two-gap their C-gaps. Disciplined run defense.',
     players: D34,
     routes:[
@@ -2089,7 +2089,7 @@
     ]
   },
   {
-    id:340, name:'Eagle Front', formation:'4-3', type:'Defense', cat:'Specialty / Goal Line', mode:'defense',
+    id:340, name:'Eagle Front', formation:'4-3', type:'Defense', cat:'Special / Goal Line', mode:'defense',
     desc:'DTs shade outside the guards; OLBs walk inside the C-gap — compresses every running lane.',
     players: D43,
     routes:[
