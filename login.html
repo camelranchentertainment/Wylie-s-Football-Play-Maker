@@ -123,7 +123,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // If already signed in, skip to app
 _supa.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.replace('library.html');
+  if (session) window.location.replace('app.html');
 });
 
 function showMsg(text, type) {
@@ -168,7 +168,7 @@ async function doLogin(e) {
   const profileDone = localStorage.getItem('wpm_profile_done') === '1' ||
                       localStorage.getItem('wpm_profile_skipped') === '1' ||
                       hasMetadata;
-  setTimeout(() => window.location.replace(profileDone ? 'library.html' : 'profile.html'), 800);
+  setTimeout(() => window.location.replace(profileDone ? 'app.html' : 'profile.html'), 800);
 }
 </script>
 </body>

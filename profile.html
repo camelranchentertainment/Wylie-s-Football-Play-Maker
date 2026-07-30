@@ -147,9 +147,9 @@ try {
     window.location.replace('login.html');
   } else {
     sessionData = s;
-    // If already completed profile, skip straight to library
+    // If already completed profile, skip straight to the app
     if (localStorage.getItem('wpm_profile_done') === '1') {
-      window.location.replace('library.html');
+      window.location.replace('app.html');
     } else {
       // Pre-fill name if stored from signup
       window.addEventListener('DOMContentLoaded', () => {
@@ -207,7 +207,7 @@ async function doSaveProfile(e) {
     if (!res.ok) {
       showMsg(data.error_description || data.message || 'Could not save profile. Please try again.', 'error');
       btn.disabled = false;
-      btn.textContent = 'SAVE & ENTER PLAY LIBRARY →';
+      btn.textContent = 'SAVE & ENTER APP →';
     } else {
       // 2. UPSERT into profiles table so it's visible in Supabase Table Editor
       const userId = sessionData?.user?.id || data?.id;
@@ -239,13 +239,13 @@ async function doSaveProfile(e) {
       }
       // Set flag so library/app don't redirect back here
       try { localStorage.setItem('wpm_profile_done', '1'); } catch {}
-      showMsg('Profile saved! Taking you to the Play Library…', 'success');
-      setTimeout(() => window.location.replace('library.html'), 900);
+      showMsg('Profile saved! Taking you to the app…', 'success');
+      setTimeout(() => window.location.replace('app.html'), 900);
     }
   } catch(err) {
     showMsg('Network error. Please try again.', 'error');
     btn.disabled = false;
-    btn.textContent = 'SAVE & ENTER PLAY LIBRARY →';
+    btn.textContent = 'SAVE & ENTER APP →';
   }
 }
 
@@ -254,7 +254,7 @@ function skipProfile() {
     localStorage.setItem('wpm_profile_skipped', '1');
     localStorage.setItem('wpm_profile_done', '1');
   } catch {}
-  window.location.replace('library.html');
+  window.location.replace('app.html');
 }
 </script>
 </body>
