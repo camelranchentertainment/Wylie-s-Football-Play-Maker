@@ -117,7 +117,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 .pdb-intro { padding:12px 20px; font-size:13px; color:var(--text-mid); line-height:1.6; background:var(--bg-panel); border-bottom:1px solid var(--border); flex-shrink:0; width:100%; box-sizing:border-box; }
 .pdb-intro strong { color:var(--text-hi); }
 #lib-count { font-size:11px; color:var(--text-lo); margin-left:4px; }
-#lib-grid { flex:1; overflow-y:auto; padding:20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); grid-auto-rows:min-content; align-items:start; align-content:start; gap:14px; max-width:1440px; margin:0 auto; }
+#lib-grid { flex:1; overflow-y:auto; padding:20px; display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:min-content; align-items:start; align-content:start; gap:18px; max-width:1440px; margin:0 auto; }
 #pdb-grid { flex:1; overflow-y:auto; padding:20px; display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:min-content; align-items:start; align-content:start; gap:18px; max-width:1440px; margin:0 auto; }
 
 #ai-output { display:flex; flex-direction:column; gap:14px; }
@@ -1768,7 +1768,7 @@ function renderLibrary(){
     const tyTag = pl.type?`<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>`:'';
     const d = document.createElement('div'); d.className='pcard';
     d.innerHTML=`
-      ${pl.thumb?`<img class="pcard-thumb" src="${pl.thumb}" loading="lazy">`:'<div class="pcard-thumb" style="height:80px;background:var(--green-dark);"></div>'}
+      <canvas class="pcard-thumb" width="460" height="374"></canvas>
       <div class="pcard-body">
         <div class="pcard-name"></div>
         <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta"></span></div>
@@ -1780,6 +1780,7 @@ function renderLibrary(){
       </div>`;
     d.querySelector('.pcard-name').textContent = pl.name;
     d.querySelector('.pcard-fmeta').textContent = pl.formation||'';
+    renderPlayToCanvas(pl, d.querySelector('.pcard-thumb'));
     d.addEventListener('click', ()=>openPlayModal(pl.id));
     grid.appendChild(d);
   });
