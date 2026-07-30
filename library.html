@@ -174,8 +174,14 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 #grid-wrap{max-width:1400px;margin:0 auto;padding:28px 20px 60px;}
 #play-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-  gap:18px;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+@media(max-width:960px){
+  #play-grid{grid-template-columns:repeat(2,1fr);gap:16px;}
+}
+@media(max-width:600px){
+  #play-grid{grid-template-columns:repeat(1,1fr);gap:14px;}
 }
 .empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--lo);}
 .empty-state .ei{font-size:48px;margin-bottom:16px;}
@@ -209,7 +215,7 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
   background:linear-gradient(to bottom,transparent 60%,rgba(30,50,72,.9) 100%);
   pointer-events:none;
 }
-.pcard-thumb{width:100%;aspect-ratio:16/9;display:block;object-fit:cover;}
+.pcard-thumb{width:100%;aspect-ratio:700/570;display:block;object-fit:cover;}
 .pcard-badges{
   position:absolute;bottom:0;left:0;right:0;z-index:1;
   padding:6px 10px;display:flex;gap:5px;align-items:center;
@@ -278,7 +284,6 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--hi);min-
 
 /* ── RESPONSIVE ─────────────────────────────────────────── */
 @media(max-width:600px){
-  #play-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
   .hero-stats{gap:20px;}
   .hero-title{font-size:32px;}
   #navbar{padding:0 12px;height:auto;min-height:52px;flex-wrap:wrap;gap:8px;padding-top:8px;padding-bottom:8px;}
@@ -654,8 +659,15 @@ function countUp(id,target,dur=900){
 
 /* ── THUMBNAIL RENDERER ──────────────────────────────────── */
 function genThumb(players,routes){
-  const TW=400,TH=252, SW=700,SH=570;
-  const sx=TW/SW, sy=TH/SH;
+  // Canvas is rendered at the field's true 700:570 proportions (uniform scale,
+  // no x/y distortion) and at a large enough resolution to stay sharp when the
+  // card thumbnail is displayed up to ~460px wide. The CSS aspect-ratio on
+  // .pcard-thumb is set to the same 700/570 ratio, so object-fit never has to
+  // crop -- every player and every route stays visible on the card.
+  const SW=700,SH=570;
+  const scale=560/SW;              // uniform scale factor, x and y together
+  const TW=Math.round(SW*scale);   // 560
+  const TH=Math.round(SH*scale);   // 456
   const c=document.createElement('canvas');
   c.width=TW; c.height=TH;
   const g=c.getContext('2d');
@@ -666,14 +678,14 @@ function genThumb(players,routes){
   g.fillStyle=fg; g.fillRect(0,0,TW,TH);
 
   // Yard lines
-  g.strokeStyle='rgba(255,255,255,0.055)'; g.lineWidth=0.8;
-  for(let y=0;y<SH;y+=57){g.beginPath();g.moveTo(0,y*sy);g.lineTo(TW,y*sy);g.stroke();}
-  for(let x=0;x<SW;x+=65.6){g.beginPath();g.moveTo(x*sx,0);g.lineTo(x*sx,TH);g.stroke();}
+  g.strokeStyle='rgba(255,255,255,0.055)'; g.lineWidth=1;
+  for(let y=0;y<SH;y+=57){g.beginPath();g.moveTo(0,y*scale);g.lineTo(TW,y*scale);g.stroke();}
+  for(let x=0;x<SW;x+=65.6){g.beginPath();g.moveTo(x*scale,0);g.lineTo(x*scale,TH);g.stroke();}
 
   // LOS
-  const LY=300*sy;
-  g.strokeStyle='rgba(255,255,255,0.22)'; g.lineWidth=1;
-  g.setLineDash([5,5]);
+  const LY=300*scale;
+  g.strokeStyle='rgba(255,255,255,0.22)'; g.lineWidth=1.4;
+  g.setLineDash([6,6]);
   g.beginPath();g.moveTo(0,LY);g.lineTo(TW,LY);g.stroke();
   g.setLineDash([]);
 
@@ -681,46 +693,46 @@ function genThumb(players,routes){
   routes.forEach(r=>{
     const pl=players.find(p=>p.id===r.pid);
     if(!pl||!r.waypoints||!r.waypoints.length) return;
-    const pts=[{x:pl.x*sx,y:pl.y*sy},...r.waypoints.map(w=>({x:w.x*sx,y:w.y*sy}))];
+    const pts=[{x:pl.x*scale,y:pl.y*scale},...r.waypoints.map(w=>({x:w.x*scale,y:w.y*scale}))];
     g.beginPath(); g.moveTo(pts[0].x,pts[0].y);
     pts.slice(1).forEach(p=>g.lineTo(p.x,p.y));
     g.strokeStyle=r.color||'#ffcc00';
-    g.lineWidth=1.8;
-    if(r.style==='dashed') g.setLineDash([4,4]);
-    else if(r.style==='motion') g.setLineDash([1,4]);
+    g.lineWidth=2.4;
+    if(r.style==='dashed') g.setLineDash([5,5]);
+    else if(r.style==='motion') g.setLineDash([1,5]);
     else g.setLineDash([]);
     g.stroke(); g.setLineDash([]);
     const last=pts[pts.length-1];
     if(r.style==='block'){
-      g.beginPath();g.arc(last.x,last.y,3.5,0,Math.PI*2);
+      g.beginPath();g.arc(last.x,last.y,4.8,0,Math.PI*2);
       g.fillStyle=r.color||'#ffcc00';g.fill();
     } else if(pts.length>1){
       const prev=pts[pts.length-2];
       const a=Math.atan2(last.y-prev.y,last.x-prev.x);
       g.beginPath();g.moveTo(last.x,last.y);
-      g.lineTo(last.x-7*Math.cos(a-.45),last.y-7*Math.sin(a-.45));
-      g.lineTo(last.x-7*Math.cos(a+.45),last.y-7*Math.sin(a+.45));
+      g.lineTo(last.x-9.5*Math.cos(a-.45),last.y-9.5*Math.sin(a-.45));
+      g.lineTo(last.x-9.5*Math.cos(a+.45),last.y-9.5*Math.sin(a+.45));
       g.closePath();g.fillStyle=r.color||'#ffcc00';g.fill();
     }
   });
 
   // Players
   players.forEach(p=>{
-    const x=p.x*sx, y=p.y*sy;
+    const x=p.x*scale, y=p.y*scale;
     const off=p.side!=='defense';
-    const r=off?7:6.5;
+    const r=off?9.5:8.8;
     g.beginPath();g.arc(x,y,r,0,Math.PI*2);
     g.fillStyle=off?'#c5202c':'#2d78cc'; g.fill();
     g.strokeStyle=off?'rgba(255,100,100,.7)':'rgba(100,180,255,.7)';
-    g.lineWidth=1.2; g.stroke();
+    g.lineWidth=1.6; g.stroke();
     const lbl=(p.lbl||p.pos||'').substring(0,2);
     g.fillStyle='#fff';
-    g.font=`bold ${off?6:5.5}px Arial`;
+    g.font=`bold ${off?8:7.4}px Arial`;
     g.textAlign='center'; g.textBaseline='middle';
     g.fillText(lbl,x,y);
   });
 
-  return c.toDataURL('image/jpeg',.88);
+  return c.toDataURL('image/jpeg',.9);
 }
 
 /* ── STATE ───────────────────────────────────────────────── */
