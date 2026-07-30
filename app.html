@@ -1800,9 +1800,27 @@ function renderPlayDb() {
   const typeColor = {run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
   const myPlays = getLib();
 
+  // The dropdown's lowercase values ('run','pass','defense') never matched
+  // the catalog's actual p.type strings ('Run','Pass','Defense') -- every
+  // plays list emptied the instant a specific type was chosen. Fixed with a
+  // case-insensitive compare for those three. The other four options
+  // (screen/trick/redzone/special) don't correspond to any p.type value at
+  // all -- they were written for a category-style filter that was never
+  // wired up -- so they're mapped to the closest matching p.category tags
+  // instead of always returning zero results.
+  const TYPE_MATCHERS = {
+    run:     p => (p.type||'').toLowerCase()==='run',
+    pass:    p => (p.type||'').toLowerCase()==='pass',
+    defense: p => (p.type||'').toLowerCase()==='defense',
+    screen:  p => (p.category||'').toLowerCase().includes('screen'),
+    trick:   p => (p.category||'').toLowerCase().includes('misdirection'),
+    redzone: p => (p.category||'').toLowerCase().includes('goal line'),
+    special: p => (p.category||'').toLowerCase().includes('special'),
+  };
+
   const tpls = (window.PLAY_LIBRARY||[]).filter(p=>{
     if(side!=='all' && p.mode!==side) return false;
-    if(type && p.type!==type) return false;
+    if(type && TYPE_MATCHERS[type] && !TYPE_MATCHERS[type](p)) return false;
     if(q && !p.name.toLowerCase().includes(q) && !(p.formation||'').toLowerCase().includes(q) && !(p.description||'').toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1956,7 +1974,12 @@ function renderPlayToCanvas(play, tc){
     tx.fillStyle=rt.color||'#ffcc00'; tx.beginPath(); tx.moveTo(as,0); tx.lineTo(-as*.65,-as*.5); tx.lineTo(-as*.65,as*.5); tx.closePath(); tx.fill(); tx.restore();
   });
   // Players
-  const pr=Math.max(5,PR*Math.min(sx,sy)*1.6);
+  // 1.2x (not 1.6x) -- at 1.6x, the most common backfield spacing in the
+  // play library (QB/RB 3yd apart in shotgun, 39px in field-canvas space)
+  // put the two circles closer together than their combined radii, so they
+  // visually overlapped on every shotgun/singleback thumbnail. 1.2x leaves
+  // a real gap there while still reading clearly at thumbnail size.
+  const pr=Math.max(5,PR*Math.min(sx,sy)*1.2);
   (play.players||[]).forEach(p=>{
     const px=p.x*sx, py=p.y*sy;
     if(p.side==='offense'){
