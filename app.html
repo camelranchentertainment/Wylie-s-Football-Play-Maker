@@ -544,9 +544,9 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   <nav class="nav-pages">
     <button class="npbtn act" data-page="home" onclick="switchPage('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</button>
     <button class="npbtn" data-page="playdb" onclick="switchPage('playdb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>PLAY DATABASE</button>
+    <button class="npbtn" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>TEAM LIBRARY</button>
     <button class="npbtn" data-page="wb" onclick="switchPage('wb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>WRISTBAND</button>
     <button class="npbtn" data-page="signals" onclick="switchPage('signals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>SIGNALS</button>
-    <button class="npbtn" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>TEAM LIBRARY</button>
     <button class="npbtn" data-page="designer" onclick="switchPage('designer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>PLAY BUILDER</button>
   </nav>
   <div class="hdiv"></div>
@@ -603,6 +603,17 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         </div>
       </div>
 
+      <div class="hcard" data-page="library" onclick="switchPage('library')">
+        <div class="hcard-bg"></div>
+        <div class="hcard-overlay"></div>
+        <div class="hcard-body">
+          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="hcard-label">TEAM LIBRARY</div>
+          <div class="hcard-desc">Your team's play library — every play you've saved or imported. Filter, load into the Designer, add to a wristband, or delete plays you no longer need.</div>
+          <div class="hcard-arrow">TEAM LIBRARY <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
+
       <div class="hcard" data-page="wb" onclick="switchPage('wb')">
         <div class="hcard-bg"></div>
         <div class="hcard-overlay"></div>
@@ -622,17 +633,6 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
           <div class="hcard-label">SIGNAL SYSTEM</div>
           <div class="hcard-desc">Build a body-signal call system using finger counts and body zones. Assign plays to signals, generate reference cards, and run a no-huddle offense.</div>
           <div class="hcard-arrow">OPEN SIGNALS <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
-        </div>
-      </div>
-
-      <div class="hcard" data-page="library" onclick="switchPage('library')">
-        <div class="hcard-bg"></div>
-        <div class="hcard-overlay"></div>
-        <div class="hcard-body">
-          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
-          <div class="hcard-label">TEAM LIBRARY</div>
-          <div class="hcard-desc">Your team's play library — every play you've saved or imported. Filter, load into the Designer, add to a wristband, or delete plays you no longer need.</div>
-          <div class="hcard-arrow">TEAM LIBRARY <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
       </div>
 
