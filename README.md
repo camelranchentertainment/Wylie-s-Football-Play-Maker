@@ -29,12 +29,11 @@ A professional, browser-based football play designer built for coaches. Design o
 - Choose column layout (3, 4, or 5 columns)
 - Print-ready wristband card output
 
-### 🤖 AI Coach (powered by Claude)
-- Set your team's age group and skill level
-- Choose a focus area (run game, passing, red zone, etc.)
-- Add coach notes for personalized suggestions
-- Upload prior season play data for context
-- Generates 4 detailed, age-appropriate play suggestions
+### 🤖 AI Play Builder (powered by Claude)
+- Describe a play in plain English right inside the Designer
+- Claude generates a real, editable play — players placed, routes drawn, not just text
+- Calibrated to your team's age group and skill level
+- Review and tweak the AI's draft with the same manual tools, then approve it into your library (or discard and regenerate)
 
 ---
 
@@ -50,14 +49,13 @@ A professional, browser-based football play designer built for coaches. Design o
 
 ---
 
-## 🔑 AI Coach Setup
+## 🔑 AI Play Builder Setup
 
-To use the AI Coach feature you need a free Anthropic API key:
+The AI Play Builder runs through a server-side API route (`/api/build-play`) so your Anthropic API key never touches the browser. To enable it on your own deployment:
 
-1. Go to [console.anthropic.com](https://console.anthropic.com)
-2. Create an account and generate an API key
-3. Click the 🔑 key icon in the app header and paste your key
-4. Your key is saved locally in your browser — never shared
+1. Go to [console.anthropic.com](https://console.anthropic.com) and generate an API key
+2. Add it to your Vercel project as the `ANTHROPIC_API_KEY` environment variable
+3. Redeploy — the AI Play Builder in the Designer will start working automatically
 
 ---
 
