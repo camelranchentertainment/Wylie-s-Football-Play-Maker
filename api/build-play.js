@@ -24,10 +24,19 @@ const PLAY_TYPES = ['run', 'pass', 'screen', 'trick', 'redzone', 'special', 'def
 const ROUTE_STYLES = ['solid', 'dashed', 'motion', 'block'];
 const ASSIGN_TYPES = ['rush', 'cover', 'zone', 'blitz'];
 
+// Production custom domains always allowed. ALLOWED_ORIGIN (optional env
+// var) adds one more — e.g. a staging domain — it does NOT replace this
+// list. (A previous version made ALLOWED_ORIGIN exclusive, which silently
+// locked the AI feature out of the real production domain because the var
+// was never set — *.vercel.app previews worked, wfpmfootball.com did not.)
+const KNOWN_PRODUCTION_ORIGINS = ['https://wfpmfootball.com', 'https://www.wfpmfootball.com'];
+
 function getAllowedOrigin(req) {
   const origin = req.headers.get('origin') || '';
-  const allowed = process.env.ALLOWED_ORIGIN;
-  if (allowed) return origin === allowed ? origin : null;
+  if (!origin) return null;
+  const extra = process.env.ALLOWED_ORIGIN;
+  if (extra && origin === extra) return origin;
+  if (KNOWN_PRODUCTION_ORIGINS.includes(origin)) return origin;
   if (
     origin === 'http://localhost:3000' ||
     origin === 'http://localhost:8765' ||
