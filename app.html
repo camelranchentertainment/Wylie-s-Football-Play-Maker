@@ -117,8 +117,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 .pdb-intro { padding:12px 20px; font-size:13px; color:var(--text-mid); line-height:1.6; background:var(--bg-panel); border-bottom:1px solid var(--border); flex-shrink:0; width:100%; box-sizing:border-box; }
 .pdb-intro strong { color:var(--text-hi); }
 #lib-count { font-size:11px; color:var(--text-lo); margin-left:4px; }
-#lib-grid { flex:1; overflow-y:auto; padding:20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; align-content:start; }
-#pdb-grid { flex:1; overflow-y:auto; padding:20px; display:grid; grid-template-columns:repeat(3,1fr); gap:18px; align-content:start; }
+#lib-grid { flex:1; overflow-y:auto; padding:20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); grid-auto-rows:min-content; align-items:start; gap:14px; align-content:start; }
+#pdb-grid { flex:1; overflow-y:auto; padding:20px; display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:min-content; align-items:start; gap:18px; align-content:start; }
 
 #ai-output { display:flex; flex-direction:column; gap:14px; }
 
@@ -546,7 +546,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <button class="npbtn" data-page="playdb" onclick="switchPage('playdb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>PLAY DATABASE</button>
     <button class="npbtn" data-page="wb" onclick="switchPage('wb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>WRISTBAND</button>
     <button class="npbtn" data-page="signals" onclick="switchPage('signals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>SIGNALS</button>
-    <button class="npbtn" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>LIBRARY</button>
+    <button class="npbtn" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>TEAM LIBRARY</button>
     <button class="npbtn" data-page="designer" onclick="switchPage('designer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>PLAY BUILDER</button>
   </nav>
   <div class="hdiv"></div>
@@ -558,7 +558,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 
   <!-- ══ PLAY DATABASE ══ -->
   <div id="page-playdb" class="page">
-    <div class="pdb-intro">This is the shared catalog every coach starts from — browse or search it, then <strong>+ MY PLAYS</strong> to copy a play into your own library, or <strong>DESIGN</strong> to open it in the Designer and customize it first. It's read-only: plays you build, edit, or generate with AI live in <strong>My Plays</strong> instead. Filters narrow this list down — hit <strong>RESET</strong> any time to see everything again.</div>
+    <div class="pdb-intro">This is the shared catalog every coach starts from — browse or search it, then <strong>+ TEAM LIBRARY</strong> to copy a play into your team's library, or <strong>DESIGN</strong> to open it in the Designer and customize it first. It's read-only: plays you build, edit, or generate with AI live in <strong>Team Library</strong> instead. Filters narrow this list down — hit <strong>RESET</strong> any time to see everything again.</div>
     <div class="page-topbar">
       <h2>Play Database <span class="cloud-badge" id="pdb-badge-count" style="display:inline;"></span></h2>
       <input type="text" class="rp-input" placeholder="Search plays..." id="pdb-search" oninput="renderPlayDb()">
@@ -630,9 +630,9 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         <div class="hcard-overlay"></div>
         <div class="hcard-body">
           <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
-          <div class="hcard-label">MY PLAYS</div>
-          <div class="hcard-desc">Your personal play library — every play you've saved or imported. Filter, load into the Designer, add to a wristband, or delete plays you no longer need.</div>
-          <div class="hcard-arrow">MY PLAYS <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="hcard-label">TEAM LIBRARY</div>
+          <div class="hcard-desc">Your team's play library — every play you've saved or imported. Filter, load into the Designer, add to a wristband, or delete plays you no longer need.</div>
+          <div class="hcard-arrow">TEAM LIBRARY <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
       </div>
 
@@ -755,7 +755,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   <!-- ══ LIBRARY ══ -->
   <div id="page-library" class="page">
     <div class="page-topbar">
-      <h2>My Plays <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">CLOUD</span></h2>
+      <h2>Team Library <span id="lib-cloud-badge" class="cloud-badge" style="display:none;">CLOUD</span></h2>
       <input type="text" class="rp-input" placeholder="Search plays..." id="lib-search" oninput="renderLibrary()">
       <select class="rp-select" id="lib-filter" style="width:110px;" onchange="renderLibrary()">
         <option value="all">All Plays</option>
@@ -989,7 +989,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <div id="pm-desc"></div>
     <div class="modal-actions">
       <button class="mbtn cancel" onclick="closePlayModal()">Close</button>
-      <button class="mbtn ok" id="pm-save-btn" onclick="addTplToMyLib(currentPopupId); closePlayModal();">+ Add to My Plays</button>
+      <button class="mbtn ok" id="pm-save-btn" onclick="addTplToMyLib(currentPopupId); closePlayModal();">+ Add to Team Library</button>
       <button class="mbtn ok" id="pm-load-btn" onclick="loadPlayFromModal()">Open in Designer</button>
     </div>
   </div>
@@ -1831,7 +1831,7 @@ function renderPlayDb() {
         <div class="pcard-desc2" style="font-size:10px;color:var(--text-lo);margin-top:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></div>
       </div>
       <div class="pcard-acts">
-        <button class="pcbtn${alreadySaved?'':' pri'}" onclick="event.stopPropagation();addTplToMyLib(${pl.id})">${alreadySaved?'✓ SAVED':'+ MY PLAYS'}</button>
+        <button class="pcbtn${alreadySaved?'':' pri'}" onclick="event.stopPropagation();addTplToMyLib(${pl.id})">${alreadySaved?'✓ SAVED':'+ TEAM LIBRARY'}</button>
         <button class="pcbtn" onclick="event.stopPropagation();loadTplToDesigner(${pl.id})">✏ DESIGN</button>
       </div>`;
     d.querySelector('.pcard-name').textContent = pl.name;
@@ -1852,7 +1852,7 @@ function addTplToMyLib(id) {
   const lib = [play, ...getLib()];
   saveLib(lib);
   if(currentUser) savePlayToCloud(play);
-  setStatus(`"${tpl.name}" added to My Plays`);
+  setStatus(`"${tpl.name}" added to Team Library`);
   renderLibrary();
 }
 
