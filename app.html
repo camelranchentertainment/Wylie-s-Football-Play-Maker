@@ -122,21 +122,12 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 
 #ai-output { display:flex; flex-direction:column; gap:14px; }
 
-/* ─── WRISTBAND PAGE ───────────────────────────────────────── */
-#page-wb { flex-direction:row; }
-#wb-controls-col { width:300px; min-width:300px; background:var(--bg-panel); border-right:1px solid var(--border); overflow-y:auto; padding:18px 14px; display:flex; flex-direction:column; gap:12px; }
-#wb-controls-col h2 { font-family:'Oswald',sans-serif; font-size:16px; font-weight:700; letter-spacing:1px; color:var(--text-hi); border-bottom:1px solid var(--border); padding-bottom:10px; }
-#wb-preview-col { flex:1; overflow-y:auto; padding:20px; background:var(--bg-deep); display:flex; flex-direction:column; gap:10px; align-content:start; }
-#wb-preview-col h3 { font-family:'Oswald',sans-serif; font-size:13px; color:var(--text-mid); letter-spacing:1px; }
-
 /* ─── SHARED FORM ELEMENTS ─────────────────────────────────── */
 .rp-label { font-family:'Oswald',sans-serif; font-size:9px; font-weight:700; letter-spacing:2px; color:var(--text-lo); margin-bottom:4px; display:block; text-transform:uppercase; }
 .rp-input, .rp-select, .rp-textarea { width:100%; padding:7px 10px; background:var(--bg-card); border:1px solid var(--border-bright); color:var(--text-hi); border-radius:7px; font-family:'Rajdhani',sans-serif; font-size:13px; transition:border-color .18s; }
 .rp-input:focus, .rp-select:focus, .rp-textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
 .rp-textarea { resize:vertical; min-height:58px; line-height:1.5; }
 .rp-group { display:flex; flex-direction:column; gap:5px; }
-.add-dashed { width:100%; padding:7px; background:transparent; border:1px dashed var(--border-bright); border-radius:6px; color:var(--text-mid); font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:600; cursor:pointer; transition:all .2s; }
-.add-dashed:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-glow); }
 
 /* ─── PLAY CARDS ───────────────────────────────────────────── */
 .pcard { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; transition:all .2s; box-shadow:var(--shadow-sm); }
@@ -178,30 +169,6 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 .ai-btn:disabled { opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
 .upload-zone { border:1px dashed var(--border-bright); border-radius:8px; padding:11px; text-align:center; cursor:pointer; transition:all .2s; font-size:11px; color:var(--text-mid); background:rgba(255,255,255,.01); }
 .upload-zone:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-glow); }
-
-/* ─── WRISTBAND ─────────────────────────────────────────────── */
-.wb-item { display:flex; align-items:center; gap:8px; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:6px 9px; }
-.wb-num { width:22px; height:22px; border-radius:50%; background:var(--accent); color:#000; font-family:'Oswald',sans-serif; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.wb-name { flex:1; font-size:12px; font-weight:600; color:var(--text-hi); }
-.wb-del { width:18px; height:18px; border-radius:50%; border:none; background:rgba(255,68,68,.15); color:#ff4455; cursor:pointer; font-size:9px; display:flex; align-items:center; justify-content:center; transition:background .15s; }
-.wb-del:hover { background:rgba(255,68,68,.3); }
-.wb-print-btn { width:100%; padding:11px; background:linear-gradient(135deg,#2a6fd4 0%,#0d3a88 100%); border:none; border-radius:8px; font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px; color:#fff; cursor:pointer; transition:all .2s; box-shadow:0 3px 14px rgba(42,111,212,.25); }
-.wb-print-btn:hover { transform:translateY(-2px); box-shadow:0 7px 24px rgba(42,111,212,.4); }
-
-/* ─── WRISTBAND CARD PREVIEW ────────────────────────────────── */
-#wb-preview-grid { padding:4px; }
-.wb-card { background:#fff; border-radius:6px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.5); max-width:760px; }
-.wb-card-hdr { background:#111; color:#fff; font-family:'Oswald',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-align:center; padding:5px 10px; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:8px; }
-.wb-card-hdr span { color:var(--accent); }
-.wb-card-grid { display:grid; border-left:1px solid #999; border-top:1px solid #999; }
-.wb-cell { border-right:1px solid #999; border-bottom:1px solid #999; background:#fff; overflow:hidden; }
-.wb-cell-num { font-size:7px; font-weight:700; color:#888; padding:2px 4px 0; font-family:Arial,sans-serif; }
-.wb-cell-img { width:100%; height:48px; object-fit:cover; display:block; }
-.wb-cell-img-ph { width:100%; height:48px; background:#e8e8e8; }
-.wb-cell-name { font-size:9px; font-weight:700; text-align:center; padding:2px 3px 0; color:#111; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:Arial,sans-serif; }
-.wb-cell-meta { font-size:7px; text-align:center; color:#666; padding:0 3px 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:Arial,sans-serif; }
-.wb-cell-empty { background:#f5f5f5; }
-.wb-empty-msg { text-align:center; color:var(--text-lo); font-size:12px; padding:30px; border:1px dashed var(--border-bright); border-radius:8px; }
 
 /* ─── MODALS ───────────────────────────────────────────────── */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:100; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
@@ -247,11 +214,6 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 .auth-msg.err { background:rgba(255,68,85,.1); color:#ff4455; border:1px solid rgba(255,68,85,.25); display:block; }
 .auth-msg.ok { background:rgba(80,220,120,.1); color:#50dc78; border:1px solid rgba(80,220,120,.25); display:block; }
 .cloud-badge { font-size:9px; padding:1px 6px; border-radius:10px; background:rgba(80,220,120,.15); color:#50dc78; border:1px solid rgba(80,220,120,.25); font-family:'Oswald',sans-serif; letter-spacing:1px; margin-left:6px; }
-#wristband-print { display:none; }
-@media print {
-  body > *:not(#wristband-print) { display:none !important; }
-  #wristband-print { display:block !important; font-family:Arial,sans-serif; }
-}
 
 /* ─── HOME PAGE ───────────────────────────────────────────── */
 #page-home {
@@ -499,10 +461,6 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   #page-designer { flex-direction:column; }
   #sidebar { width:100%; min-width:0; border-right:none; border-bottom:1px solid var(--border); max-height:220px; }
 
-  /* Wristband: stack columns */
-  #page-wb { flex-direction:column; }
-  #wb-controls-col { width:100%; min-width:0; border-right:none; border-bottom:1px solid var(--border); }
-
   /* AI play card: stack canvas and info */
 
   /* Library grid: single column on small screens */
@@ -549,8 +507,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <button class="npbtn act" data-page="home" onclick="switchPage('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</button>
     <button class="npbtn" data-page="playdb" onclick="switchPage('playdb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>PLAY DATABASE</button>
     <button class="npbtn" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>TEAM LIBRARY</button>
-    <button class="npbtn" data-page="wb" onclick="switchPage('wb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>WRISTBAND</button>
-    <button class="npbtn" data-page="signals" onclick="switchPage('signals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>SIGNALS</button>
+    <button class="npbtn" data-page="signals" onclick="switchPage('signals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>WRISTBAND</button>
     <button class="npbtn" data-page="designer" onclick="switchPage('designer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>PLAY BUILDER</button>
   </nav>
   <div class="hdiv"></div>
@@ -618,25 +575,14 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         </div>
       </div>
 
-      <div class="hcard" data-page="wb" onclick="switchPage('wb')">
-        <div class="hcard-bg"></div>
-        <div class="hcard-overlay"></div>
-        <div class="hcard-body">
-          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
-          <div class="hcard-label">WRISTBAND CARDS</div>
-          <div class="hcard-desc">Select plays from your library and build printable wristband cards. Customize the layout and send directly to your printer — game-ready in minutes.</div>
-          <div class="hcard-arrow">BUILD WRISTBAND <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
-        </div>
-      </div>
-
       <div class="hcard" data-page="signals" onclick="switchPage('signals')">
         <div class="hcard-bg"></div>
         <div class="hcard-overlay"></div>
         <div class="hcard-body">
-          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-          <div class="hcard-label">SIGNAL SYSTEM</div>
-          <div class="hcard-desc">Build a body-signal call system using finger counts and body zones. Assign plays to signals, generate reference cards, and run a no-huddle offense.</div>
-          <div class="hcard-arrow">OPEN SIGNALS <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+          <div class="hcard-label">WRISTBAND BUILDER</div>
+          <div class="hcard-desc">Assign plays to a body-signal grid, then generate a printable QB wristband insert and coach's key card — the call system and the wristband, built in one place.</div>
+          <div class="hcard-arrow">BUILD WRISTBAND <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
       </div>
 
@@ -769,42 +715,6 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <span id="lib-count"></span>
     </div>
     <div id="lib-grid"></div>
-  </div>
-
-  <!-- ══ WRISTBAND ══ -->
-  <div id="page-wb" class="page">
-    <div id="wb-controls-col">
-      <h2>Wristband Builder</h2>
-      <div class="rp-group">
-        <label class="rp-label">Card Title</label>
-        <input type="text" class="rp-input" id="wb-title" value="Game Plan" oninput="renderWbPreview()">
-      </div>
-      <div class="rp-group">
-        <label class="rp-label">Columns</label>
-        <select class="rp-select" id="wb-cols" onchange="renderWbPreview()">
-          <option value="3">3 columns</option>
-          <option value="4" selected>4 columns</option>
-          <option value="5">5 columns</option>
-        </select>
-      </div>
-      <div class="rp-group">
-        <label class="rp-label">Add Play</label>
-        <select class="rp-select" id="wb-sel"><option value="">— select a play —</option></select>
-        <button class="add-dashed" onclick="addToWb()" style="margin-top:4px;">+ Add to Wristband</button>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span class="rp-label" style="margin:0;">Plays (<span id="wb-count">0</span>/24)</span>
-          <button style="font-size:10px;color:var(--text-mid);background:none;border:none;cursor:pointer;" onclick="clearWb()">Clear All</button>
-        </div>
-        <div id="wb-list"><div style="text-align:center;color:var(--text-lo);font-size:12px;padding:16px 0;">No plays added yet</div></div>
-      </div>
-      <button class="wb-print-btn" onclick="printWb()">PRINT WRISTBAND CARD</button>
-    </div>
-    <div id="wb-preview-col">
-      <h3>CARD PREVIEW</h3>
-      <div id="wb-preview-grid"></div>
-    </div>
   </div>
 
   <!-- ══ SIGNALS ══ -->
@@ -1033,8 +943,6 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     </div>
   </div>
 </div>
-
-<div id="wristband-print"></div>
 
 <script>
 'use strict';
@@ -1355,7 +1263,7 @@ let S = {
   dragging:false, dragOX:0, dragOY:0,
   drawingRoute:false, routeWpts:[], routeForId:null,
   pendingLabelX:0, pendingLabelY:0,
-  mouseX:0, mouseY:0, history:[], wbPlays:[], zoom:1,
+  mouseX:0, mouseY:0, history:[], zoom:1,
 };
 let currentPopupId = null;
 // Tracks the last 25 AI-suggested formations to prevent repeats
@@ -1707,7 +1615,7 @@ function doSavePlay(){
   if(currentUser) savePlayToCloud(play);
   else localStorage.setItem(LIB_KEY,JSON.stringify(lib));
   document.getElementById('play-name').value=name;
-  closeSaveModal(); renderLibrary(); updateWbSel(); setStatus(`"${name}" saved`);
+  closeSaveModal(); renderLibrary(); setStatus(`"${name}" saved`);
 }
 
 // ─── THUMBNAIL ────────────────────────────────────────────────
@@ -1911,7 +1819,7 @@ function deletePlay(id){
   saveLib(newLib);
   if(currentUser) deletePlayFromCloud(id);
   else localStorage.setItem(LIB_KEY,JSON.stringify(newLib));
-  renderLibrary(); updateWbSel();
+  renderLibrary();
 }
 
 // ─── PLAY POPUP ───────────────────────────────────────────────
@@ -2010,95 +1918,24 @@ function renderPlayToCanvas(play, tc){
   });
 }
 
-// ─── WRISTBAND ────────────────────────────────────────────────
-function updateWbSel(){
-  const sel=document.getElementById('wb-sel'); if(!sel) return;
-  sel.innerHTML='<option value="">— select a play —</option>';
-  getLib().forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=`${p.name} (${p.mode==='offense'?'OFF':'DEF'})`; sel.appendChild(o); });
-}
-
-function addToWb(){ const v=parseFloat(document.getElementById('wb-sel').value); if(!v) return; wbAddById(v); }
-
-function wbAddById(id){
-  if(S.wbPlays.length>=24){setStatus('Maximum 24 plays per wristband card');return;}
-  if(S.wbPlays.includes(id)){setStatus('"'+( getLib().find(x=>x.id===id)?.name||'Play' )+'" already on wristband');return;}
-  const p=getLib().find(x=>x.id===id); if(!p) return;
-  S.wbPlays.push(id); renderWbList(); setStatus('"'+p.name+'" added to wristband'); switchPage('wb');
-}
-
-function renderWbList(){
-  const el=document.getElementById('wb-list'); if(!el) return;
-  document.getElementById('wb-count').textContent=S.wbPlays.length;
-  if(!S.wbPlays.length){ el.innerHTML='<div style="text-align:center;color:var(--text-lo);font-size:12px;padding:16px 0;">No plays added yet</div>'; renderWbPreview(); return; }
-  const lib=getLib(); el.innerHTML='';
-  S.wbPlays.forEach((id,i)=>{
-    const p=lib.find(x=>x.id===id); if(!p) return;
-    const row=document.createElement('div'); row.className='wb-item'; row.style.marginBottom='4px';
-    row.innerHTML=`<div class="wb-num">${i+1}</div><div class="wb-name"></div><button class="wb-del" onclick="removeWb(${id})">✕</button>`;
-    row.querySelector('.wb-name').textContent=p.name;
-    el.appendChild(row);
-  });
-  renderWbPreview();
-}
-
-function renderWbPreview(){
-  const wrap=document.getElementById('wb-preview-grid'); if(!wrap) return;
-  const lib=getLib();
-  const cols=parseInt(document.getElementById('wb-cols')?.value)||4;
-  const title=(document.getElementById('wb-title')?.value||'Game Plan').trim();
-
-  if(!S.wbPlays.length){
-    wrap.innerHTML='<div class="wb-empty-msg">Add plays to see the wristband card preview</div>';
-    return;
-  }
-
-  // Pad plays to a full row
-  const plays=S.wbPlays.map((id,i)=>({i:i+1,p:lib.find(x=>x.id===id)}));
-  while(plays.length%cols!==0) plays.push({i:null,p:null});
-
-  const card=document.createElement('div'); card.className='wb-card';
-  const hdr=document.createElement('div'); hdr.className='wb-card-hdr';
-  hdr.innerHTML=`🏈 <span></span> · ${plays.filter(x=>x.p).length} Play${plays.filter(x=>x.p).length!==1?'s':''}`;
-  hdr.querySelector('span').textContent=title;
-
-  const g=document.createElement('div'); g.className='wb-card-grid';
-  g.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-
-  plays.forEach(({i,p})=>{
-    const cell=document.createElement('div');
-    if(!p){ cell.className='wb-cell wb-cell-empty'; g.appendChild(cell); return; }
-    cell.className='wb-cell';
-    const num=document.createElement('div'); num.className='wb-cell-num'; num.textContent='#'+i;
-    const imgEl=p.thumb ? Object.assign(document.createElement('img'),{className:'wb-cell-img',src:p.thumb}) : Object.assign(document.createElement('div'),{className:'wb-cell-img-ph'});
-    const nm=document.createElement('div'); nm.className='wb-cell-name'; nm.textContent=p.name;
-    const mt=document.createElement('div'); mt.className='wb-cell-meta'; mt.textContent=(p.formation||'')+(p.type?' · '+p.type.toUpperCase():'');
-    cell.append(num,imgEl,nm,mt);
-    g.appendChild(cell);
-  });
-
-  card.append(hdr,g);
-  wrap.innerHTML='';
-  wrap.appendChild(card);
-}
-
-function removeWb(id){ S.wbPlays=S.wbPlays.filter(x=>x!==id); renderWbList(); }
-function clearWb(){ S.wbPlays=[]; renderWbList(); }
-
-function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function printWb(){
-  if(!S.wbPlays.length){alert('Add plays first');return;}
-  const lib=getLib(), cols=parseInt(document.getElementById('wb-cols').value)||4;
-  const title=escHtml(document.getElementById('wb-title').value||'Game Plan');
-  let plays=S.wbPlays.map((id,i)=>({i:i+1,p:lib.find(x=>x.id===id)})).filter(x=>x.p);
-  while(plays.length%cols!==0) plays.push({i:null,p:null});
-  let html=`<style>@page{margin:.2in;}*{box-sizing:border-box;}body{font-family:Arial,sans-serif;margin:0;}.wh{text-align:center;font-size:13px;font-weight:700;margin-bottom:5px;}.wg{display:grid;grid-template-columns:repeat(${cols},1fr);gap:3px;border:2px solid #222;}.wc{border:1px solid #555;padding:3px;min-height:0.95in;background:white;overflow:hidden;}.wn{font-size:8px;color:#888;font-weight:bold;}.wname{font-size:12px;font-weight:bold;text-align:center;margin:1px 0;}.wmeta{font-size:8px;text-align:center;color:#666;}.wimg{width:100%;height:52px;object-fit:cover;display:block;margin:2px 0;}.we{background:#f8f8f8;}</style><div class="wh">🏈 ${title} — ${S.wbPlays.length} Play${S.wbPlays.length>1?'s':''}</div><div class="wg">`;
-  plays.forEach(({i,p})=>{
-    if(!p){html+='<div class="wc we"></div>';return;}
-    html+=`<div class="wc"><div class="wn">#${i}</div>${p.thumb?`<img class="wimg" src="${p.thumb}">`:'<div style="height:52px;background:#ddd;"></div>'}<div class="wname">${escHtml(p.name)}</div><div class="wmeta">${escHtml(p.formation||'')} ${p.type?'· '+escHtml(p.type.toUpperCase()):''}</div></div>`;
-  });
-  html+='</div>';
-  document.getElementById('wristband-print').innerHTML=html; window.print();
+// ─── WRISTBAND (built inside the Signals module) ───────────────
+// The wristband itself now lives entirely in js/signals/*.js — a 4x4
+// signal-grid slot model matching how HS/MS programs actually build
+// wristbands (fixed cell positions + optional decoy cells), rendered by
+// signalBuilder.js and printed by wristbandPrinter.js / signalKeyPrinter.js.
+// This is the one remaining entry point on this page: quick-add a play
+// from the Team Library straight into the wristband grid.
+async function wbAddById(id){
+  const p = getLib().find(x=>x.id===id);
+  if(!p){ setStatus('Play not found'); return; }
+  switchPage('signals');
+  await ensureSignalsInit();
+  const cell = (typeof sigFindOpenCell==='function') ? sigFindOpenCell() : null;
+  if(!cell){ setStatus('Wristband grid is full (16/16 cells assigned) — clear a cell first to add "'+p.name+'"'); return; }
+  openSigModal(cell.row, cell.col);
+  const sel = document.getElementById('sig-modal-play');
+  if(sel) sel.value = String(id);
+  setStatus('Pick a signal for "'+p.name+'" and hit SAVE to add it to the wristband');
 }
 
 // ─── AI PLAY BUILDER ──────────────────────────────────────────
@@ -2248,12 +2085,21 @@ function switchPage(id){
   document.getElementById('designer-ctrls').style.display=id==='designer'?'flex':'none';
   if(id==='library') renderLibrary();
   if(id==='playdb') renderPlayDb();
-  if(id==='wb'){updateWbSel();renderWbList();}
   if(id==='designer') render();
-  if(id==='signals' && typeof initSignals === 'function' && !window._sigInitDone){
+  if(id==='signals'){
+    console.log('[switchPage] ensuring Signals module is initialized');
+    ensureSignalsInit();
+  }
+}
+
+// Lazily initializes the Signals/Wristband module exactly once. Returns a
+// promise so callers that need sigAssignments already loaded (e.g. the
+// Team Library "+ WB" quick-add in wbAddById) can await it instead of
+// racing the async fetch that initSignals() kicks off.
+async function ensureSignalsInit(){
+  if (typeof initSignals === 'function' && !window._sigInitDone) {
     window._sigInitDone = true;
-    console.log('[switchPage] initializing Signals module');
-    initSignals();
+    await initSignals();
   }
 }
 
@@ -2264,7 +2110,6 @@ function init(){
   document.getElementById('sec-route').style.display='none';
   document.getElementById('sec-assign').style.display='none';
   applyFormation('Pro Set');
-  updateWbSel();
   setStatus('Select a formation or use the Place tool to add players  ·  [S]elect [P]lace [R]oute [D]elete [L]abel');
   switchPage('home');
 }
@@ -2275,8 +2120,11 @@ initAuth().then(() => {
   // Handle ?page= deep-link from library.html goApp() navigation
   const urlPage = new URLSearchParams(location.search).get('page');
   if (urlPage) {
-    const validPages = ['home','playdb','designer','wb','signals','library'];
-    if (validPages.includes(urlPage)) switchPage(urlPage);
+    // Old standalone Wristband Builder page was merged into Signals.
+    const pageAliases = { wb: 'signals' };
+    const resolvedPage = pageAliases[urlPage] || urlPage;
+    const validPages = ['home','playdb','designer','signals','library'];
+    if (validPages.includes(resolvedPage)) switchPage(resolvedPage);
   }
 
   // Handle wfpm-open-play from library.html openInDesigner()

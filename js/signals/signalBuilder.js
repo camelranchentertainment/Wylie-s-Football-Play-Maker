@@ -21,6 +21,20 @@ function sigGetPlayLib() {
   catch { return []; }
 }
 
+// ── Find the first open (unassigned) grid cell, row-major ──────
+// Used by the Team Library "+ WB" quick-add (wbAddById in app.html) to
+// jump straight to an empty slot instead of making the coach hunt for one.
+function sigFindOpenCell() {
+  for (const row of SIG_ROWS) {
+    for (const col of SIG_COLS) {
+      if (!sigAssignments.find(a => a.wristband_row === row && a.wristband_col === col)) {
+        return { row, col };
+      }
+    }
+  }
+  return null;
+}
+
 // ── Populate signal play dropdown ─────────────────────────────
 function sigPopulatePlayDrop(selectedId) {
   const sel  = document.getElementById('sig-modal-play');
