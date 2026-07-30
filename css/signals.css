@@ -509,31 +509,45 @@
   gap: 4px;
 }
 .sig-field.wide { grid-column: span 2; }
-.sig-color-row {
+/* ─── Wristband page tabs (Green/Blue/Red/Gold, or custom pages) ────── */
+.sig-page-tabs {
   display: flex;
-  gap: 7px;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
 }
-.sig-color-btn {
-  flex: 1;
-  padding: 7px 4px;
-  border-radius: 6px;
-  border: 2px solid transparent;
-  cursor: pointer;
+.sig-page-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border-bright);
+  background: transparent;
+  color: var(--text-lo);
   font-family: 'Oswald', sans-serif;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: .5px;
+  letter-spacing: 1px;
+  cursor: pointer;
   transition: all .15s;
-  text-align: center;
 }
-.sig-color-btn[data-color="green"] { background: rgba(34,197,94,.1);  color: #22c55e; border-color: rgba(34,197,94,.25); }
-.sig-color-btn[data-color="blue"]  { background: rgba(74,158,255,.1); color: #4a9eff; border-color: rgba(74,158,255,.25); }
-.sig-color-btn[data-color="red"]   { background: rgba(230,57,70,.1);  color: #e63946; border-color: rgba(230,57,70,.25); }
-.sig-color-btn[data-color="gold"]  { background: rgba(240,165,0,.1);  color: #f0a500; border-color: rgba(240,165,0,.25); }
-.sig-color-btn.active[data-color="green"] { border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,.25); }
-.sig-color-btn.active[data-color="blue"]  { border-color: #4a9eff; box-shadow: 0 0 0 2px rgba(74,158,255,.25); }
-.sig-color-btn.active[data-color="red"]   { border-color: #e63946; box-shadow: 0 0 0 2px rgba(230,57,70,.25); }
-.sig-color-btn.active[data-color="gold"]  { border-color: #f0a500; box-shadow: 0 0 0 2px rgba(240,165,0,.25); }
+.sig-page-tab:hover { color: var(--text-mid); background: var(--bg-hover); }
+.sig-page-tab.act { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+.sig-page-tab-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.sig-page-tab-dot-multi {
+  background: conic-gradient(#22c55e 0 25%, #4a9eff 25% 50%, #e63946 50% 75%, #f0a500 75% 100%);
+}
+.sig-page-color-ctrl {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 .sig-toggle-row {
   display: flex;

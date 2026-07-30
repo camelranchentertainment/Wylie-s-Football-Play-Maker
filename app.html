@@ -749,6 +749,11 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       </div>
       <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;">
         <div class="sig-panel-sec">
+          <div class="sig-panel-sec-hdr">WRISTBAND PAGES</div>
+          <div id="sig-page-tabs" class="sig-page-tabs"></div>
+          <div id="sig-page-color-ctrl" class="sig-page-color-ctrl"></div>
+        </div>
+        <div class="sig-panel-sec">
           <div class="sig-panel-sec-hdr">SIGNAL GRID</div>
           <div id="sig-grid"></div>
         </div>
@@ -811,16 +816,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <div class="rp-group">
         <label class="rp-label">PLAY</label>
         <select class="rp-select" id="sig-modal-play"></select>
-      </div>
-      <div class="rp-group">
-        <label class="rp-label">COLOR FAMILY</label>
-        <input type="hidden" id="sig-modal-color" value="green">
-        <div class="sig-color-row">
-          <button class="sig-color-btn" data-color="green" onclick="sigPickColor('green')">GREEN</button>
-          <button class="sig-color-btn" data-color="blue" onclick="sigPickColor('blue')">BLUE</button>
-          <button class="sig-color-btn" data-color="red" onclick="sigPickColor('red')">RED</button>
-          <button class="sig-color-btn" data-color="gold" onclick="sigPickColor('gold')">GOLD</button>
-        </div>
+        <div class="modal-subtitle" style="margin:4px 0 0;">Color is set per page/row, not per cell — see the WRISTBAND PAGES panel.</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
         <div class="rp-group">
@@ -972,6 +968,8 @@ const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let currentUser = null;       // Supabase user object when signed in
 let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
+let currentTeamId = null;     // this coach's team (bootstrapped in ensureTeamContext)
+let currentSeasonId = null;   // that team's active season
 
 // Called on page load — restore session if one exists
 async function initAuth() {
@@ -985,6 +983,7 @@ async function initAuth() {
   }
   console.log('[initAuth] session found for', session.user?.email);
   currentUser = session.user;
+  await ensureTeamContext();
   await loadCloudLib();
   console.log('[initAuth] cloudLib loaded —', cloudLib ? cloudLib.length + ' plays' : 'null (error)');
   updateAuthUI();
@@ -992,12 +991,16 @@ async function initAuth() {
   supa.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
       currentUser = session.user;
+      await ensureTeamContext();
       await loadCloudLib();
       updateAuthUI();
       renderLibrary();
+      if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
     } else if (event === 'SIGNED_OUT') {
       currentUser = null;
       cloudLib = null;
+      currentTeamId = null;
+      currentSeasonId = null;
       updateAuthUI();
       renderLibrary();
     }
@@ -1017,6 +1020,61 @@ function updateAuthUI() {
   }
   const badge = document.getElementById('lib-cloud-badge');
   if (badge) badge.style.display = currentUser ? 'inline' : 'none';
+}
+
+// ─── TEAM / SEASON BOOTSTRAP ────────────────────────────────────
+// app.html is sign-in gated (initAuth redirects to login.html otherwise),
+// so every coach who reaches this point needs exactly one team and one
+// active season to hang games/wristbands/play sheets off of. teams has an
+// on_team_created trigger that auto-adds the owner to team_members, so
+// creating the team row is all that's needed to establish membership.
+async function ensureTeamContext() {
+  if (!currentUser) return;
+  try {
+    const { data: memberships, error: memErr } = await supa
+      .from('team_members')
+      .select('team_id')
+      .eq('user_id', currentUser.id)
+      .limit(1);
+    if (memErr) throw memErr;
+
+    if (memberships && memberships.length) {
+      currentTeamId = memberships[0].team_id;
+    } else {
+      const defaultName = (currentUser.email || 'Coach').split('@')[0] + "'s Team";
+      const { data: newTeam, error: teamErr } = await supa
+        .from('teams')
+        .insert({ name: defaultName, owner_id: currentUser.id })
+        .select('id')
+        .single();
+      if (teamErr) throw teamErr;
+      currentTeamId = newTeam.id;
+    }
+
+    const { data: seasons, error: seasonErr } = await supa
+      .from('seasons')
+      .select('id')
+      .eq('team_id', currentTeamId)
+      .eq('is_active', true)
+      .limit(1);
+    if (seasonErr) throw seasonErr;
+
+    if (seasons && seasons.length) {
+      currentSeasonId = seasons[0].id;
+    } else {
+      const year = new Date().getFullYear();
+      const { data: newSeason, error: newSeasonErr } = await supa
+        .from('seasons')
+        .insert({ team_id: currentTeamId, name: `${year} Season`, year, is_active: true })
+        .select('id')
+        .single();
+      if (newSeasonErr) throw newSeasonErr;
+      currentSeasonId = newSeason.id;
+    }
+    console.log('[ensureTeamContext] team', currentTeamId, 'season', currentSeasonId);
+  } catch (e) {
+    console.error('[ensureTeamContext] failed:', e.message || e);
+  }
 }
 
 // ─── CLOUD LIBRARY ────────────────────────────────────────────

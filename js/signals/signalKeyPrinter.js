@@ -3,6 +3,7 @@
 function printSigKeyCard() {
   if (!sigAssignments.length) { alert('No signals assigned yet.'); return; }
 
+  const page   = sigActivePage();
   const plays  = sigGetPlayLib();
   const real   = sigAssignments.filter(a => !a.is_dummy && a.play_id)
     .sort((a,b) => SIG_ROWS.indexOf(a.wristband_row)*4+(a.wristband_col-1)
@@ -16,7 +17,8 @@ function printSigKeyCard() {
   real.forEach(a => {
     const play  = plays.find(p => String(p.id) === String(a.play_id));
     const name  = play ? play.name : '???';
-    const cf    = { green:'#22c55e', blue:'#4a9eff', red:'#e63946', gold:'#f0a500' }[a.color_family] || '#888';
+    const rowColor = sigColorForRow(page, a.wristband_row);
+    const cf    = SIG_COLORS[rowColor]?.hex || '#888';
     const dZone = sigRotateZone(a.signal_body_zone, sigRotation);
     const ser   = a.series_rotation === 0 ? 'All' : `Q${a.series_rotation}`;
     const caller= a.live_caller || 'OC';
@@ -24,7 +26,7 @@ function printSigKeyCard() {
       <td class="kc-cell-id">${sigCellId(a.wristband_row, a.wristband_col)}</td>
       <td>${SIG_ZONE_LABELS[dZone]}</td>
       <td class="kc-ctr">${a.signal_fingers}</td>
-      <td><span class="kc-dot" style="background:${cf}"></span>${(a.color_family||'').charAt(0).toUpperCase()+(a.color_family||'').slice(1)}</td>
+      <td><span class="kc-dot" style="background:${cf}"></span>${SIG_COLORS[rowColor]?.label || ''}</td>
       <td><strong>${name}</strong></td>
       <td class="kc-ctr">${ser}</td>
       <td class="kc-ctr">${caller}</td>
@@ -60,7 +62,7 @@ tr:nth-child(even) td{background:#f8f8f8;}
 .kc-dummy-chip{display:inline-block;background:#f0f0f0;border-radius:4px;padding:2px 8px;margin:2px;font-style:italic;}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.kc-dot{border:1.5px solid #000;background:transparent!important;}}
 </style></head><body>
-<div class="kc-title">SIGNAL KEY CARD — COACH REFERENCE</div>
+<div class="kc-title">${sigEsc(page?.label || "SIGNAL KEY")} — COACH REFERENCE</div>
 <div class="kc-sub">Body Zone &rarr; Column &nbsp;·&nbsp; Fingers &rarr; Row &nbsp;·&nbsp; Read cell at intersection on wristband</div>
 ${rotNote}
 <table>

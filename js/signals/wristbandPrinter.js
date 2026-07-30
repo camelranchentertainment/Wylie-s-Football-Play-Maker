@@ -4,6 +4,7 @@ function printSigWristband() {
   const real = sigAssignments.filter(a => !a.is_dummy && a.play_id);
   if (!real.length) { alert('Add plays to the signal grid first.'); return; }
 
+  const page    = sigActivePage();
   const plays   = sigGetPlayLib();
   const caller  = real[0]?.live_caller || 'OC';
   const serSet  = [...new Set(sigAssignments.map(a => a.series_rotation))];
@@ -26,7 +27,7 @@ function printSigWristband() {
     SIG_COLS.forEach(col => {
       const a = sigAssignments.find(x => x.wristband_row === row && x.wristband_col === col);
       if (!a) { cells += '<div class="ww-cell ww-empty"></div>'; return; }
-      const cf   = { green:'#22c55e', blue:'#4a9eff', red:'#e63946', gold:'#f0a500' }[a.color_family] || '#888';
+      const cf   = SIG_COLORS[sigColorForRow(page, row)]?.hex || '#888';
       const play = plays.find(p => String(p.id) === String(a.play_id));
       const name = a.is_dummy ? '—' : (play ? play.name : '???');
       const abbr = name.length > 14 ? name.slice(0,13)+'…' : name;
@@ -59,7 +60,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;width:4.0
 <div class="ww-outer">
   <div class="ww-top">
     <span>LIVE CALLER: ${caller}${rotNote ? `<span class="rot"> ${rotNote}</span>` : ''}</span>
-    <span>QB WRISTBAND INSERT</span>
+    <span>${sigEsc(page?.label || 'WRISTBAND')} — QB INSERT</span>
   </div>
   <div class="ww-grid">${cells}</div>
   <div class="ww-bot"><span>${serLbl}</span><span>Wylie's Play Maker</span></div>

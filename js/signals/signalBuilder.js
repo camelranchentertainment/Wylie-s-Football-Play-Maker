@@ -1,17 +1,153 @@
 'use strict';
 
 // ── Module state ──────────────────────────────────────────────
-let sigAssignments = [];
-let sigRotation    = 0;      // 0–3 display rotation offset
+let sigWristbandId = null;
+let sigPages       = [];     // all pages for this wristband
+let sigActivePageId = null;
+let sigAssignments = [];     // calls for the ACTIVE page only
+let sigRotation    = 0;      // 0–3 display rotation offset (resets per page)
 let _sigModalCell  = null;   // { row, col } currently in edit
 
 // ── Bootstrap ─────────────────────────────────────────────────
 async function initSignals() {
-  console.log('[initSignals] loading signal assignments…');
-  sigAssignments = await sigLoadAll();
-  console.log('[initSignals] loaded', sigAssignments.length, 'assignments');
+  try {
+    console.log('[initSignals] resolving wristband…');
+    sigWristbandId = await sigEnsureWristband();
+    sigPages = await sigLoadPages(sigWristbandId);
+    sigActivePageId = sigPages[0]?.id || null;
+    await sigLoadActivePage();
+    renderSigPageTabs();
+  } catch (e) {
+    console.error('[initSignals] failed:', e.message || e);
+    setStatus('Could not load your wristband — ' + (e.message || 'unknown error'));
+  }
+}
+
+async function sigLoadActivePage() {
+  if (!sigActivePageId) { sigAssignments = []; renderSigGrid(); renderSigPreviews(); renderSigPageColorControls(); return; }
+  sigAssignments = await sigLoadCalls(sigActivePageId);
+  sigRotation = 0;
   renderSigGrid();
   renderSigPreviews();
+  renderSigPageColorControls();
+}
+
+async function switchSigPage(pageId) {
+  if (pageId === sigActivePageId) return;
+  sigActivePageId = pageId;
+  renderSigPageTabs();
+  await sigLoadActivePage();
+}
+
+function sigActivePage() {
+  return sigPages.find(p => p.id === sigActivePageId) || null;
+}
+
+// Resolve the color a given row should render as on the active page:
+// a solid page color wins outright; otherwise fall back to that row's
+// entry in row_colors, defaulting to green if neither is set.
+function sigColorForRow(page, row) {
+  if (!page) return 'green';
+  if (page.color_family) return page.color_family;
+  return (page.row_colors && page.row_colors[row]) || 'green';
+}
+
+// ── Page tabs ────────────────────────────────────────────────
+function renderSigPageTabs() {
+  const wrap = document.getElementById('sig-page-tabs');
+  if (!wrap) return;
+  wrap.innerHTML = sigPages.map(p => {
+    const cf = p.color_family ? SIG_COLORS[p.color_family] : null;
+    const dotHtml = cf
+      ? `<span class="sig-page-tab-dot" style="background:${cf.hex}"></span>`
+      : `<span class="sig-page-tab-dot sig-page-tab-dot-multi"></span>`;
+    const act = p.id === sigActivePageId ? ' act' : '';
+    return `<button class="sig-page-tab${act}" onclick="switchSigPage('${p.id}')">${dotHtml}${sigEsc(p.label)}</button>`;
+  }).join('');
+}
+
+// ── Page color-mode controls ────────────────────────────────────
+// modeOverride lets the mode <select>'s onchange preview "solid" vs "rows"
+// controls immediately, without writing anything until Save is clicked.
+function renderSigPageColorControls(modeOverride) {
+  const wrap = document.getElementById('sig-page-color-ctrl');
+  if (!wrap) return;
+  const page = sigActivePage();
+  if (!page) { wrap.innerHTML = ''; return; }
+
+  const mode = modeOverride || (page.color_family ? 'solid' : 'rows');
+  const colorOptions = c => Object.keys(SIG_COLORS).map(k =>
+    `<option value="${k}"${c === k ? ' selected' : ''}>${k.toUpperCase()} — ${SIG_COLORS[k].label}</option>`
+  ).join('');
+
+  let html = `
+    <div class="rp-group" style="flex-direction:row;align-items:center;gap:8px;">
+      <label class="rp-label" style="margin:0;">Page Color</label>
+      <select class="rp-select" id="sig-page-mode-sel" style="width:auto;" onchange="sigOnPageModeChange()">
+        <option value="solid"${mode === 'solid' ? ' selected' : ''}>Solid page color</option>
+        <option value="rows"${mode === 'rows' ? ' selected' : ''}>Color per row</option>
+      </select>
+    </div>`;
+
+  if (mode === 'solid') {
+    html += `
+    <div class="rp-group" style="flex-direction:row;align-items:center;gap:8px;">
+      <select class="rp-select" id="sig-page-solid-sel" style="width:auto;">
+        ${colorOptions(page.color_family || 'green')}
+      </select>
+      <button class="add-dashed" style="width:auto;padding:6px 12px;" onclick="saveSigPageColor()">Save</button>
+    </div>`;
+  } else {
+    const rc = page.row_colors || {};
+    html += `<div class="rp-group" style="gap:6px;">` +
+      SIG_ROWS.map(r => `
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="rp-label" style="margin:0;width:60px;">Row ${r}</span>
+          <select class="rp-select" id="sig-page-row-sel-${r}" style="width:auto;flex:1;">
+            ${colorOptions(rc[r] || 'green')}
+          </select>
+        </div>`).join('') +
+      `<button class="add-dashed" style="margin-top:2px;" onclick="saveSigPageColor()">Save Row Colors</button>
+    </div>`;
+  }
+
+  wrap.innerHTML = html;
+}
+
+function sigOnPageModeChange() {
+  // Re-render immediately so switching the dropdown swaps solid<->per-row
+  // controls without needing a save round-trip first. Nothing is written
+  // until saveSigPageColor() runs.
+  const mode = document.getElementById('sig-page-mode-sel').value;
+  renderSigPageColorControls(mode);
+}
+
+async function saveSigPageColor() {
+  const page = sigActivePage();
+  if (!page) return;
+  const mode = document.getElementById('sig-page-mode-sel').value;
+  let patch;
+  if (mode === 'solid') {
+    const color = document.getElementById('sig-page-solid-sel').value;
+    patch = { color_family: color, row_colors: {} };
+  } else {
+    const row_colors = {};
+    SIG_ROWS.forEach(r => {
+      row_colors[r] = document.getElementById(`sig-page-row-sel-${r}`)?.value || 'green';
+    });
+    patch = { color_family: null, row_colors };
+  }
+  try {
+    const updated = await sigUpdatePage(page.id, patch);
+    Object.assign(page, updated);
+    renderSigPageTabs();
+    renderSigPageColorControls();
+    renderSigGrid();
+    renderSigPreviews();
+    setStatus(`"${page.label}" page color updated`);
+  } catch (e) {
+    setStatus('Could not save page color — ' + (e.message || 'unknown error'));
+  }
 }
 
 // ── Play library bridge ────────────────────────────────────────
@@ -23,7 +159,8 @@ function sigGetPlayLib() {
 
 // ── Find the first open (unassigned) grid cell, row-major ──────
 // Used by the Team Library "+ WB" quick-add (wbAddById in app.html) to
-// jump straight to an empty slot instead of making the coach hunt for one.
+// jump straight to an empty slot on the currently active page instead of
+// making the coach hunt for one.
 function sigFindOpenCell() {
   for (const row of SIG_ROWS) {
     for (const col of SIG_COLS) {
@@ -57,6 +194,7 @@ function renderSigGrid() {
   const wrap = document.getElementById('sig-grid');
   if (!wrap) return;
   const plays = sigGetPlayLib();
+  const page = sigActivePage();
 
   let html = '<div class="sig-grid-inner">';
 
@@ -76,6 +214,7 @@ function renderSigGrid() {
     html += `<div class="sig-row-hdr"><span class="sig-row-letter">${row}</span><span class="sig-row-f">${fingers}f</span></div>`;
     SIG_COLS.forEach(col => {
       const a = sigAssignments.find(x => x.wristband_row === row && x.wristband_col === col);
+      const cf = SIG_COLORS[sigColorForRow(page, row)] || SIG_COLORS.green;
       if (!a) {
         html += `<div class="sig-cell sig-cell-empty" onclick="openSigModal('${row}',${col})">
           <span class="sig-cell-id">${sigCellId(row,col)}</span>
@@ -83,7 +222,6 @@ function renderSigGrid() {
         </div>`;
         return;
       }
-      const cf     = SIG_COLORS[a.color_family] || SIG_COLORS.green;
       const play   = plays.find(p => String(p.id) === String(a.play_id));
       const name   = a.is_dummy ? '—' : (play ? play.name : '?');
       const dZone  = sigRotateZone(a.signal_body_zone, sigRotation);
@@ -117,6 +255,7 @@ function _renderWbPreview() {
   const wrap = document.getElementById('sig-wb-preview');
   if (!wrap) return;
   const plays   = sigGetPlayLib();
+  const page    = sigActivePage();
   const real    = sigAssignments.filter(a => !a.is_dummy && a.play_id);
   if (!real.length) {
     wrap.innerHTML = '<div class="sig-preview-empty">Assign plays to the grid to see the wristband preview.</div>';
@@ -127,7 +266,7 @@ function _renderWbPreview() {
   const serLbl  = serSet.length === 1 ? (serSet[0] === 0 ? 'All Series' : `Q${serSet[0]}`) : 'Multi-Series';
 
   let g = '<div class="sig-wb-card"><div class="sig-wb-hdr">';
-  g += `<span class="sig-wb-caller">CALLER: ${sigEsc(caller)}</span>`;
+  g += `<span class="sig-wb-caller">${sigEsc(page?.label || 'WRISTBAND')} · CALLER: ${sigEsc(caller)}</span>`;
   g += `<span class="sig-wb-series">${sigEsc(serLbl)}</span>`;
   g += '</div><div class="sig-wb-grid">';
 
@@ -141,8 +280,8 @@ function _renderWbPreview() {
     g += `<div class="sig-wb-row-hdr">${row}</div>`;
     SIG_COLS.forEach(col => {
       const a = sigAssignments.find(x => x.wristband_row === row && x.wristband_col === col);
+      const cf = SIG_COLORS[sigColorForRow(page, row)] || SIG_COLORS.green;
       if (!a) { g += '<div class="sig-wb-cell sig-wb-empty"></div>'; return; }
-      const cf   = SIG_COLORS[a.color_family] || SIG_COLORS.green;
       const play = plays.find(p => String(p.id) === String(a.play_id));
       const name = a.is_dummy ? '—' : (play ? play.name : '???');
       g += `<div class="sig-wb-cell${a.is_dummy?' sig-wb-dummy':''}" style="border-left-color:${cf.hex};">
@@ -158,6 +297,7 @@ function _renderKeyPreview() {
   const wrap = document.getElementById('sig-key-preview');
   if (!wrap) return;
   const plays  = sigGetPlayLib();
+  const page   = sigActivePage();
   const real   = sigAssignments.filter(a => !a.is_dummy && a.play_id)
     .sort((a,b) => SIG_ROWS.indexOf(a.wristband_row)*4+(a.wristband_col-1)
                  - SIG_ROWS.indexOf(b.wristband_row)*4-(b.wristband_col-1));
@@ -172,14 +312,14 @@ function _renderKeyPreview() {
   real.forEach(a => {
     const play  = plays.find(p => String(p.id) === String(a.play_id));
     const name  = play ? play.name : '???';
-    const cf    = SIG_COLORS[a.color_family] || SIG_COLORS.green;
+    const cf    = SIG_COLORS[sigColorForRow(page, a.wristband_row)] || SIG_COLORS.green;
     const dZone = sigRotateZone(a.signal_body_zone, sigRotation);
     const ser   = a.series_rotation === 0 ? 'All' : `Q${a.series_rotation}`;
     rows += `<tr>
       <td class="sk-cell">${sigCellId(a.wristband_row, a.wristband_col)}</td>
       <td>${SIG_ZONE_LABELS[dZone]}</td>
       <td class="sk-ctr">${a.signal_fingers}</td>
-      <td><span class="sk-dot" style="background:${cf.hex}"></span>${(a.color_family||'').charAt(0).toUpperCase()+(a.color_family||'').slice(1)}</td>
+      <td><span class="sk-dot" style="background:${cf.hex}"></span>${(cf.label||'')}</td>
       <td class="sk-play">${sigEsc(name)}</td>
       <td class="sk-ctr">${ser}</td>
     </tr>`;
@@ -197,7 +337,7 @@ function _renderKeyPreview() {
 
   wrap.innerHTML = `
     <div class="sig-key-card">
-      <div class="sig-key-title">SIGNAL KEY <span class="sig-key-sub">Coach Reference</span>
+      <div class="sig-key-title">${sigEsc(page?.label || 'SIGNAL KEY')} <span class="sig-key-sub">Coach Reference</span>
         ${sigRotation > 0 ? `<span class="sig-rot-badge">ROT +${sigRotation}</span>` : ''}
       </div>
       <table class="sk-table">
@@ -212,13 +352,13 @@ function _renderKeyPreview() {
 function openSigModal(row, col) {
   _sigModalCell = { row, col };
   const existing = sigAssignments.find(a => a.wristband_row === row && a.wristband_col === col);
+  const page = sigActivePage();
 
-  document.getElementById('sig-modal-title').textContent = `CELL ${sigCellId(row, col)}`;
+  document.getElementById('sig-modal-title').textContent = `${page ? page.label + ' — ' : ''}CELL ${sigCellId(row, col)}`;
   document.getElementById('sig-modal-sub').textContent =
     `Grid position ${row}${col} · Default signal: ${SIG_ZONE_LABELS[sigDefaultZone(col)]} + ${sigDefaultFingers(row)} finger(s)`;
 
   sigPopulatePlayDrop(existing?.play_id || '');
-  document.getElementById('sig-modal-color').value   = existing?.color_family   || 'green';
   document.getElementById('sig-modal-zone').value    = existing?.signal_body_zone || sigDefaultZone(col);
   document.getElementById('sig-modal-fingers').value = existing?.signal_fingers   || sigDefaultFingers(row);
   document.getElementById('sig-modal-caller').value  = existing?.live_caller       || 'OC';
@@ -226,7 +366,6 @@ function openSigModal(row, col) {
   document.getElementById('sig-modal-dummy').checked = existing?.is_dummy || false;
   document.getElementById('sig-modal-err').textContent = '';
   document.getElementById('sig-modal-clear').style.display = existing ? 'flex' : 'none';
-  _sigSyncColorBtns(existing?.color_family || 'green');
 
   document.getElementById('sig-cell-modal').classList.add('show');
 }
@@ -234,18 +373,6 @@ function openSigModal(row, col) {
 function closeSigModal() {
   document.getElementById('sig-cell-modal').classList.remove('show');
   _sigModalCell = null;
-}
-
-function _sigSyncColorBtns(cf) {
-  document.querySelectorAll('.sig-color-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.color === cf);
-  });
-  const inp = document.getElementById('sig-modal-color');
-  if (inp) inp.value = cf;
-}
-
-function sigPickColor(cf) {
-  _sigSyncColorBtns(cf);
 }
 
 async function saveSigCell() {
@@ -260,17 +387,13 @@ async function saveSigCell() {
     return;
   }
 
-  const plays  = sigGetPlayLib();
-  const play   = plays.find(p => String(p.id) === String(playId));
-  const existId = sigAssignments.find(a => a.wristband_row === row && a.wristband_col === col)?.id || null;
+  const existing = sigAssignments.find(a => a.wristband_row === row && a.wristband_col === col);
 
   const candidate = {
-    id:               existId,
+    id:               existing?.id || null,
     wristband_row:    row,
     wristband_col:    col,
     play_id:          isDummy ? null : playId,
-    play_name:        isDummy ? null : (play?.name || null),
-    color_family:     document.getElementById('sig-modal-color').value   || 'green',
     signal_body_zone: document.getElementById('sig-modal-zone').value,
     signal_fingers:   parseInt(document.getElementById('sig-modal-fingers').value),
     live_caller:      document.getElementById('sig-modal-caller').value  || 'OC',
@@ -278,29 +401,31 @@ async function saveSigCell() {
     is_dummy:         isDummy,
   };
 
-  const { valid, errors } = sigValidate(sigAssignments, candidate, existId);
+  const { valid, errors } = sigValidate(sigAssignments, candidate, existing?.id ?? null);
   if (!valid) { errEl.textContent = errors[0]; return; }
 
-  const saved = await sigSaveOne(candidate);
-  const idx   = sigAssignments.findIndex(a => a.wristband_row === row && a.wristband_col === col);
-  if (idx >= 0) sigAssignments[idx] = saved; else sigAssignments.push(saved);
+  try {
+    await sigSaveCell(sigActivePageId, row, col, candidate);
+  } catch (e) {
+    errEl.textContent = 'Save failed — ' + (e.message || 'unknown error');
+    return;
+  }
 
+  await sigLoadActivePage();
   closeSigModal();
-  renderSigGrid();
-  renderSigPreviews();
 }
 
 async function clearSigCell() {
   if (!_sigModalCell) return;
   const { row, col } = _sigModalCell;
-  const existing = sigAssignments.find(a => a.wristband_row === row && a.wristband_col === col);
-  if (existing) {
-    await sigDeleteOne(existing.id);
-    sigAssignments = sigAssignments.filter(a => !(a.wristband_row === row && a.wristband_col === col));
+  try {
+    await sigDeleteCell(sigActivePageId, row, col);
+  } catch (e) {
+    document.getElementById('sig-modal-err').textContent = 'Clear failed — ' + (e.message || 'unknown error');
+    return;
   }
   closeSigModal();
-  renderSigGrid();
-  renderSigPreviews();
+  await sigLoadActivePage();
 }
 
 // ── Signal rotation ────────────────────────────────────────────
