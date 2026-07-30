@@ -113,6 +113,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 .page-topbar .rp-input, .page-topbar .rp-select { padding:6px 10px; background:var(--bg-card); border:1px solid var(--border-bright); color:var(--text-hi); border-radius:7px; font-family:'Rajdhani',sans-serif; font-size:13px; }
 .page-topbar .rp-input { width:240px; }
 .page-topbar .rp-input:focus, .page-topbar .rp-select:focus { outline:none; border-color:var(--accent); }
+.pdb-intro { padding:12px 20px; font-size:12px; color:var(--text-mid); line-height:1.6; background:var(--bg-panel); border-bottom:1px solid var(--border); flex-shrink:0; }
+.pdb-intro strong { color:var(--text-hi); }
 #lib-count { font-size:11px; color:var(--text-lo); margin-left:4px; }
 #lib-grid { flex:1; overflow-y:auto; padding:20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; align-content:start; }
 
@@ -563,8 +565,9 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 
   <!-- ══ PLAY DATABASE ══ -->
   <div id="page-playdb" class="page">
+    <div class="pdb-intro">This is the shared catalog every coach starts from — browse or search it, then <strong>+ MY PLAYS</strong> to copy a play into your own library, or <strong>DESIGN</strong> to open it in the Designer and customize it first. It's read-only: plays you build, edit, or generate with AI live in <strong>My Plays</strong> instead. Filters narrow this list down — hit <strong>RESET</strong> any time to see everything again.</div>
     <div class="page-topbar">
-      <h2>Play Database <span class="cloud-badge" style="display:inline;">60 PLAYS</span></h2>
+      <h2>Play Database <span class="cloud-badge" id="pdb-badge-count" style="display:inline;"></span></h2>
       <input type="text" class="rp-input" placeholder="Search plays..." id="pdb-search" oninput="renderPlayDb()">
       <select class="rp-select" id="pdb-filter-side" style="width:110px;" onchange="renderPlayDb()">
         <option value="all">All Sides</option>
@@ -581,6 +584,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         <option value="special">Special</option>
         <option value="defense">Defense</option>
       </select>
+      <button class="hbtn" id="pdb-reset" onclick="resetPlayDbFilters()" title="Clear search and filters">✕ RESET</button>
       <span id="pdb-count"></span>
     </div>
     <div id="pdb-grid" style="flex:1;overflow-y:auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;align-content:start;"></div>
@@ -992,7 +996,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <div id="pm-desc"></div>
     <div class="modal-actions">
       <button class="mbtn cancel" onclick="closePlayModal()">Close</button>
-      <button class="mbtn ok" id="pm-load-btn" onclick="loadPlayFromModal()">Load to Designer</button>
+      <button class="mbtn ok" id="pm-save-btn" onclick="addTplToMyLib(currentPopupId); closePlayModal();">+ Add to My Plays</button>
+      <button class="mbtn ok" id="pm-load-btn" onclick="loadPlayFromModal()">Open in Designer</button>
     </div>
   </div>
 </div>
@@ -1787,6 +1792,12 @@ function renderLibrary(){
   });
 }
 
+function resetPlayDbFilters(){
+  const search=document.getElementById('pdb-search'); if(search) search.value='';
+  const side=document.getElementById('pdb-filter-side'); if(side) side.value='all';
+  const type=document.getElementById('pdb-filter-type'); if(type) type.value='';
+  renderPlayDb();
+}
 function renderPlayDb() {
   const grid = document.getElementById('pdb-grid');
   if(!grid) return;
@@ -1805,6 +1816,8 @@ function renderPlayDb() {
 
   const countEl = document.getElementById('pdb-count');
   if(countEl) countEl.textContent = tpls.length+' play'+(tpls.length!==1?'s':'');
+  const badgeEl = document.getElementById('pdb-badge-count');
+  if(badgeEl) badgeEl.textContent = (window.PLAY_LIBRARY||[]).length+' PLAYS';
 
   if(!tpls.length){
     grid.innerHTML='<div class="lib-empty"><strong>No Results</strong>No plays match your filters.</div>';
@@ -1887,7 +1900,10 @@ function deletePlay(id){
 
 // ─── PLAY POPUP ───────────────────────────────────────────────
 function openPlayModal(id){
-  const p=getLib().find(x=>x.id===id); if(!p) return;
+  // This popup previews Play Database TEMPLATES only (renderPlayDb wires it
+  // up) — it must read from the shared catalog, not the signed-in user's
+  // personal library, or every click here silently no-ops.
+  const p=(window.PLAY_LIBRARY||[]).find(x=>x.id===id); if(!p) return;
   currentPopupId=id;
   document.getElementById('pm-name').textContent=p.name;
   const typeColor={run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
@@ -1917,7 +1933,7 @@ function openPlayModal(id){
 }
 
 function closePlayModal(){ document.getElementById('play-modal').classList.remove('show'); currentPopupId=null; }
-function loadPlayFromModal(){ if(currentPopupId){ loadPlay(currentPopupId); closePlayModal(); switchPage('designer'); } }
+function loadPlayFromModal(){ if(currentPopupId){ closePlayModal(); loadTplToDesigner(currentPopupId); } }
 
 function renderPlayToCanvas(play, tc){
   const W=tc.width, H=tc.height, tx=tc.getContext('2d');
