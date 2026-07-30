@@ -140,7 +140,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 /* ─── PLAY CARDS ───────────────────────────────────────────── */
 .pcard { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; transition:all .2s; box-shadow:var(--shadow-sm); }
 .pcard:hover { border-color:var(--border-bright); transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,.5); }
-.pcard-thumb { width:100%; height:80px; display:block; background:var(--green-dark); object-fit:cover; }
+.pcard-thumb { width:100%; height:auto; display:block; background:var(--green-dark); }
 .pcard-body { padding:9px 10px 5px; }
 .pcard-name { font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; color:var(--text-hi); letter-spacing:.3px; }
 .pcard-meta { display:flex; gap:5px; align-items:center; margin-top:4px; flex-wrap:wrap; }
@@ -572,7 +572,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <input type="text" class="rp-input" placeholder="Search plays..." id="pdb-search" oninput="renderPlayDb()">
       <select class="rp-select" id="pdb-filter-side" style="width:110px;" onchange="renderPlayDb()">
         <option value="all">All Sides</option>
-        <option value="offense">Offense</option>
+        <option value="offense" selected>Offense</option>
         <option value="defense">Defense</option>
       </select>
       <select class="rp-select" id="pdb-filter-type" style="width:120px;" onchange="renderPlayDb()">
@@ -588,7 +588,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <button class="hbtn" id="pdb-reset" onclick="resetPlayDbFilters()" title="Clear search and filters">✕ RESET</button>
       <span id="pdb-count"></span>
     </div>
-    <div id="pdb-grid" style="flex:1;overflow-y:auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;align-content:start;"></div>
+    <div id="pdb-grid" style="flex:1;overflow-y:auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;align-content:start;"></div>
   </div>
 
   <!-- ══ HOME ══ -->
@@ -1832,7 +1832,7 @@ function renderPlayDb() {
     const tyTag = pl.type?`<span class="ptag ${tyKey}">${pl.type.toUpperCase()}</span>`:'';
     const d = document.createElement('div'); d.className='pcard';
     d.innerHTML=`
-      <div class="pcard-thumb" style="background:var(--green-dark);height:80px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.15);font-size:10px;font-family:Oswald,sans-serif;letter-spacing:2px;"></div>
+      <canvas class="pcard-thumb" width="460" height="374"></canvas>
       <div class="pcard-body">
         <div class="pcard-name"></div>
         <div class="pcard-meta">${mTag}${tyTag}<span class="pcard-fmeta"></span></div>
@@ -1845,7 +1845,7 @@ function renderPlayDb() {
     d.querySelector('.pcard-name').textContent = pl.name;
     d.querySelector('.pcard-fmeta').textContent = pl.formation||'';
     d.querySelector('.pcard-desc2').textContent = pl.description||'';
-    d.querySelector('.pcard-thumb').textContent = (pl.formation||'').toUpperCase();
+    renderPlayToCanvas(pl, d.querySelector('.pcard-thumb'));
     grid.appendChild(d);
   });
 }
