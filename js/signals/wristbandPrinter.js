@@ -4,8 +4,16 @@ function printSigWristband() {
   const real = sigAssignments.filter(a => !a.is_dummy && a.play_id);
   if (!real.length) { alert('Add plays to the signal grid first.'); return; }
 
+  const page = sigActivePage();
+  showPrintPreview(() => buildSigWristbandHtml(), { title: (page?.label || 'WRISTBAND') + ' — QB Insert' });
+}
+
+// Fixed physical insert size (4.25in x 2.75in landscape) -- no paper-size
+// picker for this one, it's a wristband card, not a page.
+function buildSigWristbandHtml() {
   const page    = sigActivePage();
   const plays   = sigGetPlayLib();
+  const real    = sigAssignments.filter(a => !a.is_dummy && a.play_id);
   const caller  = real[0]?.live_caller || 'OC';
   const serSet  = [...new Set(sigAssignments.map(a => a.series_rotation))];
   const serLbl  = serSet.length === 1 ? (serSet[0] === 0 ? 'All Series' : `Q${serSet[0]}`) : 'Multi-Series';
@@ -67,9 +75,5 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;width:4.0
 </div>
 </body></html>`;
 
-  const win = window.open('', '_blank', 'width=620,height=430');
-  if (!win) { alert('Pop-up blocked — allow pop-ups to print.'); return; }
-  win.document.write(html);
-  win.document.close();
-  win.onload = () => setTimeout(() => win.print(), 300);
+  return html;
 }

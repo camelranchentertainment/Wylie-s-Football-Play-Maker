@@ -257,6 +257,115 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   font-size:14px;color:var(--text-mid);
   max-width:500px;margin:0 auto;line-height:1.6;
 }
+/* ─── TEAM DASHBOARD (Home, signed-in) ──────────────────────── */
+.dash-header {
+  padding:28px 28px 18px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.dash-team-name-row { display:flex; align-items:center; gap:10px; }
+.dash-team-name-input {
+  background:transparent; border:none; border-bottom:2px solid transparent;
+  font-family:'Oswald',sans-serif; font-size:clamp(22px,3.2vw,32px); font-weight:700;
+  color:var(--text-hi); letter-spacing:.5px; padding:2px 1px; min-width:0; flex:1;
+  transition:border-color .15s;
+}
+.dash-team-name-input:hover { border-bottom-color:var(--border-bright); }
+.dash-team-name-input:focus { outline:none; border-bottom-color:var(--accent); }
+.dash-save-badge {
+  font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:1.5px;
+  color:#50dc78; opacity:0; transition:opacity .4s; flex-shrink:0;
+}
+.dash-save-badge.show { opacity:1; }
+.dash-season-label {
+  font-size:11px; color:var(--text-lo); letter-spacing:2px;
+  margin-top:4px; text-transform:uppercase;
+}
+.dash-section { padding:22px 28px; border-bottom:1px solid var(--border); }
+.dash-section-hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px; gap:12px; flex-wrap:wrap;
+}
+.dash-section-hdr h2 {
+  font-family:'Oswald',sans-serif; font-size:13px; font-weight:700;
+  letter-spacing:2px; color:var(--text-hi); text-transform:uppercase; margin:0;
+}
+.dash-games-empty {
+  text-align:center; color:var(--text-lo); font-size:12px; padding:30px;
+  border:1px dashed var(--border-bright); border-radius:8px;
+}
+.game-row {
+  display:flex; align-items:center; gap:14px; padding:12px 14px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:9px;
+  margin-bottom:8px; cursor:pointer; transition:all .15s;
+}
+.game-row:hover { border-color:var(--border-bright); background:var(--bg-hover); }
+.game-row-date { width:52px; flex-shrink:0; text-align:center; font-family:'Oswald',sans-serif; }
+.game-row-date .gd-month { font-size:9px; color:var(--accent); letter-spacing:1px; display:block; }
+.game-row-date .gd-day { font-size:20px; font-weight:700; color:var(--text-hi); line-height:1.2; }
+.game-row-main { flex:1; min-width:0; }
+.game-row-opp { font-family:'Oswald',sans-serif; font-size:14px; font-weight:700; color:var(--text-hi); }
+.game-row-meta { font-size:11px; color:var(--text-lo); margin-top:3px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.game-row-loc {
+  display:inline-block; padding:1px 7px; border-radius:10px; font-size:9px;
+  font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+}
+.game-row-loc.home { background:rgba(80,220,120,.15); color:#50dc78; }
+.game-row-loc.away { background:rgba(74,158,255,.15); color:#4a9eff; }
+.game-row-loc.neutral { background:rgba(255,255,255,.08); color:var(--text-mid); }
+.game-row-notes { font-style:italic; opacity:.8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:280px; }
+.game-row-score { font-family:'Oswald',sans-serif; font-size:17px; font-weight:700; flex-shrink:0; text-align:center; min-width:64px; color:var(--text-hi); }
+.game-row-score .gs-result { font-size:9px; letter-spacing:1px; display:block; margin-top:2px; }
+.game-row-score.win .gs-result { color:#50dc78; }
+.game-row-score.loss .gs-result { color:#ff6b75; }
+.game-row-score.tie .gs-result { color:var(--text-mid); }
+.game-row-score.tbd { color:var(--text-lo); font-size:11px; font-weight:600; }
+
+/* ─── PLAY SHEETS ────────────────────────────────────────────── */
+.ps-sheet-card {
+  display:flex; align-items:center; gap:14px; padding:14px 16px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:9px;
+  margin-bottom:8px; cursor:pointer; transition:all .15s;
+}
+.ps-sheet-card:hover { border-color:var(--border-bright); background:var(--bg-hover); }
+.ps-sheet-card-main { flex:1; min-width:0; }
+.ps-sheet-card-name { font-family:'Oswald',sans-serif; font-size:14px; font-weight:700; color:var(--text-hi); }
+.ps-sheet-card-meta { font-size:11px; color:var(--text-lo); margin-top:3px; }
+.ps-section { border:1px solid var(--border); border-radius:9px; margin-bottom:14px; overflow:hidden; }
+.ps-section-hdr {
+  background:var(--bg-panel); padding:9px 14px; font-family:'Oswald',sans-serif;
+  font-size:11px; font-weight:700; letter-spacing:1.5px; color:var(--accent);
+  text-transform:uppercase; display:flex; align-items:center; justify-content:space-between;
+}
+.ps-section-plays { padding:6px 10px; }
+.ps-play-row {
+  display:flex; align-items:center; gap:10px; padding:7px 6px;
+  border-bottom:1px solid var(--border);
+}
+.ps-play-row:last-child { border-bottom:none; }
+.ps-play-num { width:20px; flex-shrink:0; text-align:center; font-family:'Oswald',sans-serif; font-size:11px; color:var(--text-lo); }
+.ps-play-name { font-size:13px; font-weight:600; color:var(--text-hi); flex-shrink:0; min-width:130px; }
+.ps-play-meta { font-size:11px; color:var(--text-lo); flex:1; }
+.ps-play-acts { display:flex; gap:4px; flex-shrink:0; }
+.ps-play-acts button {
+  width:22px; height:22px; border-radius:5px; border:1px solid var(--border-bright);
+  background:transparent; color:var(--text-mid); cursor:pointer; font-size:11px;
+  display:flex; align-items:center; justify-content:center; transition:all .15s;
+}
+.ps-play-acts button:hover { color:var(--text-hi); background:var(--bg-hover); }
+.ps-play-acts button.ps-del:hover { color:#ff6b75; border-color:rgba(255,68,85,.4); background:rgba(255,68,85,.1); }
+.ps-section-empty { padding:10px 6px; font-size:11px; color:var(--text-lo); font-style:italic; }
+.ps-add-row { display:flex; gap:8px; padding:10px 14px; border-top:1px solid var(--border); background:rgba(255,255,255,.01); }
+.ps-add-row select { flex:1; }
+
+/* ─── PRINT PREVIEW ──────────────────────────────────────────── */
+.pp-modal { max-width:960px; width:94%; height:88vh; display:flex; flex-direction:column; padding:20px; }
+.pp-hdr { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-shrink:0; margin-bottom:12px; flex-wrap:wrap; }
+.pp-hdr h2 { margin:0; }
+.pp-size-row { display:flex; align-items:center; gap:8px; }
+.pp-frame-wrap { flex:1; min-height:0; border-radius:9px; overflow:hidden; background:#525659; border:1px solid var(--border-bright); }
+.pp-frame { width:100%; height:100%; border:none; background:#fff; }
+
 .home-cards {
   display:flex;
   flex-wrap:wrap;
@@ -509,6 +618,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <button class="npbtn" data-page="playdb" onclick="switchPage('playdb')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>PLAY DATABASE</button>
     <button class="npbtn" data-page="library" onclick="switchPage('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>TEAM LIBRARY</button>
     <button class="npbtn" data-page="signals" onclick="switchPage('signals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>WRISTBAND</button>
+    <button class="npbtn" data-page="playsheets" onclick="switchPage('playsheets')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg>PLAY SHEETS</button>
     <button class="npbtn" data-page="designer" onclick="switchPage('designer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>PLAY BUILDER</button>
   </nav>
   <div class="hdr-right">
@@ -564,59 +674,156 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 
   <!-- ══ HOME ══ -->
   <div id="page-home" class="page act">
-    <div class="home-hero">
-      <div class="home-hero-eyebrow">COACHING TOOLS</div>
-      <div class="home-hero-title"><em>WYLIE'S</em> PLAY MAKER</div>
-      <div class="home-hero-sub">Everything you need to build smarter plays, prep your team, and win on game day. Select a tool to get started.</div>
+  <div id="dash-scroll" style="flex:1;overflow-y:auto;">
+    <div class="dash-header">
+      <div class="dash-team-name-row">
+        <input type="text" id="dash-team-name" class="dash-team-name-input" placeholder="Team Name" onblur="saveDashTeamName()" onkeydown="if(event.key==='Enter')this.blur()">
+        <span id="dash-team-save-badge" class="dash-save-badge">SAVED</span>
+      </div>
+      <div class="dash-season-label" id="dash-season-label">SEASON</div>
     </div>
-    <div class="home-cards">
 
-      <div class="hcard" data-page="playdb" onclick="switchPage('playdb')">
-        <div class="hcard-bg"></div>
-        <div class="hcard-overlay"></div>
-        <div class="hcard-body">
-          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
-          <div class="hcard-label">PLAY DATABASE</div>
-          <div class="hcard-desc">Browse 60 professionally designed plays available to all coaches. Filter by formation, type, or side of the ball. Load any play straight to the Designer or save it to your personal library.</div>
-          <div class="hcard-arrow">BROWSE DATABASE <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
-        </div>
+    <div class="dash-section">
+      <div class="dash-section-hdr">
+        <h2>Game Schedule</h2>
+        <button class="add-dashed" style="width:auto;padding:8px 14px;" onclick="openGameModal()">+ Add Game</button>
       </div>
+      <div id="dash-games-list"><div class="dash-games-empty">No games on the schedule yet — add your first game.</div></div>
+    </div>
 
-      <div class="hcard" data-page="library" onclick="switchPage('library')">
-        <div class="hcard-bg"></div>
-        <div class="hcard-overlay"></div>
-        <div class="hcard-body">
-          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
-          <div class="hcard-label">TEAM LIBRARY</div>
-          <div class="hcard-desc">Your team's play library — every play you've saved or imported. Filter, load into the Designer, add to a wristband, or delete plays you no longer need.</div>
-          <div class="hcard-arrow">TEAM LIBRARY <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+    <div class="dash-section" style="border-bottom:none;">
+      <div class="dash-section-hdr"><h2>Quick Links</h2></div>
+      <div class="home-cards">
+
+        <div class="hcard" data-page="playdb" onclick="switchPage('playdb')">
+          <div class="hcard-bg"></div>
+          <div class="hcard-overlay"></div>
+          <div class="hcard-body">
+            <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+            <div class="hcard-label">PLAY DATABASE</div>
+            <div class="hcard-desc">Browse 60 professionally designed plays available to all coaches. Filter by formation, type, or side of the ball. Load any play straight to the Designer or save it to your personal library.</div>
+            <div class="hcard-arrow">BROWSE DATABASE <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
         </div>
-      </div>
 
-      <div class="hcard" data-page="signals" onclick="switchPage('signals')">
-        <div class="hcard-bg"></div>
-        <div class="hcard-overlay"></div>
-        <div class="hcard-body">
-          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
-          <div class="hcard-label">WRISTBAND BUILDER</div>
-          <div class="hcard-desc">Assign plays to a body-signal grid, then generate a printable QB wristband insert and coach's key card — the call system and the wristband, built in one place.</div>
-          <div class="hcard-arrow">BUILD WRISTBAND <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        <div class="hcard" data-page="library" onclick="switchPage('library')">
+          <div class="hcard-bg"></div>
+          <div class="hcard-overlay"></div>
+          <div class="hcard-body">
+            <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+            <div class="hcard-label">TEAM LIBRARY</div>
+            <div class="hcard-desc">Your team's play library — every play you've saved or imported. Filter, load into the Designer, add to a wristband, or delete plays you no longer need.</div>
+            <div class="hcard-arrow">TEAM LIBRARY <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
         </div>
-      </div>
 
-      <div class="hcard" data-page="designer" onclick="switchPage('designer')">
-        <div class="hcard-bg"></div>
-        <div class="hcard-overlay"></div>
-        <div class="hcard-body">
-          <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
-          <div class="hcard-label">PLAY BUILDER</div>
-          <div class="hcard-desc">Draw offensive and defensive plays on a live field canvas — or describe a play in plain English and let AI build the formation, players, and routes for you to review and approve.</div>
-          <div class="hcard-arrow">OPEN PLAY BUILDER <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        <div class="hcard" data-page="signals" onclick="switchPage('signals')">
+          <div class="hcard-bg"></div>
+          <div class="hcard-overlay"></div>
+          <div class="hcard-body">
+            <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+            <div class="hcard-label">WRISTBAND BUILDER</div>
+            <div class="hcard-desc">Assign plays to a body-signal grid, then generate a printable QB wristband insert and coach's key card — the call system and the wristband, built in one place.</div>
+            <div class="hcard-arrow">BUILD WRISTBAND <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
         </div>
-      </div>
 
+        <div class="hcard" data-page="playsheets" onclick="switchPage('playsheets')">
+          <div class="hcard-bg"></div>
+          <div class="hcard-overlay"></div>
+          <div class="hcard-body">
+            <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg></div>
+            <div class="hcard-label">PLAY SHEETS</div>
+            <div class="hcard-desc">Build a printable, situational call sheet for game day — pull plays from your Team Library into sections like openers, red zone, and 3rd down.</div>
+            <div class="hcard-arrow">OPEN PLAY SHEETS <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
+        </div>
+
+        <div class="hcard" data-page="designer" onclick="switchPage('designer')">
+          <div class="hcard-bg"></div>
+          <div class="hcard-overlay"></div>
+          <div class="hcard-body">
+            <div class="hcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+            <div class="hcard-label">PLAY BUILDER</div>
+            <div class="hcard-desc">Draw offensive and defensive plays on a live field canvas — or describe a play in plain English and let AI build the formation, players, and routes for you to review and approve.</div>
+            <div class="hcard-arrow">OPEN PLAY BUILDER <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
+</div>
+
+<!-- ══ GAME MODAL ══ -->
+<div class="modal-overlay" id="game-modal" onclick="if(event.target===this)closeGameModal()">
+  <div class="modal">
+    <h2 id="game-modal-title">ADD GAME</h2>
+    <div class="modal-subtitle">Track your schedule, final score, and any notes for this game.</div>
+    <div class="rp-group" style="margin-bottom:10px;">
+      <label class="rp-label">Opponent</label>
+      <input type="text" class="rp-input" id="game-name" placeholder="e.g. Eastside High" style="width:100%;">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div class="rp-group">
+        <label class="rp-label">Date</label>
+        <input type="date" class="rp-input" id="game-date" style="width:100%;">
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">Location</label>
+        <select class="rp-select" id="game-location" style="width:100%;">
+          <option value="home">Home</option>
+          <option value="away">Away</option>
+          <option value="neutral">Neutral</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div class="rp-group">
+        <label class="rp-label">Our Score</label>
+        <input type="number" min="0" class="rp-input" id="game-our-score" placeholder="—" style="width:100%;">
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">Opponent Score</label>
+        <input type="number" min="0" class="rp-input" id="game-opp-score" placeholder="—" style="width:100%;">
+      </div>
+    </div>
+    <div class="rp-group" style="margin-bottom:6px;">
+      <label class="rp-label">Notes</label>
+      <textarea class="rp-select" id="game-notes" rows="3" style="width:100%;resize:vertical;font-family:'Rajdhani',sans-serif;"></textarea>
+    </div>
+    <div id="game-modal-err" style="color:#ff6b75;font-size:11px;min-height:14px;margin-bottom:4px;"></div>
+    <div class="modal-actions">
+      <button class="mbtn cancel" onclick="closeGameModal()">Cancel</button>
+      <button class="mbtn" id="game-delete-btn" style="flex:0 0 auto;background:rgba(255,68,85,.15);color:#ff7788;border:1px solid rgba(255,68,85,.3);display:none;" onclick="deleteGameFromModal()">Delete</button>
+      <button class="mbtn ok" onclick="saveGameFromModal()">Save Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRINT PREVIEW ══ -->
+<div class="modal-overlay" id="print-preview-modal" onclick="if(event.target===this)closePrintPreview()">
+  <div class="modal wide pp-modal">
+    <div class="pp-hdr">
+      <h2 id="pp-title">Print Preview</h2>
+      <div id="pp-size-row" class="pp-size-row" style="display:none;">
+        <label class="rp-label" style="margin:0;">Paper</label>
+        <select class="rp-select" id="pp-size-sel" style="width:auto;" onchange="ppOnSizeChange()">
+          <option value="letter-portrait">Letter — Portrait</option>
+          <option value="letter-landscape">Letter — Landscape</option>
+        </select>
+      </div>
+      <button onclick="closePrintPreview()" style="background:none;border:none;color:var(--text-mid);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;">✕</button>
+    </div>
+    <div class="pp-frame-wrap">
+      <iframe id="print-preview-frame" class="pp-frame" title="Print preview"></iframe>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn cancel" onclick="closePrintPreview()">Close</button>
+      <button class="mbtn ok" onclick="doPrintPreview()">🖨 PRINT</button>
+    </div>
+  </div>
+</div>
 
   <!-- ══ DESIGNER ══ -->
   <div id="page-designer" class="page">
@@ -800,6 +1007,38 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     </div>
   </div>
 
+</div>
+
+<!-- ══ PLAY SHEETS ══ -->
+<div id="page-playsheets" class="page">
+  <div id="ps-list-view" style="flex:1;overflow-y:auto;padding:22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;color:var(--text-hi);margin:0 0 4px;">Coach's Play Sheets</h2>
+        <div style="font-size:11px;color:var(--text-lo);">Situational call sheets, built from your Team Library — printable and saved to your team.</div>
+      </div>
+      <button class="add-dashed" style="width:auto;padding:8px 14px;" onclick="psCreateSheet()">+ New Play Sheet</button>
+    </div>
+    <div id="ps-sheet-list"><div class="dash-games-empty">No play sheets yet — create your first one.</div></div>
+  </div>
+
+  <div id="ps-editor-view" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+    <div style="padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:10px;">
+      <button class="npbtn" onclick="psShowList()">← ALL PLAY SHEETS</button>
+      <div style="display:flex;gap:8px;">
+        <button class="sig-print-btn" onclick="psPrintSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> PRINT</button>
+        <button class="mbtn" style="flex:0 0 auto;padding:7px 14px;background:rgba(255,68,85,.15);color:#ff7788;border:1px solid rgba(255,68,85,.3);border-radius:7px;font-size:11px;" onclick="psDeleteSheet()">DELETE SHEET</button>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:20px 22px;">
+      <input type="text" id="ps-sheet-name" class="dash-team-name-input" style="font-size:22px;display:block;width:100%;margin-bottom:10px;" onblur="psRenameSheet()" onkeydown="if(event.key==='Enter')this.blur()">
+      <div class="rp-group" style="max-width:320px;margin-bottom:20px;">
+        <label class="rp-label">Linked Game (optional)</label>
+        <select class="rp-select" id="ps-sheet-opponent" style="width:100%;" onchange="psSetOpponent()"><option value="">— No game selected —</option></select>
+      </div>
+      <div id="ps-sections"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ SIGNAL CELL MODAL ═══ -->
@@ -987,6 +1226,7 @@ async function initAuth() {
   await loadCloudLib();
   console.log('[initAuth] cloudLib loaded —', cloudLib ? cloudLib.length + ' plays' : 'null (error)');
   updateAuthUI();
+  if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
   // Listen for auth state changes (sign-in / sign-out in other tabs)
   supa.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
@@ -2159,6 +2399,7 @@ function switchPage(id){
   if (!pageEl) { console.warn('[switchPage] page element not found: page-'+id); return; }
   pageEl.classList.add('act');
   document.getElementById('designer-ctrls').style.display=id==='designer'?'flex':'none';
+  if(id==='home') renderTeamDashboard();
   if(id==='library') renderLibrary();
   if(id==='playdb') renderPlayDb();
   if(id==='designer') render();
@@ -2166,6 +2407,7 @@ function switchPage(id){
     console.log('[switchPage] ensuring Signals module is initialized');
     ensureSignalsInit();
   }
+  if(id==='playsheets') psInit();
 }
 
 // Lazily initializes the Signals/Wristband module exactly once. Returns a
@@ -2199,7 +2441,7 @@ initAuth().then(() => {
     // Old standalone Wristband Builder page was merged into Signals.
     const pageAliases = { wb: 'signals' };
     const resolvedPage = pageAliases[urlPage] || urlPage;
-    const validPages = ['home','playdb','designer','signals','library'];
+    const validPages = ['home','playdb','designer','signals','library','playsheets'];
     if (validPages.includes(resolvedPage)) switchPage(resolvedPage);
   }
 
@@ -2227,6 +2469,9 @@ initAuth().then(() => {
 });
 </script>
 <script src="js/play-library.js"></script>
+<script src="js/teamDashboard.js"></script>
+<script src="js/printPreview.js"></script>
+<script src="js/playSheets.js"></script>
 <script src="js/signals/signalEncoder.js"></script>
 <script src="js/signals/signalStorage.js"></script>
 <script src="js/signals/signalValidator.js"></script>

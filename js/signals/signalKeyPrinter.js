@@ -3,6 +3,12 @@
 function printSigKeyCard() {
   if (!sigAssignments.length) { alert('No signals assigned yet.'); return; }
 
+  const page = sigActivePage();
+  showPrintPreview(() => buildSigKeyCardHtml(), { title: (page?.label || 'SIGNAL KEY') + ' — Coach Reference' });
+}
+
+// Fixed physical card size (5.5in x 4.25in) -- no paper-size picker.
+function buildSigKeyCardHtml() {
   const page   = sigActivePage();
   const plays  = sigGetPlayLib();
   const real   = sigAssignments.filter(a => !a.is_dummy && a.play_id)
@@ -72,9 +78,5 @@ ${rotNote}
 ${dummySection}
 </body></html>`;
 
-  const win = window.open('', '_blank', 'width=720,height=560');
-  if (!win) { alert('Pop-up blocked — allow pop-ups to print.'); return; }
-  win.document.write(html);
-  win.document.close();
-  win.onload = () => setTimeout(() => win.print(), 300);
+  return html;
 }
