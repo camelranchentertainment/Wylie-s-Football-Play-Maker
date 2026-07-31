@@ -195,3 +195,128 @@ async function deleteGameFromModal() {
   closeGameModal();
   await loadDashGames();
 }
+
+// ── Team Coaches (invite code + roster) ─────────────────────────
+// join_team_by_code / regenerate_team_invite_code / get_team_roster are
+// all SECURITY DEFINER RPCs (see the team_invite_codes_and_roster
+// migration) -- profiles and auth.users are both locked to self-only
+// RLS, so get_team_roster() is the only way a coach can see teammate
+// names/emails at all, and the other two need to validate/mutate things
+// (an invite code match, team ownership) that a plain client-side query
+// has no safe way to check on its own.
+let _teamRoster = [];
+
+function openTeamCoachesModal() {
+  if (!currentTeamId) { setStatus("Your team isn't set up yet — close this and hit Retry on the dashboard.", 'err'); return; }
+  document.getElementById('tc-err').textContent = '';
+  document.getElementById('tc-owner-panel').style.display = currentTeamRole === 'owner' ? 'block' : 'none';
+  document.getElementById('tc-leave-btn').style.display = currentTeamRole === 'owner' ? 'none' : 'flex';
+  document.getElementById('tc-invite-code').textContent = '——————';
+  document.getElementById('team-coaches-modal').classList.add('show');
+  loadTeamCoachesPanel();
+}
+
+function closeTeamCoachesModal() {
+  document.getElementById('team-coaches-modal').classList.remove('show');
+}
+
+async function loadTeamCoachesPanel() {
+  const errEl = document.getElementById('tc-err');
+  try {
+    if (currentTeamRole === 'owner') {
+      const { data: team, error: teamErr } = await supa.from('teams').select('invite_code').eq('id', currentTeamId).single();
+      if (teamErr) throw teamErr;
+      document.getElementById('tc-invite-code').textContent = team?.invite_code || '——————';
+    }
+    const { data: roster, error: rosterErr } = await supa.rpc('get_team_roster', { p_team_id: currentTeamId });
+    if (rosterErr) throw rosterErr;
+    _teamRoster = roster || [];
+    renderTeamRoster();
+  } catch (e) {
+    errEl.textContent = 'Could not load — ' + (e.message || 'unknown error');
+    console.error('[loadTeamCoachesPanel] failed:', e);
+  }
+}
+
+function renderTeamRoster() {
+  const wrap = document.getElementById('tc-roster-list');
+  if (!wrap) return;
+  if (!_teamRoster.length) {
+    wrap.innerHTML = '<div class="tc-roster-empty">No coaches yet.</div>';
+    return;
+  }
+  wrap.innerHTML = '';
+  _teamRoster.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'tc-roster-row';
+    const canRemove = currentTeamRole === 'owner' && m.role !== 'owner' && m.user_id !== currentUser?.id;
+    row.innerHTML = `
+      <div class="tc-roster-info">
+        <div class="tc-roster-name"></div>
+        <div class="tc-roster-email"></div>
+      </div>
+      <span class="tc-roster-role ${m.role}">${m.role.toUpperCase()}</span>
+      ${canRemove ? `<button class="tc-roster-remove" title="Remove from team">✕</button>` : ''}
+    `;
+    row.querySelector('.tc-roster-name').textContent = m.display_name || (m.email ? m.email.split('@')[0] : 'Coach');
+    row.querySelector('.tc-roster-email').textContent = m.email || '';
+    const removeBtn = row.querySelector('.tc-roster-remove');
+    if (removeBtn) removeBtn.onclick = () => removeTeamMember(m.user_id, m.display_name || m.email || 'this coach');
+    wrap.appendChild(row);
+  });
+}
+
+function copyInviteCode() {
+  const code = document.getElementById('tc-invite-code').textContent.trim();
+  if (!code || code === '——————') return;
+  navigator.clipboard?.writeText(code)
+    .then(() => setStatus('Invite code copied', 'ok'))
+    .catch(() => setStatus('Could not copy — select and copy the code manually.', 'err'));
+}
+
+async function regenerateInviteCode() {
+  if (!confirm('Generate a new invite code? The old code will stop working immediately.')) return;
+  const errEl = document.getElementById('tc-err');
+  try {
+    const { data: newCode, error } = await supa.rpc('regenerate_team_invite_code', { p_team_id: currentTeamId });
+    if (error) throw error;
+    document.getElementById('tc-invite-code').textContent = newCode;
+    setStatus('New invite code generated', 'ok');
+  } catch (e) {
+    errEl.textContent = 'Could not regenerate — ' + (e.message || 'unknown error');
+  }
+}
+
+// Owner removing a coach, or a coach removing themself, both go through
+// the same DELETE -- team_members' RLS policy already allows either
+// (is_team_owner(team_id) OR user_id = auth.uid()), so there's no need
+// for a dedicated RPC here the way join/regenerate need one.
+async function removeTeamMember(userId, label) {
+  if (!confirm(`Remove ${label} from this team?`)) return;
+  const errEl = document.getElementById('tc-err');
+  try {
+    const { error } = await supa.from('team_members').delete().eq('team_id', currentTeamId).eq('user_id', userId);
+    if (error) throw error;
+    setStatus(`${label} removed from the team`, 'ok');
+    await loadTeamCoachesPanel();
+  } catch (e) {
+    errEl.textContent = 'Could not remove — ' + (e.message || 'unknown error');
+  }
+}
+
+async function leaveCurrentTeam() {
+  if (!confirm("Leave this team? You'll need a new invite code to rejoin.")) return;
+  try {
+    const { error } = await supa.from('team_members').delete().eq('team_id', currentTeamId).eq('user_id', currentUser.id);
+    if (error) throw error;
+    closeTeamCoachesModal();
+    currentTeamId = null;
+    currentTeamRole = null;
+    currentSeasonId = null;
+    teamContextError = null;
+    setStatus("You've left the team.", 'ok');
+    renderTeamDashboard();
+  } catch (e) {
+    document.getElementById('tc-err').textContent = 'Could not leave — ' + (e.message || 'unknown error');
+  }
+}

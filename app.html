@@ -347,6 +347,46 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 .game-row-score.tie .gs-result { color:var(--text-mid); }
 .game-row-score.tbd { color:var(--text-lo); font-size:11px; font-weight:600; }
 
+/* ─── TEAM SETUP TABS (Create vs Join) ──────────────────────── */
+.ts-tabs { display:flex; gap:6px; margin:14px 0 16px; border-bottom:1px solid var(--border); }
+.ts-tab {
+  flex:1; padding:9px 8px; background:none; border:none; border-bottom:2px solid transparent;
+  font-family:'Oswald',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px;
+  color:var(--text-lo); cursor:pointer; transition:all .15s; text-transform:uppercase;
+}
+.ts-tab:hover { color:var(--text-mid); }
+.ts-tab.act { color:var(--accent); border-bottom-color:var(--accent); }
+.ts-code-input { text-transform:uppercase; letter-spacing:3px; font-family:'Oswald',sans-serif; font-weight:700; text-align:center; }
+
+/* ─── TEAM COACHES MODAL (invite code + roster) ─────────────── */
+.tc-code-row { display:flex; align-items:center; gap:8px; }
+.tc-code-display {
+  flex:1; font-family:'Oswald',sans-serif; font-size:22px; font-weight:700; letter-spacing:6px;
+  text-align:center; color:var(--accent); background:var(--bg-card);
+  border:1px solid var(--border-bright); border-radius:7px; padding:8px 10px;
+}
+.tc-roster-list { display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto; }
+.tc-roster-empty { text-align:center; color:var(--text-lo); font-size:12px; padding:16px; }
+.tc-roster-row {
+  display:flex; align-items:center; gap:10px; padding:9px 11px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:8px;
+}
+.tc-roster-info { flex:1; min-width:0; }
+.tc-roster-name { font-family:'Rajdhani',sans-serif; font-size:13.5px; font-weight:700; color:var(--text-hi); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tc-roster-email { font-size:11px; color:var(--text-lo); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tc-roster-role {
+  flex-shrink:0; font-family:'Oswald',sans-serif; font-size:9px; font-weight:700; letter-spacing:1px;
+  text-transform:uppercase; padding:3px 9px; border-radius:10px;
+}
+.tc-roster-role.owner { background:rgba(240,165,0,.15); color:var(--accent); }
+.tc-roster-role.coach { background:rgba(74,158,255,.15); color:#4a9eff; }
+.tc-roster-role.assistant { background:rgba(255,255,255,.08); color:var(--text-mid); }
+.tc-roster-remove {
+  flex-shrink:0; background:none; border:none; color:var(--text-lo); cursor:pointer;
+  font-size:14px; padding:4px 6px; line-height:1; border-radius:5px; transition:all .15s;
+}
+.tc-roster-remove:hover { color:#ff6b75; background:rgba(255,68,85,.1); }
+
 /* ─── PLAY SHEETS ────────────────────────────────────────────── */
 .ps-sheet-card {
   display:flex; align-items:center; gap:14px; padding:14px 16px;
@@ -713,6 +753,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <div class="dash-team-name-row">
         <input type="text" id="dash-team-name" class="dash-team-name-input" placeholder="Team Name" onblur="saveDashTeamName()" onkeydown="if(event.key==='Enter')this.blur()">
         <span id="dash-team-save-badge" class="dash-save-badge">SAVED</span>
+        <button class="hbtn" style="margin-left:auto;" onclick="openTeamCoachesModal()">👥 COACHES</button>
       </div>
       <div class="dash-season-label" id="dash-season-label">SEASON</div>
     </div>
@@ -842,29 +883,80 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   </div>
 </div>
 
-<!-- ══ TEAM SETUP (manual fallback when auto-provisioning fails) ══ -->
+<!-- ══ TEAM SETUP (manual fallback when auto-provisioning fails, or a
+     brand-new coach with an invite code from their head coach) ══ -->
 <div class="modal-overlay" id="team-setup-modal" onclick="if(event.target===this)closeTeamSetupModal()">
   <div class="modal">
     <h2>SET UP YOUR TEAM</h2>
-    <div class="modal-subtitle">Every coach account needs one team to hang games, plays, and wristbands off of. Name yours to get started.</div>
-    <div class="rp-group" style="margin-bottom:10px;">
-      <label class="rp-label">Team Name<span style="color:#ff6b75;">*</span></label>
-      <input type="text" class="rp-input" id="ts-team-name" placeholder="e.g. Wylie Bulldogs" style="width:100%;" maxlength="80">
+    <div class="modal-subtitle">Every coach account needs a team to hang games, plays, and wristbands off of. Start a new one, or join a team a head coach already created.</div>
+    <div class="ts-tabs">
+      <button type="button" class="ts-tab act" id="ts-tab-create" onclick="switchTeamSetupTab('create')">Create New Team</button>
+      <button type="button" class="ts-tab" id="ts-tab-join" onclick="switchTeamSetupTab('join')">Join Existing Team</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;">
-      <div class="rp-group">
-        <label class="rp-label">Mascot</label>
-        <input type="text" class="rp-input" id="ts-mascot" placeholder="Optional" style="width:100%;" maxlength="60">
+
+    <div id="ts-panel-create">
+      <div class="rp-group" style="margin-bottom:10px;">
+        <label class="rp-label">Team Name<span style="color:#ff6b75;">*</span></label>
+        <input type="text" class="rp-input" id="ts-team-name" placeholder="e.g. Wylie Bulldogs" style="width:100%;" maxlength="80">
       </div>
-      <div class="rp-group">
-        <label class="rp-label">Age Group</label>
-        <input type="text" class="rp-input" id="ts-age-group" placeholder="Optional" style="width:100%;" maxlength="60">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;">
+        <div class="rp-group">
+          <label class="rp-label">Mascot</label>
+          <input type="text" class="rp-input" id="ts-mascot" placeholder="Optional" style="width:100%;" maxlength="60">
+        </div>
+        <div class="rp-group">
+          <label class="rp-label">Age Group</label>
+          <input type="text" class="rp-input" id="ts-age-group" placeholder="Optional" style="width:100%;" maxlength="60">
+        </div>
+      </div>
+      <div id="team-setup-err" style="color:#ff6b75;font-size:11px;min-height:14px;margin-bottom:4px;"></div>
+      <div class="modal-actions">
+        <button class="mbtn cancel" onclick="closeTeamSetupModal()">Cancel</button>
+        <button class="mbtn ok" id="ts-create-btn" onclick="createTeamFromModal()">Create Team</button>
       </div>
     </div>
-    <div id="team-setup-err" style="color:#ff6b75;font-size:11px;min-height:14px;margin-bottom:4px;"></div>
+
+    <div id="ts-panel-join" style="display:none;">
+      <div class="rp-group" style="margin-bottom:10px;">
+        <label class="rp-label">Invite Code<span style="color:#ff6b75;">*</span></label>
+        <input type="text" class="rp-input ts-code-input" id="ts-join-code" placeholder="e.g. U7NNZW" style="width:100%;" maxlength="6" autocapitalize="characters" autocomplete="off">
+        <div class="modal-subtitle" style="margin:4px 0 0;">Get this 6-character code from your head coach — it's on their Home tab under COACHES.</div>
+      </div>
+      <div id="ts-join-err" style="color:#ff6b75;font-size:11px;min-height:14px;margin-bottom:4px;"></div>
+      <div class="modal-actions">
+        <button class="mbtn cancel" onclick="closeTeamSetupModal()">Cancel</button>
+        <button class="mbtn ok" id="ts-join-btn" onclick="joinTeamFromModal()">Join Team</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TEAM COACHES (invite code + roster, opened from the Home tab) ══ -->
+<div class="modal-overlay" id="team-coaches-modal" onclick="if(event.target===this)closeTeamCoachesModal()">
+  <div class="modal" style="max-width:480px;">
+    <h2>TEAM COACHES</h2>
+    <div class="modal-subtitle">Anyone with your invite code can sign up (or sign in) and join this team as a coach.</div>
+
+    <div id="tc-owner-panel" style="display:none;">
+      <div class="rp-group" style="margin:14px 0 10px;">
+        <label class="rp-label">Invite Code</label>
+        <div class="tc-code-row">
+          <div class="tc-code-display" id="tc-invite-code">——————</div>
+          <button class="hbtn" onclick="copyInviteCode()" title="Copy code">📋 COPY</button>
+          <button class="hbtn" onclick="regenerateInviteCode()" title="Generate a new code (the old one stops working)">↻ NEW CODE</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-group" style="margin:14px 0 6px;">
+      <label class="rp-label">Roster</label>
+      <div id="tc-roster-list" class="tc-roster-list"><div class="tc-roster-empty">Loading…</div></div>
+    </div>
+    <div id="tc-err" style="color:#ff6b75;font-size:11px;min-height:14px;margin-bottom:4px;"></div>
+
     <div class="modal-actions">
-      <button class="mbtn cancel" onclick="closeTeamSetupModal()">Cancel</button>
-      <button class="mbtn ok" id="ts-create-btn" onclick="createTeamFromModal()">Create Team</button>
+      <button class="mbtn cancel" onclick="closeTeamCoachesModal()">Close</button>
+      <button class="mbtn" id="tc-leave-btn" style="display:none;flex:0 0 auto;background:rgba(255,68,85,.15);color:#ff7788;border:1px solid rgba(255,68,85,.3);" onclick="leaveCurrentTeam()">Leave Team</button>
     </div>
   </div>
 </div>
@@ -1821,6 +1913,7 @@ const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 let currentUser = null;       // Supabase user object when signed in
 let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
 let currentTeamId = null;     // this coach's team (bootstrapped in ensureTeamContext)
+let currentTeamRole = null;   // 'owner' | 'coach' | 'assistant' -- gates owner-only UI (invite code, removing coaches)
 let currentSeasonId = null;   // that team's active season
 
 // Called on page load — restore session if one exists
@@ -1863,6 +1956,7 @@ async function initAuth() {
         currentUser = null;
         cloudLib = null;
         currentTeamId = null;
+        currentTeamRole = null;
         currentSeasonId = null;
         teamContextError = null;
         updateAuthUI();
@@ -1918,20 +2012,22 @@ async function ensureTeamContext() {
   try {
     const { data: memberships, error: memErr } = await supa
       .from('team_members')
-      .select('team_id')
+      .select('team_id, role')
       .eq('user_id', currentUser.id)
       .limit(1);
     if (memErr) throw memErr;
 
     if (memberships && memberships.length) {
-      currentTeamId = memberships[0].team_id;
+      currentTeamId   = memberships[0].team_id;
+      currentTeamRole = memberships[0].role;
     } else {
       const defaultName = (currentUser.email || 'Coach').split('@')[0] + "'s Team";
       const { data: newTeam, error: teamErr } = await supa
         .rpc('create_my_team', { p_name: defaultName })
         .single();
       if (teamErr) throw teamErr;
-      currentTeamId = newTeam.id;
+      currentTeamId   = newTeam.id;
+      currentTeamRole = 'owner';
     }
 
     const { data: seasons, error: seasonErr } = await supa
@@ -1992,12 +2088,62 @@ function openTeamSetupModal() {
   document.getElementById('ts-mascot').value = '';
   document.getElementById('ts-age-group').value = '';
   document.getElementById('team-setup-err').textContent = '';
+  document.getElementById('ts-join-code').value = '';
+  document.getElementById('ts-join-err').textContent = '';
+  switchTeamSetupTab('create');
   document.getElementById('team-setup-modal').classList.add('show');
   setTimeout(() => document.getElementById('ts-team-name')?.focus(), 50);
 }
 
 function closeTeamSetupModal() {
   document.getElementById('team-setup-modal').classList.remove('show');
+}
+
+function switchTeamSetupTab(tab) {
+  const isCreate = tab === 'create';
+  document.getElementById('ts-tab-create').classList.toggle('act', isCreate);
+  document.getElementById('ts-tab-join').classList.toggle('act', !isCreate);
+  document.getElementById('ts-panel-create').style.display = isCreate ? 'block' : 'none';
+  document.getElementById('ts-panel-join').style.display   = isCreate ? 'none' : 'block';
+  if (!isCreate) setTimeout(() => document.getElementById('ts-join-code')?.focus(), 50);
+}
+
+// Redeems an invite code from a head coach -- join_team_by_code() is a
+// SECURITY DEFINER RPC that validates the code and inserts this coach
+// into team_members as role='coach' server-side (see the migration for
+// why this can't just be a client-side INSERT: nothing about a raw
+// insert would verify the code at all).
+async function joinTeamFromModal() {
+  const errEl = document.getElementById('ts-join-err');
+  const btn = document.getElementById('ts-join-btn');
+  const code = (document.getElementById('ts-join-code').value || '').trim();
+  errEl.textContent = '';
+  if (!code) { errEl.textContent = 'Enter the invite code your head coach gave you.'; return; }
+  if (!currentUser) { errEl.textContent = "You're not signed in — please sign in and try again."; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Joining…';
+  try {
+    const { data: team, error: rpcErr } = await supa.rpc('join_team_by_code', { p_code: code }).single();
+    if (rpcErr) throw rpcErr;
+    currentTeamId = team.id;
+    currentTeamRole = 'coach';
+    teamContextError = null;
+    await ensureTeamContext();
+    closeTeamSetupModal();
+    setStatus(`Joined ${team.name || 'the team'} — welcome in!`, 'ok');
+    if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
+    window._sigInitDone = false;
+    if (document.getElementById('page-signals')?.classList.contains('act')) ensureSignalsInit();
+    if (document.getElementById('page-playsheets')?.classList.contains('act')) psInit();
+  } catch (e) {
+    const detail = [e?.message, e?.details, e?.hint].filter(Boolean).join(' — ') || String(e);
+    errEl.textContent = detail;
+    console.error('[joinTeamFromModal] failed:', e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Join Team';
+  }
 }
 
 async function createTeamFromModal() {
