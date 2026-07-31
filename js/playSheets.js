@@ -15,6 +15,7 @@
 const PS_SECTIONS = ['OPENERS', 'RUN GAME', 'PASS GAME', '3RD DOWN', 'RED ZONE', 'GOAL LINE', '2-MINUTE', 'TRICK / SPECIAL'];
 
 let psSheets = [];
+let psGames = [];    // this team's scheduled opponents, for the game-tile landing view
 let psActiveSheetId = null;
 let psActiveSheetName = '';
 let psActiveSheetPlays = []; // [{ play_id (uuid), section, sort_order, play: {name, formation, type} }]
@@ -26,31 +27,81 @@ async function psInit() {
     setStatus(teamContextError ? "Play Sheets aren't available yet — " + teamContextError : 'Setting up your team — try Play Sheets again in a moment.', 'err');
     return;
   }
-  psShowList();
-  await psLoadSheets();
+  await psShowList();
 }
 
 // ── List view ────────────────────────────────────────────────
+// The landing view is organized around GAMES first, sheets second -- a
+// coach thinks "build the call sheet for Friday's game against Eastside",
+// not "create a play sheet, then remember to link it to a game" (the old
+// flow: a generic "+ New Play Sheet" button, then a separate "Linked
+// Game" dropdown buried inside the editor). Every game on the schedule
+// gets a tile; tapping one opens its sheet, creating it on first tap if
+// it doesn't exist yet. Sheets with no game (scout templates, etc.) still
+// exist and show in a plain list below the tiles.
 async function psLoadSheets() {
-  const { data, error } = await supa
-    .from('gameday_playbooks')
-    .select('*, gameday_playbook_plays(count)')
-    .eq('team_id', currentTeamId)
-    .order('created_at', { ascending: false });
-  if (error) { console.error('[psLoadSheets] failed:', error.message); setStatus('Could not load play sheets — ' + error.message); return; }
-  psSheets = data || [];
-  renderPsSheetList();
+  const [gamesRes, sheetsRes] = await Promise.all([
+    supa.from('opponents').select('id, name, game_date, location')
+      .eq('team_id', currentTeamId)
+      .eq('season_id', currentSeasonId)
+      .order('game_date', { ascending: true, nullsFirst: false }),
+    supa.from('gameday_playbooks').select('*, gameday_playbook_plays(count)')
+      .eq('team_id', currentTeamId)
+      .order('created_at', { ascending: false }),
+  ]);
+  if (gamesRes.error) { console.error('[psLoadSheets] games failed:', gamesRes.error.message); setStatus('Could not load schedule — ' + gamesRes.error.message); return; }
+  if (sheetsRes.error) { console.error('[psLoadSheets] sheets failed:', sheetsRes.error.message); setStatus('Could not load play sheets — ' + sheetsRes.error.message); return; }
+  psGames = gamesRes.data || [];
+  psSheets = sheetsRes.data || [];
+  renderPsLanding();
 }
 
-function renderPsSheetList() {
-  const wrap = document.getElementById('ps-sheet-list');
+function psFormatGameDate(dateStr) {
+  if (!dateStr) return 'DATE TBD';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+}
+
+function renderPsLanding() {
+  renderPsGameTiles();
+  renderPsGeneralSheets();
+}
+
+function renderPsGameTiles() {
+  const wrap = document.getElementById('ps-game-tiles');
   if (!wrap) return;
-  if (!psSheets.length) {
-    wrap.innerHTML = '<div class="dash-games-empty">No play sheets yet — create your first one.</div>';
+  if (!psGames.length) {
+    wrap.innerHTML = '<div class="dash-games-empty">No games on your schedule yet — add one from the Home tab, then its call sheet will show up here.</div>';
     return;
   }
   wrap.innerHTML = '';
-  psSheets.forEach(s => {
+  psGames.forEach(g => {
+    const sheet = psSheets.find(s => s.opponent_id === g.id);
+    const count = sheet?.gameday_playbook_plays?.[0]?.count ?? 0;
+    const tile = document.createElement('div');
+    tile.className = 'ps-game-tile';
+    tile.onclick = () => psOpenOrCreateForGame(g);
+    tile.innerHTML = `
+      <div class="ps-game-tile-top">
+        <span class="ps-game-tile-date">${psFormatGameDate(g.game_date)}</span>
+        <span class="ps-game-tile-loc ${g.location || 'home'}">${(g.location || 'home').toUpperCase()}</span>
+      </div>
+      <div class="ps-game-tile-name"></div>
+      <span class="ps-game-tile-badge ${sheet ? 'has-sheet' : 'none'}">${sheet ? `${count} play${count === 1 ? '' : 's'}` : 'no sheet yet'}</span>
+    `;
+    tile.querySelector('.ps-game-tile-name').textContent = g.name || 'Opponent TBD';
+    wrap.appendChild(tile);
+  });
+}
+
+function renderPsGeneralSheets() {
+  const wrap = document.getElementById('ps-general-sheet-list');
+  const section = document.getElementById('ps-general-sheets-section');
+  if (!wrap || !section) return;
+  const general = psSheets.filter(s => !s.opponent_id);
+  section.style.display = general.length ? 'block' : 'none';
+  wrap.innerHTML = '';
+  general.forEach(s => {
     const count = s.gameday_playbook_plays?.[0]?.count ?? 0;
     const card = document.createElement('div');
     card.className = 'ps-sheet-card';
@@ -67,7 +118,25 @@ function renderPsSheetList() {
   });
 }
 
-async function psCreateSheet() {
+// Opens a game's existing sheet, or creates one (pre-named and pre-linked
+// to the game) the first time a coach taps that tile -- this is the one
+// step that replaces "create a blank sheet, then find and use the Linked
+// Game dropdown" from the old flow.
+async function psOpenOrCreateForGame(game) {
+  const existing = psSheets.find(s => s.opponent_id === game.id);
+  if (existing) { await psShowEditor(existing.id); return; }
+  if (!currentTeamId) { setStatus("Your team isn't set up yet — try reloading the page.", 'err'); return; }
+  const { data, error } = await supa
+    .from('gameday_playbooks')
+    .insert({ team_id: currentTeamId, name: `vs ${game.name || 'Opponent'}`, opponent_id: game.id })
+    .select('*')
+    .single();
+  if (error) { setStatus('Could not create play sheet — ' + error.message); return; }
+  await psLoadSheets();
+  await psShowEditor(data.id);
+}
+
+async function psCreateGeneralSheet() {
   if (!currentTeamId) { setStatus("Your team isn't set up yet — try reloading the page.", 'err'); return; }
   const { data, error } = await supa
     .from('gameday_playbooks')
@@ -82,10 +151,12 @@ async function psCreateSheet() {
 }
 
 // ── Editor view ──────────────────────────────────────────────
-function psShowList() {
+async function psShowList() {
   document.getElementById('ps-list-view').style.display = 'block';
   document.getElementById('ps-editor-view').style.display = 'none';
   psActiveSheetId = null;
+  // Refresh so a tile's play count reflects whatever was just edited.
+  await psLoadSheets();
 }
 
 async function psShowEditor(sheetId) {
@@ -108,7 +179,11 @@ async function psLoadSheetDetail() {
 
   const { data: rows, error: rowsErr } = await supa
     .from('gameday_playbook_plays')
-    .select('play_id, section, sort_order, plays(name, formation, type, client_id)')
+    // players/routes/mode/thumbnail are needed to render an install-sheet
+    // diagram for each play (see psPrintInstallPacket) -- the original
+    // select only pulled name/formation/type/client_id, which was enough
+    // for the text-only call sheet but not for drawing the field.
+    .select('play_id, section, sort_order, plays(name, formation, type, mode, players, routes, thumbnail, client_id)')
     .eq('gameday_playbook_id', psActiveSheetId)
     .order('sort_order', { ascending: true });
   if (rowsErr) { setStatus('Could not load plays — ' + rowsErr.message); return; }
@@ -117,7 +192,7 @@ async function psLoadSheetDetail() {
     play_id: r.play_id,
     section: r.section || PS_SECTIONS[0],
     sort_order: r.sort_order,
-    play: r.plays || { name: '(deleted play)', formation: '', type: '' },
+    play: r.plays || { name: '(deleted play)', formation: '', type: '', players: [], routes: [] },
   }));
   renderPsSections();
 }
@@ -162,6 +237,7 @@ function renderPsSections() {
           <div class="ps-play-acts">
             <button title="Move up" ${i === 0 ? 'disabled style="opacity:.3;"' : ''} onclick="psMovePlay('${section}','${p.play_id}',-1)">↑</button>
             <button title="Move down" ${i === plays.length - 1 ? 'disabled style="opacity:.3;"' : ''} onclick="psMovePlay('${section}','${p.play_id}',1)">↓</button>
+            <button title="Print install sheet for this play" onclick="psPrintSinglePlay('${p.play_id}')">🖶</button>
             <button class="ps-del" title="Remove" onclick="psRemovePlay('${p.play_id}')">✕</button>
           </div>
         </div>`).join('')
@@ -364,4 +440,70 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;font-size
 </div>
 <div class="psh-cols">${sectionsHtml}</div>
 </body></html>`;
+}
+
+// ── Player Install Sheets ────────────────────────────────────
+// A separate document from the coach's call sheet above: one play per
+// page, big diagram, meant to be handed to a kid to study -- not dense
+// or abbreviated. Reuses renderPlayToCanvas() (app.html), the same
+// renderer already used for Team Library/Play Database thumbnails, so
+// the diagram a player studies always matches what the coach designed.
+function psPlayDiagramDataUrl(play) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 700;
+  canvas.height = 568;
+  renderPlayToCanvas(play, canvas);
+  return canvas.toDataURL('image/png');
+}
+
+function psInstallSheetStyles() {
+  return `
+@page{size:8.5in 11in;margin:.5in;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;}
+.pis-page{break-after:page;padding:.1in;}
+.pis-page:last-child{break-after:auto;}
+.pis-hdr{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid #111;padding-bottom:8px;margin-bottom:14px;}
+.pis-name{font-size:26pt;font-weight:700;letter-spacing:.5px;}
+.pis-meta{font-size:12pt;color:#444;text-align:right;}
+.pis-diagram{width:100%;border:2px solid #111;border-radius:6px;overflow:hidden;}
+.pis-diagram img{display:block;width:100%;height:auto;}
+.pis-footer{margin-top:10px;font-size:9pt;color:#888;text-align:center;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}`;
+}
+
+function psInstallSheetPageHtml(play) {
+  const dataUrl = psPlayDiagramDataUrl(play);
+  return `<div class="pis-page">
+    <div class="pis-hdr">
+      <span class="pis-name">${sigEsc(play.name)}</span>
+      <span class="pis-meta">${sigEsc([play.formation, play.type].filter(Boolean).join(' · '))}</span>
+    </div>
+    <div class="pis-diagram"><img src="${dataUrl}" alt=""></div>
+    <div class="pis-footer">Study your assignment on this play, then hand this back to your coach.</div>
+  </div>`;
+}
+
+// One play, printed on its own -- the print icon on each play row in the
+// editor.
+function psPrintSinglePlay(playId) {
+  const row = psActiveSheetPlays.find(p => p.play_id === playId);
+  if (!row) return;
+  showPrintPreview(() => `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${sigEsc(row.play.name)} — Install Sheet</title>
+<style>${psInstallSheetStyles()}</style></head><body>${psInstallSheetPageHtml(row.play)}</body></html>`,
+    { title: row.play.name + ' — Install Sheet' });
+}
+
+// Every play on the current sheet, in its current sorted order, as a
+// multi-page packet -- one page per play -- so a coach can hand a kid
+// exactly the plays they need to learn for this game in one print job.
+function psPrintInstallPacket() {
+  if (!psActiveSheetPlays.length) { alert('Add plays to this sheet first.'); return; }
+  const ordered = PS_SECTIONS
+    .flatMap(section => psActiveSheetPlays.filter(p => p.section === section).sort((a, b) => a.sort_order - b.sort_order));
+  showPrintPreview(() => `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${sigEsc(psActiveSheetName)} — Install Packet</title>
+<style>${psInstallSheetStyles()}</style></head><body>${ordered.map(p => psInstallSheetPageHtml(p.play)).join('')}</body></html>`,
+    { title: psActiveSheetName + ' — Install Packet' });
 }
