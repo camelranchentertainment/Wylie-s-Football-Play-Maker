@@ -198,21 +198,27 @@ function renderSigGrid() {
 
   let html = '<div class="sig-grid-inner">';
 
-  // Corner + column headers
+  // Corner + column headers -- columns are PURELY finger count now.
+  // Body zone lives on the row header instead (see below), so a coach
+  // reads "row = body part, column = finger count" straight off the grid
+  // with nothing to interpret or pick from a dropdown.
   html += '<div class="sig-grid-corner"></div>';
   for (let c = 1; c <= 4; c++) {
-    const zone = sigColHeader(c, sigRotation);
+    const f = sigDefaultFingers(c);
     html += `<div class="sig-col-hdr">
-      <span class="sig-col-zone">${SIG_ZONE_LABELS[zone]}</span>
-      <span class="sig-col-num">${SIG_ZONE_ABBR[zone]} · ${sigDefaultFingers(c)}f</span>
+      <span class="sig-col-num">${f === 4 ? 'FIST' : f + (f === 1 ? ' FINGER' : ' FINGERS')}</span>
     </div>`;
   }
 
-  // Data rows -- finger count is a column property now (see
-  // signalEncoder.js), so the row header no longer implies a fixed
-  // per-row finger count; it's just the row letter / color-family label.
+  // Data rows -- each row's body zone is fixed (locked methodology, see
+  // signalEncoder.js) and shown right on the row header so it's always
+  // visible while building the grid, not just inside the cell modal.
   SIG_ROWS.forEach(row => {
-    html += `<div class="sig-row-hdr"><span class="sig-row-letter">${row}</span></div>`;
+    const rowZone = sigRowHeader(row, sigRotation);
+    html += `<div class="sig-row-hdr">
+      <span class="sig-row-letter">${row}</span>
+      <span class="sig-row-zone">${SIG_ZONE_ABBR[rowZone]}</span>
+    </div>`;
     SIG_COLS.forEach(col => {
       const a = sigAssignments.find(x => x.wristband_row === row && x.wristband_col === col);
       const cf = SIG_COLORS[sigColorForRow(page, row)] || SIG_COLORS.green;
@@ -275,14 +281,15 @@ function _renderWbPreview() {
   g += `<span class="sig-wb-series">${sigEsc(serLbl)}</span>`;
   g += '</div><div class="sig-wb-grid">';
 
-  // Col headers
+  // Col headers -- finger count only; body zone now lives on the row.
   g += '<div class="sig-wb-corner"></div>';
   for (let c = 1; c <= 4; c++) {
-    const zone = sigColHeader(c, sigRotation);
-    g += `<div class="sig-wb-col-hdr">${SIG_ZONE_ABBR[zone]}</div>`;
+    const f = sigDefaultFingers(c);
+    g += `<div class="sig-wb-col-hdr">${f === 4 ? 'FIST' : f + 'F'}</div>`;
   }
   SIG_ROWS.forEach(row => {
-    g += `<div class="sig-wb-row-hdr">${row}</div>`;
+    const rowZone = sigRowHeader(row, sigRotation);
+    g += `<div class="sig-wb-row-hdr">${row}<span class="sig-wb-row-zone">${SIG_ZONE_ABBR[rowZone]}</span></div>`;
     SIG_COLS.forEach(col => {
       const a = sigAssignments.find(x => x.wristband_row === row && x.wristband_col === col);
       const cf = SIG_COLORS[sigColorForRow(page, row)] || SIG_COLORS.green;
@@ -359,13 +366,19 @@ function openSigModal(row, col) {
   const existing = sigAssignments.find(a => a.wristband_row === row && a.wristband_col === col);
   const page = sigActivePage();
 
+  // Body zone and finger count are 100% determined by the cell's row/col
+  // position -- there is nothing to choose here, which is the entire
+  // point. The modal shows the locked signal as a read-only display
+  // instead of dropdowns a coach could accidentally set to something
+  // inconsistent with the rest of the grid.
+  const zone    = sigDefaultZone(row);
+  const fingers = sigDefaultFingers(col);
   document.getElementById('sig-modal-title').textContent = `${page ? page.label + ' — ' : ''}CELL ${sigCellId(row, col)}`;
-  document.getElementById('sig-modal-sub').textContent =
-    `Grid position ${row}${col} · Default signal: ${SIG_ZONE_LABELS[sigDefaultZone(col)]} + ${sigDefaultFingers(col)} finger(s)`;
+  document.getElementById('sig-modal-sub').textContent = `Grid position ${row}${col}`;
+  document.getElementById('sig-modal-signal-display').textContent =
+    `Touch ${SIG_ZONE_LABELS[zone].toUpperCase()} + ${fingers === 4 ? 'make a FIST' : `hold up ${fingers} finger${fingers === 1 ? '' : 's'}`}`;
 
   sigPopulatePlayDrop(existing?.play_id || '');
-  document.getElementById('sig-modal-zone').value    = existing?.signal_body_zone || sigDefaultZone(col);
-  document.getElementById('sig-modal-fingers').value = existing?.signal_fingers   || sigDefaultFingers(col);
   document.getElementById('sig-modal-caller').value  = existing?.live_caller       || 'OC';
   document.getElementById('sig-modal-series').value  = String(existing?.series_rotation ?? 0);
   document.getElementById('sig-modal-dummy').checked = existing?.is_dummy || false;
@@ -418,8 +431,10 @@ async function saveSigCell() {
     wristband_row:    row,
     wristband_col:    col,
     play_id:          isDummy ? null : resolvedPlayId,
-    signal_body_zone: document.getElementById('sig-modal-zone').value,
-    signal_fingers:   parseInt(document.getElementById('sig-modal-fingers').value),
+    // Locked to the cell's position -- never read from a user-editable
+    // control (there isn't one anymore; see openSigModal).
+    signal_body_zone: sigDefaultZone(row),
+    signal_fingers:   sigDefaultFingers(col),
     live_caller:      document.getElementById('sig-modal-caller').value  || 'OC',
     series_rotation:  parseInt(document.getElementById('sig-modal-series').value),
     is_dummy:         isDummy,

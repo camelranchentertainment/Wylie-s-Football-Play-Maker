@@ -4,13 +4,20 @@
 const SIG_ROWS  = ['A','B','C','D'];
 const SIG_COLS  = [1,2,3,4];
 
-const ZONE_TO_COL = { head:1, shoulder:2, chest:3, waist:4 };
-const COL_TO_ZONE = { 1:'head', 2:'shoulder', 3:'chest', 4:'waist' };
-// Finger count is the box's column position, 1-4, and repeats identically
-// on every row (Box 1 = 1 finger, Box 2 = 2 fingers, ... on rows A, B, C,
-// and D alike) -- it used to be fixed per-row instead (A=1f, B=2f, ...),
-// which meant every cell in a row defaulted to the same finger count
-// regardless of which box a coach tapped.
+// ── Locked signaling methodology ────────────────────────────────
+// Every row has ONE fixed body zone for its entire life -- a coach never
+// picks a body zone from a dropdown, it's simply "whatever row this play
+// lives in." Finger count is the box's column position (1-4, 4=Fist) and
+// repeats identically on every row. Together (row's zone) + (column's
+// finger count) is a single, unambiguous, memorized signal: e.g. "touch
+// CHEST, hold up 3 fingers" can only ever mean row C, box 3. This replaced
+// an earlier design where body zone AND finger count were both editable
+// per cell via dropdowns in the assignment modal -- that let two coaches
+// (or one coach on a rushed Friday night) assign the same cell two
+// different signals, or the same signal to two different cells, which is
+// exactly the kind of mistake a live signaling system can't afford.
+const ZONE_TO_ROW = { head:'A', shoulder:'B', chest:'C', waist:'D' };
+const ROW_TO_ZONE = { A:'head', B:'shoulder', C:'chest', D:'waist' };
 const COL_TO_FINGER = { 1:1, 2:2, 3:3, 4:4 };
 
 const SIG_ZONE_LABELS = { head:'Head', shoulder:'Shoulder', chest:'Chest', waist:'Waist' };
@@ -26,24 +33,30 @@ const SIG_COLORS = {
 // Unique cell identifier e.g. 'B3'
 function sigCellId(row, col) { return row + col; }
 
-// Default zone / finger count for a column position (no rotation)
-function sigDefaultZone(col)    { return COL_TO_ZONE[col]; }
+// Locked-in zone for a row / finger count for a column (no rotation).
+// These are the ONLY inputs to a cell's signal -- never user-editable.
+function sigDefaultZone(row)    { return ROW_TO_ZONE[row]; }
 function sigDefaultFingers(col) { return COL_TO_FINGER[col]; }
 
 // Apply display rotation to a body zone.
-// rotation=1 → head now maps to col 2, so col 1 header shows shoulder, etc.
+// rotation=1 → head now belongs to row B, so row A shows shoulder, etc.
+// This is the ONLY thing rotation changes -- it lets a coach shift which
+// row means which body part between series/quarters to keep an opposing
+// scout from picking up the pattern, without ever touching the fixed
+// row->zone / column->finger methodology itself.
 function sigRotateZone(zone, rotation) {
   if (!rotation) return zone;
-  const col    = ZONE_TO_COL[zone];
-  const newCol = ((col - 1 + rotation) % 4) + 1;
-  return COL_TO_ZONE[newCol];
+  const idx    = SIG_ROWS.indexOf(ZONE_TO_ROW[zone]);
+  const newIdx = (idx + rotation) % 4;
+  return ROW_TO_ZONE[SIG_ROWS[newIdx]];
 }
 
-// What body zone label to show for column c given current rotation offset
-function sigColHeader(col, rotation) {
-  // Inverse rotation: find which stored zone now maps to this column
-  const origCol = ((col - 1 - rotation + 4) % 4) + 1;
-  return COL_TO_ZONE[origCol];
+// What body zone to show for row r's header given current rotation offset
+function sigRowHeader(row, rotation) {
+  // Inverse rotation: find which stored zone now maps to this row
+  const idx     = SIG_ROWS.indexOf(row);
+  const origIdx = ((idx - rotation) % 4 + 4) % 4;
+  return ROW_TO_ZONE[SIG_ROWS[origIdx]];
 }
 
 // HTML escape helper (used across all signal modules)

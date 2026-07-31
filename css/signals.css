@@ -54,17 +54,12 @@
   background: rgba(255,255,255,.04);
   border-radius: 5px;
 }
-.sig-col-zone {
-  font-family: 'Oswald', sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--text-mid);
-}
 .sig-col-num {
-  font-size: 8px;
-  color: var(--text-lo);
-  margin-top: 1px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--text-mid);
 }
 .sig-row-hdr {
   display: flex;
@@ -80,8 +75,11 @@
   color: var(--text-mid);
   line-height: 1;
 }
-.sig-row-f {
-  font-size: 8px;
+.sig-row-zone {
+  font-family: 'Oswald', sans-serif;
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: .5px;
   color: var(--text-lo);
   line-height: 1;
 }
@@ -337,10 +335,18 @@
   font-size: 8pt;
   font-weight: 700;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  line-height: 1.15;
+  gap: 1px;
   border-right: 1px solid #444;
   border-bottom: 1px solid #333;
+}
+.sig-wb-row-zone {
+  font-size: 5.5pt;
+  font-weight: 400;
+  color: #aaa;
 }
 .sig-wb-cell {
   border-right: 1px solid #ddd;
@@ -724,4 +730,25 @@
   .sig-modal-grid { grid-template-columns: 1fr; }
   .sig-field.wide { grid-column: span 1; }
   .sig-modal-row { flex-direction: column; gap: 0; }
+}
+
+/* ─── Locked signal display (cell modal) ─────────────────────────
+   Replaces the old BODY ZONE / FINGERS <select> dropdowns. The signal
+   for a cell is 100% determined by its row (body zone) and column
+   (finger count), so this is a read-only readout, not an input -- there
+   is nothing left for a coach to choose or get wrong. */
+.sig-locked-display {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 7px 10px;
+  min-height: 33px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  border-left: 3px solid var(--accent);
+  border-radius: 7px;
+  color: var(--text-hi);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
 }

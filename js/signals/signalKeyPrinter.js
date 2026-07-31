@@ -16,7 +16,7 @@ function buildSigKeyCardHtml() {
   const dummies = sigAssignments.filter(a => a.is_dummy);
 
   const rotNote = sigRotation > 0
-    ? `<div class="kc-rot">ROTATION +${sigRotation} ACTIVE — Column mapping shifted by ${sigRotation}</div>` : '';
+    ? `<div class="kc-rot">ROTATION +${sigRotation} ACTIVE — row/body-part mapping shifted by ${sigRotation}</div>` : '';
 
   let rows = '';
   real.forEach(a => {
@@ -71,7 +71,7 @@ tr:nth-child(even) td{background:#f8f8f8;}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.kc-dot{border:1.5px solid #000;background:transparent!important;}}
 </style></head><body>
 <div class="kc-title">${sigEsc(page?.label || "SIGNAL KEY")} — COACH REFERENCE</div>
-<div class="kc-sub">Body Zone &rarr; Column &nbsp;·&nbsp; Fingers &rarr; Row &nbsp;·&nbsp; Read cell at intersection on wristband</div>
+<div class="kc-sub">Body Zone &rarr; Row (fixed) &nbsp;·&nbsp; Fingers &rarr; Column &nbsp;·&nbsp; Read cell at intersection on wristband</div>
 ${rotNote}
 <table>
   <thead><tr><th>Cell</th><th>Body Zone</th><th>Fingers</th><th>Color</th><th>Play</th><th>Series</th><th>Caller</th></tr></thead>

@@ -1049,16 +1049,16 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         <div class="sig-panel-sec">
           <div class="sig-panel-sec-hdr">ENCODING GUIDE</div>
           <div class="sig-encode-grid">
-            <div class="sig-encode-row"><span class="sig-encode-lbl">Head</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 1</span></div>
-            <div class="sig-encode-row"><span class="sig-encode-lbl">Shoulder</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 2</span></div>
-            <div class="sig-encode-row"><span class="sig-encode-lbl">Chest</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 3</span></div>
-            <div class="sig-encode-row"><span class="sig-encode-lbl">Waist</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 4</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Row A</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Touch Head</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Row B</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Touch Shoulder</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Row C</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Touch Chest</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Row D</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Touch Waist</span></div>
             <div class="sig-encode-divider"></div>
-            <div class="sig-encode-row"><span class="sig-encode-lbl">1 Finger</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 1</span></div>
-            <div class="sig-encode-row"><span class="sig-encode-lbl">2 Fingers</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 2</span></div>
-            <div class="sig-encode-row"><span class="sig-encode-lbl">3 Fingers</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 3</span></div>
-            <div class="sig-encode-row"><span class="sig-encode-lbl">Fist</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Column 4</span></div>
-            <div class="sig-encode-note">Same pattern repeats on every row (A–D) — rows are just the color/series grouping.</div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Box 1</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">1 Finger</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Box 2</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">2 Fingers</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Box 3</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">3 Fingers</span></div>
+            <div class="sig-encode-row"><span class="sig-encode-lbl">Box 4</span><span class="sig-encode-arrow">→</span><span class="sig-encode-val">Fist</span></div>
+            <div class="sig-encode-note">Fixed for every play — the row a play sits in decides the body part, the box (column) decides the finger count. Nothing to pick, nothing to remember differently page to page. Use the rotate arrows above to shift which row means which body part between series without changing this pattern.</div>
           </div>
         </div>
       </div>
@@ -1683,24 +1683,10 @@ renderTimer();
         <select class="rp-select" id="sig-modal-play"></select>
         <div class="modal-subtitle" style="margin:4px 0 0;">Color is set per page/row, not per cell — see the WRISTBAND PAGES panel.</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:10px;">
         <div class="rp-group">
-          <label class="rp-label">BODY ZONE</label>
-          <select class="rp-select" id="sig-modal-zone">
-            <option value="head">Head</option>
-            <option value="shoulder">Shoulder</option>
-            <option value="chest">Chest</option>
-            <option value="waist">Waist</option>
-          </select>
-        </div>
-        <div class="rp-group">
-          <label class="rp-label">FINGERS</label>
-          <select class="rp-select" id="sig-modal-fingers">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">Fist</option>
-          </select>
+          <label class="rp-label">SIGNAL (LOCKED TO CELL)</label>
+          <div class="sig-locked-display" id="sig-modal-signal-display"></div>
         </div>
         <div class="rp-group">
           <label class="rp-label">CALLER</label>
@@ -1712,6 +1698,7 @@ renderTimer();
           </select>
         </div>
       </div>
+      <div class="modal-subtitle" style="margin:-6px 0 0;">Body zone is fixed per row and fingers are fixed per column — every cell has exactly one signal, so there's nothing to pick.</div>
       <div class="rp-group">
         <label class="rp-label">SERIES</label>
         <select class="rp-select" id="sig-modal-series">

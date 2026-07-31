@@ -18,19 +18,18 @@ function buildSigWristbandHtml() {
   const serLbl  = serSet.length === 1 ? (serSet[0] === 0 ? 'All Series' : `Q${serSet[0]}`) : 'Multi-Series';
   const rotNote = sigRotation > 0 ? ` [ROT +${sigRotation}]` : '';
 
-  // Col header zones with rotation applied
-  const colZones = [1,2,3,4].map(c => {
-    const z = sigColHeader(c, sigRotation);
-    return SIG_ZONE_ABBR[z];
-  });
+  // Columns are finger count only; body zone is fixed per row instead
+  // (see signalEncoder.js) and printed on the row header below.
+  const colFingers = [1,2,3,4].map(c => sigDefaultFingers(c));
 
   let cells = '';
   // corner + col headers
   cells += `<div class="ww-corner"></div>`;
-  colZones.forEach(z => { cells += `<div class="ww-col">${z}</div>`; });
+  colFingers.forEach(f => { cells += `<div class="ww-col">${f === 4 ? 'FIST' : f + 'F'}</div>`; });
 
   SIG_ROWS.forEach(row => {
-    cells += `<div class="ww-row">${row}</div>`;
+    const rowZone = sigRowHeader(row, sigRotation);
+    cells += `<div class="ww-row">${row}<span class="ww-row-zone">${SIG_ZONE_ABBR[rowZone]}</span></div>`;
     SIG_COLS.forEach(col => {
       const a = sigAssignments.find(x => x.wristband_row === row && x.wristband_col === col);
       if (!a) { cells += '<div class="ww-cell ww-empty"></div>'; return; }
@@ -56,7 +55,8 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;width:4.0
 .ww-top .rot{color:#f0a500;font-size:7pt;}
 .ww-grid{display:grid;grid-template-columns:16px repeat(4,1fr);grid-template-rows:12px repeat(4,1fr);flex:1;border:2px solid #111;}
 .ww-corner,.ww-col{background:#222;color:#fff;font-size:7pt;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid #444;border-bottom:1px solid #444;}
-.ww-row{background:#222;color:#fff;font-size:8pt;font-weight:700;display:flex;align-items:center;justify-content:center;border-right:1px solid #444;border-bottom:1px solid #333;}
+.ww-row{background:#222;color:#fff;font-size:8pt;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;gap:1px;border-right:1px solid #444;border-bottom:1px solid #333;}
+.ww-row-zone{font-size:5.5pt;font-weight:400;color:#aaa;}
 .ww-cell{display:flex;flex-direction:column;justify-content:center;padding:1px 3px;border-right:1px solid #ccc;border-bottom:1px solid #ccc;}
 .ww-empty{background:#f5f5f5;}
 .ww-id{font-size:6pt;color:#999;font-weight:700;line-height:1;}
