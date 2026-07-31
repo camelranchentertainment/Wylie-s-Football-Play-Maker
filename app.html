@@ -2057,58 +2057,126 @@ async function createTeamFromModal() {
 }
 
 // ─── CLOUD LIBRARY ────────────────────────────────────────────
+// The `plays` table has no `play_id`/`labels`/`thumb`/`ts` columns — those
+// were leftover from a pre-team schema. The real columns are `id` (server
+// uuid PK), `tags`, `thumbnail`, `created_at`, plus `team_id`/`client_id`.
+// Team Library plays are TEAM-scoped (shared by every coach on the team),
+// matching the pattern already used by psEnsureCloudPlay() in
+// js/playSheets.js: the client-generated numeric id (Date.now()+Math.random())
+// is stored in `client_id` and used as the stable lookup key, since it is
+// not a real uuid and can't be the primary key itself.
 async function loadCloudLib() {
-  if (!currentUser) return;
-  const { data, error } = await supa.from('plays').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-  if (error) { console.error('Cloud load error:', error); return; }
-  cloudLib = (data || []).map(row => ({
-    id: row.play_id,
-    name: row.name,
-    formation: row.formation,
-    type: row.type,
-    mode: row.mode,
-    players: row.players || [],
-    routes: row.routes || [],
-    labels: row.labels || [],
-    thumb: row.thumb,
-    description: row.description,
-    ts: row.ts,
-  }));
+  // Leave cloudLib untouched (still null) if we're not ready to load —
+  // getLib() treats null as "not loaded" and falls back to localStorage,
+  // which is the correct fallback while team context is still resolving.
+  if (!currentUser || !currentTeamId) return;
+  try {
+    const { data, error } = await supa
+      .from('plays')
+      .select('*')
+      .eq('team_id', currentTeamId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    cloudLib = (data || []).map(row => ({
+      id: row.client_id || row.id,
+      cloudId: row.id,
+      name: row.name,
+      formation: row.formation,
+      type: row.type,
+      mode: row.mode,
+      players: row.players || [],
+      routes: row.routes || [],
+      labels: row.tags || [],
+      thumb: row.thumbnail,
+      description: row.description,
+      ts: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+    }));
+  } catch (e) {
+    console.error('Cloud load error:', e);
+    setStatus('Could not load Team Library from the cloud — showing local copy if available');
+    // cloudLib intentionally left as-is (null) so getLib() falls back to localStorage.
+  }
 }
 
 async function savePlayToCloud(play) {
   if (!currentUser) return;
-  const row = {
-    user_id: currentUser.id,
-    play_id: play.id,
-    name: play.name,
-    formation: play.formation || '',
-    type: play.type || '',
-    mode: play.mode || 'offense',
-    players: play.players || [],
-    routes: play.routes || [],
-    labels: play.labels || [],
-    thumb: play.thumb || null,
-    description: play.description || null,
-    ts: play.ts || Date.now(),
-  };
-  const { error } = await supa.from('plays').upsert(row, { onConflict: 'user_id,play_id' });
-  if (error) console.error('Cloud save error:', error);
+  if (!currentTeamId) {
+    setStatus('No team on file yet — play saved locally only. Set up your team to sync it.');
+    return;
+  }
+  const clientId = String(play.id);
+  try {
+    // Manual find-then-write instead of .upsert(onConflict:...) because
+    // there is no unique DB constraint on (team_id, client_id) — this
+    // mirrors the exact pattern already proven working in
+    // psEnsureCloudPlay() (js/playSheets.js) for the same reason.
+    const { data: existing, error: findErr } = await supa
+      .from('plays')
+      .select('id')
+      .eq('team_id', currentTeamId)
+      .eq('client_id', clientId)
+      .maybeSingle();
+    if (findErr) throw findErr;
+
+    const row = {
+      team_id: currentTeamId,
+      user_id: currentUser.id,
+      client_id: clientId,
+      name: play.name || 'Untitled Play',
+      formation: play.formation || '',
+      type: play.type || '',
+      mode: play.mode || 'offense',
+      players: play.players || [],
+      routes: play.routes || [],
+      tags: play.labels || [],
+      thumbnail: play.thumb || null,
+      description: play.description || null,
+      is_global: false,
+      deleted_at: null,
+    };
+
+    if (existing) {
+      const { error: updErr } = await supa.from('plays').update(row).eq('id', existing.id);
+      if (updErr) throw updErr;
+    } else {
+      const { error: insErr } = await supa.from('plays').insert(row);
+      if (insErr) throw insErr;
+    }
+  } catch (e) {
+    console.error('Cloud save error:', e);
+    setStatus('Save failed — ' + (e.message || e.details || 'unknown error'));
+  }
 }
 
 async function deletePlayFromCloud(playId) {
-  if (!currentUser) return;
-  const { error } = await supa.from('plays').delete().eq('user_id', currentUser.id).eq('play_id', playId);
-  if (error) console.error('Cloud delete error:', error);
+  if (!currentUser || !currentTeamId) return;
+  try {
+    // Soft delete (deleted_at) to match the audit-trail pattern used
+    // elsewhere in the schema, rather than a hard DELETE.
+    const { error } = await supa
+      .from('plays')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('team_id', currentTeamId)
+      .eq('client_id', String(playId));
+    if (error) throw error;
+  } catch (e) {
+    console.error('Cloud delete error:', e);
+    setStatus('Delete failed — ' + (e.message || 'unknown error'));
+  }
 }
 
 async function migrateLocalToCloud() {
-  const local = JSON.parse(localStorage.getItem('gridiron_pro_v3_lib') || '[]');
+  const local = JSON.parse(localStorage.getItem(LIB_KEY) || '[]');
   if (!local.length) return;
   for (const play of local) {
     await savePlayToCloud(play);
   }
-  cloudLib = [...local];
+  localStorage.removeItem(LIB_KEY);
+  // Re-pull from the server rather than trusting the local copy verbatim —
+  // this picks up server-assigned fields and avoids drifting from what
+  // other coaches on the team may already see.
+  await loadCloudLib();
 }
 
 // ─── AUTH UI ──────────────────────────────────────────────────
