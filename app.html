@@ -796,7 +796,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <div id="dash-team-error" class="dash-error-banner" style="display:none;">
       <span class="dash-error-icon">⚠</span>
       <span class="dash-error-msg">Setting up your team…</span>
-      <button class="hbtn" onclick="retryTeamContext()">↻ RETRY</button>
+      <button class="hbtn dash-retry-btn" onclick="retryTeamContext()">↻ RETRY</button>
       <button class="hbtn" onclick="openTeamSetupModal()">+ SET UP TEAM</button>
     </div>
 
@@ -1043,11 +1043,16 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <div class="pp-hdr">
       <h2 id="pp-title">Print Preview</h2>
       <div id="pp-size-row" class="pp-size-row" style="display:none;">
-        <label class="rp-label" style="margin:0;">Paper</label>
-        <select class="rp-select" id="pp-size-sel" style="width:auto;" onchange="ppOnSizeChange()">
-          <option value="letter-portrait">Letter — Portrait</option>
-          <option value="letter-landscape">Letter — Landscape</option>
-        </select>
+        <label class="rp-label" id="pp-size-label" style="margin:0;">Paper</label>
+        <select class="rp-select" id="pp-size-sel" style="width:auto;" onchange="ppOnSizeChange()"></select>
+      </div>
+      <div id="pp-custom-size-row" class="pp-size-row" style="display:none;">
+        <label class="rp-label" style="margin:0;">W</label>
+        <input type="number" class="rp-input" id="pp-custom-w" style="width:64px;" min="2" max="10" step="0.05" onchange="ppOnCustomSizeChange()" oninput="ppOnCustomSizeChange()">
+        <span style="color:var(--text-lo);font-size:11px;">in ×</span>
+        <label class="rp-label" style="margin:0;">H</label>
+        <input type="number" class="rp-input" id="pp-custom-h" style="width:64px;" min="1.5" max="8" step="0.05" onchange="ppOnCustomSizeChange()" oninput="ppOnCustomSizeChange()">
+        <span style="color:var(--text-lo);font-size:11px;">in</span>
       </div>
       <button onclick="closePrintPreview()" style="background:none;border:none;color:var(--text-mid);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;">✕</button>
     </div>
@@ -2022,6 +2027,7 @@ let currentUser = null;       // Supabase user object when signed in
 let cloudLib = null;          // in-memory cache: null = not loaded, [] = loaded
 let currentTeamId = null;     // this coach's team (bootstrapped in ensureTeamContext)
 let currentTeamRole = null;   // 'owner' | 'coach' | 'assistant' -- gates owner-only UI (invite code, removing coaches)
+let teamContextNeedsSetup = false; // true = signed in, zero team_members rows, hasn't chosen create-vs-join yet
 let currentSeasonId = null;   // that team's active season
 
 // Called on page load — restore session if one exists
@@ -2038,6 +2044,11 @@ async function initAuth() {
     console.log('[initAuth] session found for', session.user?.email);
     currentUser = session.user;
     await ensureTeamContext();
+    // A brand-new coach (no team_members row) needs to explicitly choose
+    // Create vs. Join before we do anything team-scoped -- see the long
+    // comment on ensureTeamContext() for why this can no longer happen
+    // automatically.
+    if (teamContextNeedsSetup) openTeamSetupModal();
     await loadCloudLib();
     console.log('[initAuth] cloudLib loaded —', cloudLib ? cloudLib.length + ' plays' : 'null (error)');
     updateAuthUI();
@@ -2056,6 +2067,7 @@ async function initAuth() {
       if (event === 'SIGNED_IN' && session) {
         currentUser = session.user;
         await ensureTeamContext();
+        if (teamContextNeedsSetup) openTeamSetupModal();
         await loadCloudLib();
         updateAuthUI();
         renderLibrary();
@@ -2067,6 +2079,7 @@ async function initAuth() {
         currentTeamRole = null;
         currentSeasonId = null;
         teamContextError = null;
+        teamContextNeedsSetup = false;
         updateAuthUI();
         renderLibrary();
       }
@@ -2125,18 +2138,29 @@ async function ensureTeamContext() {
       .limit(1);
     if (memErr) throw memErr;
 
-    if (memberships && memberships.length) {
-      currentTeamId   = memberships[0].team_id;
-      currentTeamRole = memberships[0].role;
-    } else {
-      const defaultName = (currentUser.email || 'Coach').split('@')[0] + "'s Team";
-      const { data: newTeam, error: teamErr } = await supa
-        .rpc('create_my_team', { p_name: defaultName })
-        .single();
-      if (teamErr) throw teamErr;
-      currentTeamId   = newTeam.id;
-      currentTeamRole = 'owner';
+    if (!memberships || !memberships.length) {
+      // No team yet -- do NOT auto-create one here. This used to
+      // silently call create_my_team() for every zero-membership user,
+      // which always won the race against a real invite: a coach who'd
+      // just been given a join code would get signed in, be instantly
+      // made the owner of their own brand-new empty team on this very
+      // call, and never see the "Join Existing Team" tab at all -- from
+      // their side it just looked like "my team isn't set up right",
+      // because they were never on the head coach's team to begin with.
+      // Leaving currentTeamId null here (with teamContextNeedsSetup
+      // true, not an error) is what lets initAuth()/onAuthStateChange
+      // pop team-setup-modal and give the coach an explicit choice.
+      currentTeamId = null;
+      currentTeamRole = null;
+      currentSeasonId = null;
+      teamContextNeedsSetup = true;
+      teamContextError = null;
+      return;
     }
+
+    currentTeamId   = memberships[0].team_id;
+    currentTeamRole = memberships[0].role;
+    teamContextNeedsSetup = false;
 
     const { data: seasons, error: seasonErr } = await supa
       .from('seasons')
@@ -2167,6 +2191,7 @@ async function ensureTeamContext() {
     // instead of a generic "something went wrong".
     const detail = [e?.message, e?.details, e?.hint].filter(Boolean).join(' — ') || String(e);
     teamContextError = detail;
+    teamContextNeedsSetup = false;
     currentTeamId = null;
     currentSeasonId = null;
     console.error('[ensureTeamContext] failed:', e, '| code:', e?.code);
@@ -2178,7 +2203,8 @@ async function ensureTeamContext() {
 async function retryTeamContext() {
   setStatus('Retrying team setup…');
   await ensureTeamContext();
-  if (teamContextError) { setStatus("Still couldn't set up your team — " + teamContextError, 'err'); return; }
+  if (teamContextError) { setStatus("Still couldn't set up your team — " + teamContextError, 'err'); if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard(); return; }
+  if (teamContextNeedsSetup) { setStatus("You're not on a team yet — use Set Up Team below to create one or enter an invite code.", 'err'); if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard(); return; }
   setStatus('Team ready.', 'ok');
   if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
   // Team-scoped modules that lazily init once (Signals/Wristband) need to

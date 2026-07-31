@@ -21,39 +21,91 @@ function ppSavePrefs(patch) {
   return prefs;
 }
 
-// buildFn(paperSize) -> html string. Called once up front, and again
-// whenever the paper size selector changes (only shown if opts.paperSize).
+// Default size choices for documents that print to a normal page (play
+// sheets, install sheets/packet, playbook). Physical-card documents
+// (wristband insert) pass their own opts.sizeOptions instead -- see
+// PP_WRISTBAND_SIZE_OPTIONS in wristbandPrinter.js.
+const PP_PAPER_OPTIONS = [
+  { value: 'letter-portrait', label: 'Letter — Portrait' },
+  { value: 'letter-landscape', label: 'Letter — Landscape' },
+];
+
+// buildFn(sizeValue, customDims) -> html string, where customDims is
+// {w,h} in inches (only populated when sizeValue === 'custom') and null
+// otherwise. Called once up front, and again whenever the size selector
+// or the custom width/height inputs change (only shown if opts.paperSize
+// or opts.sizeOptions was passed to showPrintPreview()).
 let _ppBuildFn = null;
+let _ppSizeOptions = null;
+let _ppSizePrefKey = 'paperSize';
 
 function showPrintPreview(buildFn, opts = {}) {
   _ppBuildFn = buildFn;
   document.getElementById('pp-title').textContent = opts.title || 'Print Preview';
 
-  const sizeRow = document.getElementById('pp-size-row');
-  const sizeSel = document.getElementById('pp-size-sel');
-  if (opts.paperSize) {
+  const sizeRow    = document.getElementById('pp-size-row');
+  const sizeSel     = document.getElementById('pp-size-sel');
+  const sizeLabel   = document.getElementById('pp-size-label');
+  const customRow   = document.getElementById('pp-custom-size-row');
+
+  _ppSizeOptions = opts.sizeOptions || (opts.paperSize ? PP_PAPER_OPTIONS : null);
+  _ppSizePrefKey = opts.sizePrefKey || 'paperSize';
+
+  if (_ppSizeOptions && _ppSizeOptions.length) {
     sizeRow.style.display = 'flex';
-    const saved = ppLoadPrefs().paperSize || 'letter-portrait';
-    sizeSel.value = saved;
+    sizeLabel.textContent = opts.sizeLabel || 'Paper';
+    sizeSel.innerHTML = _ppSizeOptions.map(o => `<option value="${o.value}">${sigEsc(o.label)}</option>`).join('');
+
+    const prefs = ppLoadPrefs();
+    const savedValue = prefs[_ppSizePrefKey];
+    const validSaved = _ppSizeOptions.some(o => o.value === savedValue);
+    sizeSel.value = validSaved ? savedValue : _ppSizeOptions[0].value;
+
+    const customW = parseFloat(prefs[_ppSizePrefKey + 'CustomW']);
+    const customH = parseFloat(prefs[_ppSizePrefKey + 'CustomH']);
+    document.getElementById('pp-custom-w').value = Number.isFinite(customW) ? customW : 4.25;
+    document.getElementById('pp-custom-h').value = Number.isFinite(customH) ? customH : 2.75;
+    customRow.style.display = sizeSel.value === 'custom' ? 'flex' : 'none';
   } else {
     sizeRow.style.display = 'none';
+    customRow.style.display = 'none';
   }
 
   ppRender();
   document.getElementById('print-preview-modal').classList.add('show');
 }
 
+// Reads the current custom width/height inputs, clamped to sane bounds
+// (2-10in / 1.5-8in) so a coach fat-fingering a "0" or a stray letter
+// can't hand the wristband builder a broken or negative page size.
+function ppReadCustomDims() {
+  const wRaw = parseFloat(document.getElementById('pp-custom-w')?.value);
+  const hRaw = parseFloat(document.getElementById('pp-custom-h')?.value);
+  return {
+    w: (Number.isFinite(wRaw) && wRaw >= 2 && wRaw <= 10) ? wRaw : 4.25,
+    h: (Number.isFinite(hRaw) && hRaw >= 1.5 && hRaw <= 8) ? hRaw : 2.75,
+  };
+}
+
 function ppRender() {
+  const sizeRow = document.getElementById('pp-size-row');
   const sizeSel = document.getElementById('pp-size-sel');
-  const size = sizeSel && document.getElementById('pp-size-row').style.display !== 'none'
-    ? sizeSel.value
-    : null;
+  const size = (_ppSizeOptions && sizeRow.style.display !== 'none') ? sizeSel.value : null;
+  const customDims = size === 'custom' ? ppReadCustomDims() : null;
   const frame = document.getElementById('print-preview-frame');
-  frame.srcdoc = _ppBuildFn(size);
+  frame.srcdoc = _ppBuildFn(size, customDims);
 }
 
 function ppOnSizeChange() {
-  ppSavePrefs({ paperSize: document.getElementById('pp-size-sel').value });
+  const sizeSel = document.getElementById('pp-size-sel');
+  document.getElementById('pp-custom-size-row').style.display = sizeSel.value === 'custom' ? 'flex' : 'none';
+  ppSavePrefs({ [_ppSizePrefKey]: sizeSel.value });
+  ppRender();
+}
+
+function ppOnCustomSizeChange() {
+  const dims = ppReadCustomDims();
+  ppSavePrefs({ [_ppSizePrefKey + 'CustomW']: dims.w, [_ppSizePrefKey + 'CustomH']: dims.h });
   ppRender();
 }
 

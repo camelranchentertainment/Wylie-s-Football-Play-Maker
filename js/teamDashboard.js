@@ -13,17 +13,26 @@ let _dashEditingGameId = null;
 async function renderTeamDashboard() {
   const banner = document.getElementById('dash-team-error');
   if (!currentTeamId) {
-    // teamContextError (set in app.html's ensureTeamContext) holds the
-    // real reason -- show it instead of leaving the page looking like a
-    // normal, just-empty dashboard. A silently-empty dashboard is
-    // indistinguishable from "you have no games yet", which is exactly
-    // what made this failure mode so confusing to debug from the outside.
-    console.warn('[renderTeamDashboard] no team context yet:', teamContextError);
+    // Three distinct states share this one "no team yet" banner, and
+    // conflating them was the root of the invite-code bug: a coach who
+    // hasn't picked Create-vs-Join yet (teamContextNeedsSetup) is NOT in
+    // an error state, so showing them "Couldn't set up your team" (or a
+    // Retry button that has nothing to actually retry) reads as broken
+    // when it's really just an unmade choice.
+    console.warn('[renderTeamDashboard] no team context yet:', teamContextError, '| needsSetup:', teamContextNeedsSetup);
     if (banner) {
       banner.style.display = 'flex';
-      banner.querySelector('.dash-error-msg').textContent = teamContextError
-        ? `Couldn't set up your team: ${teamContextError}`
-        : 'Setting up your team…';
+      const retryBtn = banner.querySelector('.dash-retry-btn');
+      if (teamContextNeedsSetup) {
+        banner.querySelector('.dash-error-msg').textContent =
+          "You're not on a team yet — create one, or enter the invite code your head coach gave you.";
+        if (retryBtn) retryBtn.style.display = 'none';
+      } else {
+        banner.querySelector('.dash-error-msg').textContent = teamContextError
+          ? `Couldn't set up your team: ${teamContextError}`
+          : 'Setting up your team…';
+        if (retryBtn) retryBtn.style.display = '';
+      }
     }
     return;
   }
