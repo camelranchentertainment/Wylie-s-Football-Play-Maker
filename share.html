@@ -83,14 +83,29 @@ function drawField(ctx){
   }
 }
 
+// Mirrors traceRoutePath() in app.html so a route drawn with a hard-cut
+// shape in the Play Builder renders with the same real angles here on the
+// shared/public play view, instead of always smoothing into a curve.
+function traceRoutePath(ctx,pts,shape){
+  ctx.moveTo(pts[0].x,pts[0].y);
+  if(shape==='sharp'){
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y);
+    return;
+  }
+  for(let i=1;i<pts.length-1;i++){
+    const mx2=(pts[i].x+pts[i+1].x)/2, my2=(pts[i].y+pts[i+1].y)/2;
+    ctx.quadraticCurveTo(pts[i].x,pts[i].y,mx2,my2);
+  }
+  ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
+}
+
 function drawRoute(ctx,route){
   if(!route.waypoints||route.waypoints.length<2) return;
   ctx.strokeStyle=route.color||'#ffcc00'; ctx.lineWidth=2.5;
   if(route.style==='dashed'){ctx.setLineDash([8,5]);}
   else{ctx.setLineDash([]);}
   ctx.beginPath();
-  ctx.moveTo(route.waypoints[0].x,route.waypoints[0].y);
-  for(let i=1;i<route.waypoints.length;i++) ctx.lineTo(route.waypoints[i].x,route.waypoints[i].y);
+  traceRoutePath(ctx, route.waypoints, route.shape||'curve');
   ctx.stroke();
   ctx.setLineDash([]);
   // Arrow at end

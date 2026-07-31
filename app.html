@@ -889,7 +889,12 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         <div id="formations-list"></div>
       </div>
       <div class="sb-sec" id="sec-route" style="display:none;">
-        <div class="sb-title">Route Style</div>
+        <div class="sb-title">Line Shape</div>
+        <div class="rs-grid" id="rsh-grid">
+          <button class="rsbtn act" id="rsh-curve" onclick="setRouteShape('curve')" title="Smooth curve through each waypoint">Curved</button>
+          <button class="rsbtn" id="rsh-sharp" onclick="setRouteShape('sharp')" title="Straight segments with a hard angle at every waypoint">Sharp Cut</button>
+        </div>
+        <div class="sb-title" style="margin-top:10px;">Route Style</div>
         <div class="rs-grid">
           <button class="rsbtn act" id="rs-solid" onclick="setRouteStyle('solid')">Solid</button>
           <button class="rsbtn" id="rs-dashed" onclick="setRouteStyle('dashed')">Dashed</button>
@@ -1574,10 +1579,10 @@ const DEF_TYPES = ['DE','DT','NT','OLB','MLB','ILB','LB','CB','SS','FS','NB','DB
 // ─── STATE ────────────────────────────────────────────────────
 let S = {
   mode:'offense', tool:'select', formation:'Pro Set',
-  placeType:'WR', routeStyle:'solid', routeColor:'#ffcc00', assignType:'rush',
+  placeType:'WR', routeStyle:'solid', routeShape:'curve', routeColor:'#ffcc00', assignType:'rush',
   players:[], routes:[], labels:[], selectedId:null,
   dragging:false, dragOX:0, dragOY:0,
-  drawingRoute:false, routeWpts:[], routeForId:null,
+  drawingRoute:false, routeWpts:[], routeForId:null, justStartedRoute:false,
   pendingLabelX:0, pendingLabelY:0,
   mouseX:0, mouseY:0, history:[], zoom:1,
 };
@@ -1638,6 +1643,27 @@ function arrowHead(x,y,ang,sz,col){
   ctx.closePath(); ctx.fill(); ctx.restore();
 }
 
+// Traces a route's waypoints onto a 2D context as either a soft blended
+// curve (quadratic-smoothed through each interior waypoint -- the classic
+// look, good for go/post/curl routes) or a hard-cut polyline (a straight
+// segment to every waypoint with a real angle at the break -- accurate for
+// route-tree breaks like slants, outs, digs, and comebacks where the
+// receiver actually plants and cuts rather than rounding the corner).
+// Caller owns ctx.beginPath()/ctx.stroke(); pts must already be in the
+// target canvas's coordinate space (pre-scaled by the caller if needed).
+function traceRoutePath(tx, pts, shape){
+  tx.moveTo(pts[0].x, pts[0].y);
+  if(shape==='sharp'){
+    for(let i=1;i<pts.length;i++) tx.lineTo(pts[i].x,pts[i].y);
+    return;
+  }
+  for(let i=1;i<pts.length-1;i++){
+    const mx2=(pts[i].x+pts[i+1].x)/2, my2=(pts[i].y+pts[i+1].y)/2;
+    tx.quadraticCurveTo(pts[i].x,pts[i].y,mx2,my2);
+  }
+  tx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
+}
+
 function drawRoute(route,preview){
   const pts=route.waypoints;
   if(!pts||pts.length<2) return;
@@ -1648,12 +1674,9 @@ function drawRoute(route,preview){
   if(route.style==='dashed') ctx.setLineDash([7,4]);
   else if(route.style==='motion') ctx.setLineDash([2,5]);
   else ctx.setLineDash([]);
-  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-  for(let i=1;i<pts.length-1;i++){
-    const mx2=(pts[i].x+pts[i+1].x)/2, my2=(pts[i].y+pts[i+1].y)/2;
-    ctx.quadraticCurveTo(pts[i].x,pts[i].y,mx2,my2);
-  }
-  ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y); ctx.stroke();
+  ctx.beginPath();
+  traceRoutePath(ctx, pts, route.shape||'curve');
+  ctx.stroke();
   ctx.setLineDash([]);
   const n=pts.length, ang=Math.atan2(pts[n-1].y-pts[n-2].y,pts[n-1].x-pts[n-2].x);
   arrowHead(pts[n-1].x,pts[n-1].y,ang,preview?6:8,preview?'rgba(255,204,0,0.55)':col);
@@ -1698,7 +1721,7 @@ function render(){
   ctx.clearRect(0,0,CW,CH); drawField();
   S.routes.forEach(r=>drawRoute(r,false));
   if(S.drawingRoute&&S.routeWpts.length>0){
-    drawRoute({waypoints:[...S.routeWpts,{x:S.mouseX,y:S.mouseY}],style:S.routeStyle,color:S.routeColor},true);
+    drawRoute({waypoints:[...S.routeWpts,{x:S.mouseX,y:S.mouseY}],style:S.routeStyle,shape:S.routeShape,color:S.routeColor},true);
     S.routeWpts.forEach((pt,i)=>{
       ctx.fillStyle=i===0?'rgba(255,204,0,.9)':'rgba(255,204,0,.5)';
       ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2); ctx.fill();
@@ -1734,7 +1757,7 @@ function snapGrid(mx,my){ const yd=c2yd(mx,my); return yd2c(Math.round(yd.x*2)/2
 function playerAt(mx,my){ let best=null,bestD=PR+5; S.players.forEach(p=>{ const d=Math.hypot(mx-p.x,my-p.y); if(d<bestD){bestD=d;best=p;} }); return best; }
 
 // ─── MOUSE EVENTS ─────────────────────────────────────────────
-let mdX=0,mdY=0,mIsDown=false,lastRouteClick=0;
+let mdX=0,mdY=0,mIsDown=false;
 
 canvas.addEventListener('mousedown',e=>{
   const r=canvas.getBoundingClientRect(), mx=(e.clientX-r.left)/S.zoom, my=(e.clientY-r.top)/S.zoom;
@@ -1745,7 +1768,14 @@ canvas.addEventListener('mousedown',e=>{
     else S.selectedId=null;
     render();
   } else if(S.tool==='route'){
-    if(!S.drawingRoute){ const p=playerAt(mx,my); if(p){ S.drawingRoute=true; S.routeForId=p.id; S.routeWpts=[{x:p.x,y:p.y}]; S.selectedId=p.id; setStatus('Click waypoints · Double-click or ✓ FINISH to complete'); } }
+    if(!S.drawingRoute){
+      const p=playerAt(mx,my);
+      // justStartedRoute suppresses the mouseup that belongs to THIS SAME
+      // click from also adding a waypoint -- without it, the first click
+      // on a player both starts the route AND immediately pushes a second,
+      // near-duplicate waypoint at the same spot on its own mouseup.
+      if(p){ S.drawingRoute=true; S.routeForId=p.id; S.routeWpts=[{x:p.x,y:p.y}]; S.selectedId=p.id; S.justStartedRoute=true; setStatus('Click to add waypoints · Double-click, Enter, or ✓ FINISH to complete'); }
+    }
     render();
   } else if(S.tool==='delete'){
     const p=playerAt(mx,my);
@@ -1784,10 +1814,12 @@ canvas.addEventListener('mouseup',e=>{
     const snap=snapGrid(mx,my);
     if(!playerAt(snap.x,snap.y)){ pushH(); S.players.push({id:Date.now()+Math.random(),pos:S.placeType,lbl:S.placeType,x:snap.x,y:snap.y,side:S.mode}); render(); }
   } else if(S.tool==='route'&&S.drawingRoute){
-    const now=Date.now();
-    if(now-lastRouteClick<340&&S.routeWpts.length>1) finishRoute();
+    // Every click adds a waypoint -- no timing heuristic. Ending the route
+    // is an explicit act (double-click, Enter, or the ✓ FINISH button),
+    // so coaches can click as fast as they want to lay down a route without
+    // accidentally cutting it short.
+    if(S.justStartedRoute){ S.justStartedRoute=false; }
     else { S.routeWpts.push({x:mx,y:my}); render(); }
-    lastRouteClick=now;
   }
 });
 
@@ -1808,7 +1840,7 @@ document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='z'){ undoLast(); e.preventDefault(); return; }
   if((e.ctrlKey||e.metaKey)&&e.key==='s'){ openSaveModal(); e.preventDefault(); return; }
   if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
-  if(e.key==='Escape'){ if(S.drawingRoute){S.drawingRoute=false;S.routeWpts=[];render();} S.selectedId=null; render(); }
+  if(e.key==='Escape'){ if(S.drawingRoute){S.drawingRoute=false;S.routeWpts=[];S.justStartedRoute=false;render();} S.selectedId=null; render(); }
   if(e.key==='Enter'&&S.drawingRoute) finishRoute();
   if(!e.ctrlKey&&!e.metaKey&&(e.key==='+'||e.key==='=')){ changeZoom(0.25); e.preventDefault(); }
   if(!e.ctrlKey&&!e.metaKey&&e.key==='-'){ changeZoom(-0.25); e.preventDefault(); }
@@ -1837,19 +1869,19 @@ document.getElementById('field-wrap').addEventListener('wheel',e=>{
 
 // ─── TOOLS ────────────────────────────────────────────────────
 function setTool(t){
-  if(S.drawingRoute&&t!=='route'){S.drawingRoute=false;S.routeWpts=[];}
+  if(S.drawingRoute&&t!=='route'){S.drawingRoute=false;S.routeWpts=[];S.justStartedRoute=false;}
   S.tool=t;
   ['select','place','route','delete','label'].forEach(tt=>document.getElementById('t-'+tt)?.classList.toggle('act',tt===t));
   const off=S.mode==='offense';
   document.getElementById('sec-ptypes').style.display=t==='place'?'block':'none';
   document.getElementById('sec-route').style.display=(t==='route'&&off)?'block':'none';
   document.getElementById('sec-assign').style.display=(t==='route'&&!off)?'block':'none';
-  const hints={select:'Click to select · Drag to move · Dbl-click to remove',place:`Click to place ${S.placeType}`,route:S.drawingRoute?'Click waypoints · Dbl-click or ✓ FINISH to end':'Click on a player to begin route',delete:'Click a player to remove',label:'Click on the field to place a text label'};
+  const hints={select:'Click to select · Drag to move · Dbl-click to remove',place:`Click to place ${S.placeType}`,route:S.drawingRoute?'Click to add waypoints · Dbl-click, Enter, or ✓ FINISH to end':'Click on a player to begin route',delete:'Click a player to remove',label:'Click on the field to place a text label'};
   setStatus(hints[t]||''); render();
 }
 
 function setMode(m){
-  if(S.drawingRoute){S.drawingRoute=false;S.routeWpts=[];}
+  if(S.drawingRoute){S.drawingRoute=false;S.routeWpts=[];S.justStartedRoute=false;}
   S.mode=m; S.selectedId=null;
   if(!FMTNS[m][S.formation]) S.formation=Object.keys(FMTNS[m])[0];
   document.getElementById('btn-off').className='mode-btn'+(m==='offense'?' on-off':'');
@@ -1858,6 +1890,7 @@ function setMode(m){
 }
 
 function setRouteStyle(s){ S.routeStyle=s; ['solid','dashed','motion','block'].forEach(k=>document.getElementById('rs-'+k)?.classList.toggle('act',k===s)); }
+function setRouteShape(s){ S.routeShape=s; ['curve','sharp'].forEach(k=>document.getElementById('rsh-'+k)?.classList.toggle('act',k===s)); render(); }
 function setAssign(a){ S.assignType=a; ['rush','cover','zone','blitz'].forEach(k=>document.getElementById('as-'+k)?.classList.toggle('act',k===a)); }
 document.getElementById('route-color').addEventListener('input',e=>{ S.routeColor=e.target.value; });
 
@@ -1902,14 +1935,14 @@ function rebuildPlayerTypes(){
 // ─── ROUTE FINISH ─────────────────────────────────────────────
 function finishRoute(){
   if(!S.drawingRoute) return;
-  if(S.routeWpts.length>=2){ pushH(); S.routes=S.routes.filter(r=>r.pid!==S.routeForId); S.routes.push({id:Date.now(),pid:S.routeForId,waypoints:[...S.routeWpts],style:S.routeStyle,color:S.routeColor,assign:S.assignType}); }
-  S.drawingRoute=false; S.routeWpts=[]; S.routeForId=null; render(); setStatus('Route saved');
+  if(S.routeWpts.length>=2){ pushH(); S.routes=S.routes.filter(r=>r.pid!==S.routeForId); S.routes.push({id:Date.now(),pid:S.routeForId,waypoints:[...S.routeWpts],style:S.routeStyle,shape:S.routeShape,color:S.routeColor,assign:S.assignType}); }
+  S.drawingRoute=false; S.routeWpts=[]; S.routeForId=null; S.justStartedRoute=false; render(); setStatus('Route saved');
 }
 
 // ─── HISTORY ──────────────────────────────────────────────────
 function pushH(){ S.history.push({p:JSON.parse(JSON.stringify(S.players)),r:JSON.parse(JSON.stringify(S.routes)),l:JSON.parse(JSON.stringify(S.labels))}); if(S.history.length>40) S.history.shift(); }
 function undoLast(){ if(!S.history.length) return; const h=S.history.pop(); S.players=h.p; S.routes=h.r; S.labels=h.l; S.selectedId=null; render(); setStatus('Undone'); }
-function confirmClear(){ if(!confirm('Clear all players, routes, and labels?')) return; pushH(); S.players=[]; S.routes=[]; S.labels=[]; S.selectedId=null; S.drawingRoute=false; S.routeWpts=[]; render(); setStatus('Field cleared'); }
+function confirmClear(){ if(!confirm('Clear all players, routes, and labels?')) return; pushH(); S.players=[]; S.routes=[]; S.labels=[]; S.selectedId=null; S.drawingRoute=false; S.routeWpts=[]; S.justStartedRoute=false; render(); setStatus('Field cleared'); }
 function setStatus(msg){ /* status pill removed */ }
 
 // ─── SAVE MODAL ───────────────────────────────────────────────
@@ -1944,8 +1977,8 @@ function genThumbFromPlay(players, routes){
   routes.forEach(rt=>{
     if(!rt.waypoints||rt.waypoints.length<2) return;
     tx.strokeStyle=rt.color||'#ffcc00'; tx.lineWidth=1.5;
-    tx.beginPath(); tx.moveTo(rt.waypoints[0].x*sx,rt.waypoints[0].y*sy);
-    for(let i=1;i<rt.waypoints.length;i++) tx.lineTo(rt.waypoints[i].x*sx,rt.waypoints[i].y*sy);
+    tx.beginPath();
+    traceRoutePath(tx, rt.waypoints.map(w=>({x:w.x*sx,y:w.y*sy})), rt.shape||'curve');
     tx.stroke();
   });
   players.forEach(p=>{
@@ -2194,8 +2227,8 @@ function renderPlayToCanvas(play, tc){
     tx.strokeStyle=rt.color||'#ffcc00'; tx.lineWidth=Math.max(1.5,2.5*Math.min(sx,sy)*2);
     tx.lineCap='round'; tx.lineJoin='round';
     if(rt.style==='dashed') tx.setLineDash([6,3]); else tx.setLineDash([]);
-    tx.beginPath(); tx.moveTo(rt.waypoints[0].x*sx,rt.waypoints[0].y*sy);
-    for(let i=1;i<rt.waypoints.length;i++) tx.lineTo(rt.waypoints[i].x*sx,rt.waypoints[i].y*sy);
+    tx.beginPath();
+    traceRoutePath(tx, rt.waypoints.map(w=>({x:w.x*sx,y:w.y*sy})), rt.shape||'curve');
     tx.stroke(); tx.setLineDash([]);
     const n=rt.waypoints.length, ang=Math.atan2((rt.waypoints[n-1].y-rt.waypoints[n-2].y)*sy,(rt.waypoints[n-1].x-rt.waypoints[n-2].x)*sx);
     const as=8*Math.min(sx,sy)*1.8;
