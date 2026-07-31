@@ -34,6 +34,11 @@ async function renderTeamDashboard() {
 async function loadDashTeamName() {
   const input = document.getElementById('dash-team-name');
   if (!input) return;
+  // supabase-js serializes a JS `null` filter value as the literal string
+  // "null" in the query string (?id=eq.null), which Postgres then rejects
+  // with "invalid input syntax for type uuid" instead of matching nothing.
+  // Bail out before firing a request that's guaranteed to fail.
+  if (!currentTeamId) return;
   const { data, error } = await supa.from('teams').select('name').eq('id', currentTeamId).single();
   if (error) { console.error('[loadDashTeamName] failed:', error.message); return; }
   input.value = data?.name || '';
