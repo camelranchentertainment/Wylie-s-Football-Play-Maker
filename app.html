@@ -2165,14 +2165,28 @@ async function authSubmit() {
     renderLibrary();
     if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
   } else {
-    const { error } = await supa.auth.signUp({ email, password });
+    const { data: signUpData, error } = await supa.auth.signUp({ email, password });
     if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; btn.textContent = 'CREATE ACCOUNT'; return; }
+    // Same gap this branch used to have as the sign-in branch: creating the
+    // account does NOT by itself update the header button or dashboard --
+    // that used to be left for a future manual sign-in, which is exactly
+    // the "I have to sign in twice" complaint. Drive the full post-login
+    // refresh here too, immediately, the same as a normal sign-in does.
+    currentUser = signUpData?.user || (await supa.auth.getUser()).data.user;
     // Migrate any existing localStorage plays to cloud for new users
     showAuthMsg('Account created! Syncing your plays to the cloud…', 'ok');
     setTimeout(async () => {
       await migrateLocalToCloud();
       closeAuthModal();
+      try {
+        await ensureTeamContext();
+        await loadCloudLib();
+      } catch (e) {
+        console.error('[authSubmit] post-signup setup failed:', e);
+      }
+      updateAuthUI();
       renderLibrary();
+      if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
     }, 1200);
     btn.disabled = false; btn.textContent = 'CREATE ACCOUNT';
     return;
