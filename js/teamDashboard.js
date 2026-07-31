@@ -11,10 +11,23 @@ let _dashGames = [];
 let _dashEditingGameId = null;
 
 async function renderTeamDashboard() {
+  const banner = document.getElementById('dash-team-error');
   if (!currentTeamId) {
-    console.warn('[renderTeamDashboard] no team context yet');
+    // teamContextError (set in app.html's ensureTeamContext) holds the
+    // real reason -- show it instead of leaving the page looking like a
+    // normal, just-empty dashboard. A silently-empty dashboard is
+    // indistinguishable from "you have no games yet", which is exactly
+    // what made this failure mode so confusing to debug from the outside.
+    console.warn('[renderTeamDashboard] no team context yet:', teamContextError);
+    if (banner) {
+      banner.style.display = 'flex';
+      banner.querySelector('.dash-error-msg').textContent = teamContextError
+        ? `Couldn't set up your team: ${teamContextError}`
+        : 'Setting up your team…';
+    }
     return;
   }
+  if (banner) banner.style.display = 'none';
   await Promise.all([loadDashTeamName(), loadDashSeasonLabel(), loadDashGames()]);
 }
 
@@ -31,6 +44,7 @@ async function saveDashTeamName() {
   const badge = document.getElementById('dash-team-save-badge');
   const name = (input.value || '').trim();
   if (!name) { input.value = input.defaultValue || 'My Team'; return; }
+  if (!currentTeamId) { setStatus("Your team isn't set up yet — try Retry above, or reload the page.", 'err'); return; }
   const { error } = await supa.from('teams').update({ name }).eq('id', currentTeamId);
   if (error) { console.error('[saveDashTeamName] failed:', error.message); setStatus('Could not save team name — ' + error.message); return; }
   if (badge) {
@@ -140,6 +154,7 @@ async function saveGameFromModal() {
   const name = document.getElementById('game-name').value.trim();
   const errEl = document.getElementById('game-modal-err');
   if (!name) { errEl.textContent = 'Enter an opponent name.'; return; }
+  if (!currentTeamId) { errEl.textContent = "Your team isn't set up yet — close this, hit Retry on the dashboard, then try again."; return; }
 
   const ourScoreRaw = document.getElementById('game-our-score').value;
   const oppScoreRaw = document.getElementById('game-opp-score').value;

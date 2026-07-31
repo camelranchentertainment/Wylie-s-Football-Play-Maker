@@ -21,7 +21,11 @@ let psActiveSheetPlays = []; // [{ play_id (uuid), section, sort_order, play: {n
 let psOpponentsCache = [];
 
 async function psInit() {
-  if (!currentTeamId) { console.warn('[psInit] no team context yet'); return; }
+  if (!currentTeamId) {
+    console.warn('[psInit] no team context yet');
+    setStatus(teamContextError ? "Play Sheets aren't available yet — " + teamContextError : 'Setting up your team — try Play Sheets again in a moment.', 'err');
+    return;
+  }
   psShowList();
   await psLoadSheets();
 }
@@ -64,6 +68,7 @@ function renderPsSheetList() {
 }
 
 async function psCreateSheet() {
+  if (!currentTeamId) { setStatus("Your team isn't set up yet — try reloading the page.", 'err'); return; }
   const { data, error } = await supa
     .from('gameday_playbooks')
     .insert({ team_id: currentTeamId, name: 'New Play Sheet' })

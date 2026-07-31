@@ -281,6 +281,32 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   font-size:11px; color:var(--text-lo); letter-spacing:2px;
   margin-top:4px; text-transform:uppercase;
 }
+/* ─── STATUS TOAST ──────────────────────────────────────────── */
+/* setStatus(msg) drives this. It's the only feedback mechanism for a lot
+   of async save/load calls throughout the app, so it needs to actually be
+   visible -- a silently-discarded status message reads to the user as
+   "nothing happened", which is indistinguishable from "it worked". */
+.status-toast {
+  position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(0);
+  z-index:9999; max-width:min(560px,calc(100vw - 32px));
+  padding:12px 18px; border-radius:9px;
+  font-family:'Rajdhani',sans-serif; font-size:13.5px; font-weight:600; line-height:1.4;
+  background:var(--bg-card); color:var(--text-hi); border:1px solid var(--border-bright);
+  box-shadow:0 8px 28px rgba(0,0,0,.4);
+  opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;
+}
+.status-toast.show { opacity:1; transform:translateX(-50%) translateY(-4px); }
+.status-toast.err { background:rgba(255,68,85,.15); color:#ff8a93; border-color:rgba(255,68,85,.4); }
+.status-toast.ok { background:rgba(80,220,120,.12); color:#7cf0a0; border-color:rgba(80,220,120,.35); }
+.dash-error-banner {
+  display:flex; align-items:center; gap:12px;
+  margin:18px 28px 0; padding:12px 16px;
+  background:rgba(255,68,85,.1); border:1px solid rgba(255,68,85,.3); border-radius:8px;
+}
+.dash-error-icon { font-size:16px; color:#ff4455; flex-shrink:0; }
+.dash-error-msg { flex:1; font-size:13px; color:#ff8a93; line-height:1.5; }
+.dash-error-banner .hbtn { flex-shrink:0; color:#ff8a93; border-color:rgba(255,68,85,.35); }
+.dash-error-banner .hbtn:hover { color:#ff4455; border-color:#ff4455; background:rgba(255,68,85,.08); }
 .dash-section { padding:22px 28px; border-bottom:1px solid var(--border); }
 .dash-section-hdr {
   display:flex; align-items:center; justify-content:space-between;
@@ -598,6 +624,9 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 </head>
 <body>
 
+<!-- ═══ STATUS TOAST ═══ -->
+<div id="status-toast" class="status-toast"></div>
+
 <!-- ═══ HEADER ═══ -->
 <div id="hdr">
   <div class="hdr-left">
@@ -681,6 +710,12 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         <span id="dash-team-save-badge" class="dash-save-badge">SAVED</span>
       </div>
       <div class="dash-season-label" id="dash-season-label">SEASON</div>
+    </div>
+
+    <div id="dash-team-error" class="dash-error-banner" style="display:none;">
+      <span class="dash-error-icon">⚠</span>
+      <span class="dash-error-msg">Setting up your team…</span>
+      <button class="hbtn" onclick="retryTeamContext()">↻ RETRY</button>
     </div>
 
     <div class="dash-section">
@@ -1218,36 +1253,51 @@ let currentSeasonId = null;   // that team's active season
 // Called on page load — restore session if one exists
 async function initAuth() {
   console.log('[initAuth] checking session…');
-  const { data: { session }, error: sessErr } = await supa.auth.getSession();
-  if (sessErr) console.error('[initAuth] getSession error:', sessErr);
-  if (!session) {
-    console.log('[initAuth] no session — redirecting to login');
-    window.location.replace('login.html');
-    return;
+  try {
+    const { data: { session }, error: sessErr } = await supa.auth.getSession();
+    if (sessErr) console.error('[initAuth] getSession error:', sessErr);
+    if (!session) {
+      console.log('[initAuth] no session — redirecting to login');
+      window.location.replace('login.html');
+      return;
+    }
+    console.log('[initAuth] session found for', session.user?.email);
+    currentUser = session.user;
+    await ensureTeamContext();
+    await loadCloudLib();
+    console.log('[initAuth] cloudLib loaded —', cloudLib ? cloudLib.length + ' plays' : 'null (error)');
+    updateAuthUI();
+    if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
+  } catch (e) {
+    // Whatever broke here, the header button and dashboard retry banner
+    // are the two things a signed-in user can see even when everything
+    // else failed to load — never let an unexpected error leave both of
+    // those silently frozen on their pre-auth default state.
+    console.error('[initAuth] unexpected error during startup:', e);
+    updateAuthUI();
   }
-  console.log('[initAuth] session found for', session.user?.email);
-  currentUser = session.user;
-  await ensureTeamContext();
-  await loadCloudLib();
-  console.log('[initAuth] cloudLib loaded —', cloudLib ? cloudLib.length + ' plays' : 'null (error)');
-  updateAuthUI();
-  if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
   // Listen for auth state changes (sign-in / sign-out in other tabs)
   supa.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      currentUser = session.user;
-      await ensureTeamContext();
-      await loadCloudLib();
+    try {
+      if (event === 'SIGNED_IN' && session) {
+        currentUser = session.user;
+        await ensureTeamContext();
+        await loadCloudLib();
+        updateAuthUI();
+        renderLibrary();
+        if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        cloudLib = null;
+        currentTeamId = null;
+        currentSeasonId = null;
+        teamContextError = null;
+        updateAuthUI();
+        renderLibrary();
+      }
+    } catch (e) {
+      console.error('[onAuthStateChange] unexpected error handling', event, ':', e);
       updateAuthUI();
-      renderLibrary();
-      if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
-    } else if (event === 'SIGNED_OUT') {
-      currentUser = null;
-      cloudLib = null;
-      currentTeamId = null;
-      currentSeasonId = null;
-      updateAuthUI();
-      renderLibrary();
     }
   });
 }
@@ -1255,16 +1305,24 @@ async function initAuth() {
 function updateAuthUI() {
   const btn = document.getElementById('auth-nav-btn');
   if (!btn) return;
-  if (currentUser) {
-    const short = currentUser.email.split('@')[0];
-    btn.textContent = '👤 ' + short.toUpperCase();
-    btn.classList.add('signed-in');
-  } else {
-    btn.textContent = '👤 SIGN IN';
-    btn.classList.remove('signed-in');
+  try {
+    if (currentUser) {
+      const label = currentUser.email || currentUser.user_metadata?.display_name || 'ACCOUNT';
+      const short = label.split('@')[0];
+      btn.textContent = '👤 ' + short.toUpperCase();
+      btn.classList.add('signed-in');
+    } else {
+      btn.textContent = '👤 SIGN IN';
+      btn.classList.remove('signed-in');
+    }
+    const badge = document.getElementById('lib-cloud-badge');
+    if (badge) badge.style.display = currentUser ? 'inline' : 'none';
+  } catch (e) {
+    // Never let a malformed user object leave the button stuck mid-render
+    // — fall back to something truthful rather than throwing silently.
+    console.error('[updateAuthUI] failed to render auth state:', e);
+    btn.textContent = currentUser ? '👤 ACCOUNT' : '👤 SIGN IN';
   }
-  const badge = document.getElementById('lib-cloud-badge');
-  if (badge) badge.style.display = currentUser ? 'inline' : 'none';
 }
 
 // ─── TEAM / SEASON BOOTSTRAP ────────────────────────────────────
@@ -1273,6 +1331,15 @@ function updateAuthUI() {
 // active season to hang games/wristbands/play sheets off of. teams has an
 // on_team_created trigger that auto-adds the owner to team_members, so
 // creating the team row is all that's needed to establish membership.
+//
+// teamContextError holds the last failure (Postgrest error shape, or a
+// plain message) so the UI can show *why* instead of just rendering an
+// empty, seemingly-fine dashboard when currentTeamId never got set. Every
+// team-scoped read/write should treat a null currentTeamId as "not ready
+// yet" and bail with a clear status message rather than firing a request
+// with team_id=null.
+let teamContextError = null;
+
 async function ensureTeamContext() {
   if (!currentUser) return;
   try {
@@ -1316,10 +1383,34 @@ async function ensureTeamContext() {
       if (newSeasonErr) throw newSeasonErr;
       currentSeasonId = newSeason.id;
     }
+    teamContextError = null;
     console.log('[ensureTeamContext] team', currentTeamId, 'season', currentSeasonId);
   } catch (e) {
-    console.error('[ensureTeamContext] failed:', e.message || e);
+    // Postgrest errors carry message/details/hint/code; plain JS errors
+    // just have message. Capture whatever's there so the dashboard's
+    // retry banner can show something a person can actually act on
+    // instead of a generic "something went wrong".
+    const detail = [e?.message, e?.details, e?.hint].filter(Boolean).join(' — ') || String(e);
+    teamContextError = detail;
+    currentTeamId = null;
+    currentSeasonId = null;
+    console.error('[ensureTeamContext] failed:', e, '| code:', e?.code);
   }
+}
+
+// Re-runs team setup and re-renders whichever team-scoped view is active.
+// Wired to the retry button shown in the dashboard's error banner.
+async function retryTeamContext() {
+  setStatus('Retrying team setup…');
+  await ensureTeamContext();
+  if (teamContextError) { setStatus("Still couldn't set up your team — " + teamContextError, 'err'); return; }
+  setStatus('Team ready.', 'ok');
+  if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
+  // Team-scoped modules that lazily init once (Signals/Wristband) need to
+  // be told it's safe to try again now that currentTeamId is real.
+  window._sigInitDone = false;
+  if (document.getElementById('page-signals')?.classList.contains('act')) ensureSignalsInit();
+  if (document.getElementById('page-playsheets')?.classList.contains('act')) psInit();
 }
 
 // ─── CLOUD LIBRARY ────────────────────────────────────────────
@@ -1943,7 +2034,40 @@ function finishRoute(){
 function pushH(){ S.history.push({p:JSON.parse(JSON.stringify(S.players)),r:JSON.parse(JSON.stringify(S.routes)),l:JSON.parse(JSON.stringify(S.labels))}); if(S.history.length>40) S.history.shift(); }
 function undoLast(){ if(!S.history.length) return; const h=S.history.pop(); S.players=h.p; S.routes=h.r; S.labels=h.l; S.selectedId=null; render(); setStatus('Undone'); }
 function confirmClear(){ if(!confirm('Clear all players, routes, and labels?')) return; pushH(); S.players=[]; S.routes=[]; S.labels=[]; S.selectedId=null; S.drawingRoute=false; S.routeWpts=[]; S.justStartedRoute=false; render(); setStatus('Field cleared'); }
-function setStatus(msg){ /* status pill removed */ }
+// The old status pill in the header was removed at some point, but every
+// save/load call site across the whole app (dashboard, wristband, play
+// sheets, printers, etc.) still calls setStatus() as its ONLY way of
+// telling the user something went wrong. Leaving this as a no-op made all
+// of those failures invisible -- the exact bug behind "nothing saves and
+// nothing tells me why". A floating toast is the lowest-risk way to make
+// every one of those existing call sites start working again without
+// touching each of them individually.
+let _statusToastTimer = null;
+// type: 'err' | 'ok' | omitted (neutral). Existing call sites across the
+// app predate this parameter and just pass a message, so when it's
+// omitted the tone is sniffed from the wording -- good enough for the
+// common "Could not X — reason" / "X saved" phrasing used throughout, but
+// new call sites should pass the type explicitly rather than relying on
+// the guess.
+function setStatus(msg, type){
+  if (!msg) return;
+  const el = document.getElementById('status-toast');
+  if (!el) { console.log('[status]', msg); return; }
+  let isErr = type === 'err';
+  let isOk = type === 'ok';
+  if (!type) {
+    const lower = String(msg).toLowerCase();
+    isErr = /(fail|error|could ?n'?t|can'?t|isn'?t|aren'?t|couldn'?t)/.test(lower);
+    isOk = !isErr && /(saved|added|removed|updated|deleted|loaded|created|ready)/.test(lower);
+  }
+  el.textContent = msg;
+  el.classList.remove('err', 'ok');
+  if (isErr) el.classList.add('err');
+  else if (isOk) el.classList.add('ok');
+  el.classList.add('show');
+  clearTimeout(_statusToastTimer);
+  _statusToastTimer = setTimeout(() => el.classList.remove('show'), isErr ? 6000 : 3200);
+}
 
 // ─── SAVE MODAL ───────────────────────────────────────────────
 function openSaveModal(){
@@ -2448,9 +2572,16 @@ function switchPage(id){
 // Team Library "+ WB" quick-add in wbAddById) can await it instead of
 // racing the async fetch that initSignals() kicks off.
 async function ensureSignalsInit(){
-  if (typeof initSignals === 'function' && !window._sigInitDone) {
-    window._sigInitDone = true;
+  if (typeof initSignals !== 'function' || window._sigInitDone) return;
+  try {
     await initSignals();
+    // Only latch "done" once currentTeamId actually resolved to something
+    // real -- if team context still isn't ready, leave the guard open so
+    // the next visit to this tab (or retryTeamContext()) tries again
+    // instead of being permanently stuck from one early failed attempt.
+    if (currentTeamId) window._sigInitDone = true;
+  } catch (e) {
+    console.error('[ensureSignalsInit] initSignals threw:', e);
   }
 }
 
