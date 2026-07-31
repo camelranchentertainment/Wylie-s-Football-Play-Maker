@@ -320,3 +320,144 @@ async function leaveCurrentTeam() {
     document.getElementById('tc-err').textContent = 'Could not leave — ' + (e.message || 'unknown error');
   }
 }
+
+// ── Team Branding (colors + logo) ────────────────────────────────
+// teams.primary_color/secondary_color/logo_url already existed in the
+// schema but had no UI anywhere and were never read by any print
+// template -- every printout looked anonymous (or, on the wristband
+// insert, was hardcoded to the app's own name instead of the team's).
+// getTeamBranding()/buildPrintBrandingHeader() (js/printPreview.js) are
+// what actually consume these values at print time.
+const TB_LOGO_BUCKET = 'team-logos';
+const TB_MAX_LOGO_BYTES = 2 * 1024 * 1024;
+const TB_ALLOWED_LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+
+function openTeamBrandingModal() {
+  if (!currentTeamId) { setStatus("Your team isn't set up yet — close this and hit Retry on the dashboard.", 'err'); return; }
+  document.getElementById('tb-err').textContent = '';
+  // teams_update RLS is owner-only (matches the rest of the team's
+  // identity fields -- name, mascot, etc.), so a coach can see branding
+  // here but not change it, rather than clicking Save and hitting a
+  // confusing permission error.
+  const isOwner = currentTeamRole === 'owner';
+  document.getElementById('tb-logo-upload-label').style.display = isOwner ? 'inline-flex' : 'none';
+  document.getElementById('tb-primary-color').disabled = !isOwner;
+  document.getElementById('tb-secondary-color').disabled = !isOwner;
+  document.getElementById('tb-save-btn').style.display = isOwner ? 'block' : 'none';
+  document.getElementById('tb-readonly-note').style.display = isOwner ? 'none' : 'block';
+  document.getElementById('team-branding-modal').classList.add('show');
+  loadTeamBrandingIntoModal();
+}
+
+function closeTeamBrandingModal() {
+  document.getElementById('team-branding-modal').classList.remove('show');
+}
+
+async function loadTeamBrandingIntoModal() {
+  const errEl = document.getElementById('tb-err');
+  try {
+    const { data, error } = await supa
+      .from('teams')
+      .select('primary_color, secondary_color, logo_url')
+      .eq('id', currentTeamId)
+      .single();
+    if (error) throw error;
+    document.getElementById('tb-primary-color').value = data?.primary_color || '#0B2545';
+    document.getElementById('tb-secondary-color').value = data?.secondary_color || '#F4B400';
+    renderTeamLogoPreview(data?.logo_url || null);
+  } catch (e) {
+    errEl.textContent = 'Could not load — ' + (e.message || 'unknown error');
+  }
+}
+
+function renderTeamLogoPreview(logoUrl) {
+  const preview = document.getElementById('tb-logo-preview');
+  const removeBtn = document.getElementById('tb-logo-remove-btn');
+  const isOwner = currentTeamRole === 'owner';
+  if (logoUrl) {
+    preview.innerHTML = `<img src="${logoUrl}" alt="Team logo">`;
+    removeBtn.style.display = isOwner ? 'block' : 'none';
+  } else {
+    preview.innerHTML = '<span id="tb-logo-placeholder">No logo</span>';
+    removeBtn.style.display = 'none';
+  }
+}
+
+async function saveTeamBrandingColors() {
+  const errEl = document.getElementById('tb-err');
+  const btn = document.getElementById('tb-save-btn');
+  const primary = document.getElementById('tb-primary-color').value;
+  const secondary = document.getElementById('tb-secondary-color').value;
+  errEl.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    const { error } = await supa.from('teams')
+      .update({ primary_color: primary, secondary_color: secondary })
+      .eq('id', currentTeamId);
+    if (error) throw error;
+    setStatus('Team colors saved', 'ok');
+  } catch (e) {
+    errEl.textContent = 'Could not save — ' + (e.message || 'unknown error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Colors';
+  }
+}
+
+async function handleTeamLogoSelect(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (!file) return;
+  const errEl = document.getElementById('tb-err');
+  errEl.textContent = '';
+
+  // Client-side checks are just fast feedback -- the team-logos bucket
+  // itself enforces the real size/type limits server-side (see the
+  // team_logos_storage_bucket migration), so a request that slips past
+  // this still can't succeed with something outside those bounds.
+  if (!TB_ALLOWED_LOGO_TYPES.includes(file.type)) {
+    errEl.textContent = 'Please choose a PNG, JPG, or WEBP image.';
+    return;
+  }
+  if (file.size > TB_MAX_LOGO_BYTES) {
+    errEl.textContent = 'That image is too large — please choose one under 2MB.';
+    return;
+  }
+
+  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+  const path = `${currentTeamId}/logo.${ext}`;
+
+  try {
+    const { error: uploadErr } = await supa.storage
+      .from(TB_LOGO_BUCKET)
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (uploadErr) throw uploadErr;
+
+    const { data: pub } = supa.storage.from(TB_LOGO_BUCKET).getPublicUrl(path);
+    // Cache-bust so re-uploading a logo at the same path shows up
+    // immediately instead of an old cached copy at the identical URL.
+    const logoUrl = `${pub.publicUrl}?t=${Date.now()}`;
+
+    const { error: updateErr } = await supa.from('teams').update({ logo_url: logoUrl }).eq('id', currentTeamId);
+    if (updateErr) throw updateErr;
+
+    renderTeamLogoPreview(logoUrl);
+    setStatus('Logo uploaded', 'ok');
+  } catch (e) {
+    errEl.textContent = 'Upload failed — ' + (e.message || 'unknown error');
+  }
+}
+
+async function removeTeamLogo() {
+  if (!confirm('Remove your team logo?')) return;
+  const errEl = document.getElementById('tb-err');
+  try {
+    const { error } = await supa.from('teams').update({ logo_url: null }).eq('id', currentTeamId);
+    if (error) throw error;
+    renderTeamLogoPreview(null);
+    setStatus('Logo removed', 'ok');
+  } catch (e) {
+    errEl.textContent = 'Could not remove — ' + (e.message || 'unknown error');
+  }
+}

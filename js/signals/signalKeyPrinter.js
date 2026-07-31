@@ -1,14 +1,15 @@
 'use strict';
 
-function printSigKeyCard() {
+async function printSigKeyCard() {
   if (!sigAssignments.length) { alert('No signals assigned yet.'); return; }
 
   const page = sigActivePage();
-  showPrintPreview(() => buildSigKeyCardHtml(), { title: (page?.label || 'SIGNAL KEY') + ' — Coach Reference' });
+  const branding = await getTeamBranding();
+  showPrintPreview(() => buildSigKeyCardHtml(branding), { title: (page?.label || 'SIGNAL KEY') + ' — Coach Reference' });
 }
 
 // Fixed physical card size (5.5in x 4.25in) -- no paper-size picker.
-function buildSigKeyCardHtml() {
+function buildSigKeyCardHtml(branding) {
   const page   = sigActivePage();
   const real   = sigAssignments.filter(a => !a.is_dummy && a.play_id)
     .sort((a,b) => SIG_ROWS.indexOf(a.wristband_row)*4+(a.wristband_col-1)
@@ -70,6 +71,7 @@ tr:nth-child(even) td{background:#f8f8f8;}
 .kc-dummy-chip{display:inline-block;background:#f0f0f0;border-radius:4px;padding:2px 8px;margin:2px;font-style:italic;}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.kc-dot{border:1.5px solid #000;background:transparent!important;}}
 </style></head><body>
+${buildPrintBrandingHeader(branding)}
 <div class="kc-title">${sigEsc(page?.label || "SIGNAL KEY")} — COACH REFERENCE</div>
 <div class="kc-sub">Body Zone &rarr; Row (fixed) &nbsp;·&nbsp; Fingers &rarr; Column &nbsp;·&nbsp; Read cell at intersection on wristband</div>
 ${rotNote}

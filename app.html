@@ -387,6 +387,20 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 }
 .tc-roster-remove:hover { color:#ff6b75; background:rgba(255,68,85,.1); }
 
+/* ─── TEAM BRANDING MODAL ────────────────────────────────────── */
+.tb-logo-row { display:flex; align-items:center; gap:12px; }
+.tb-logo-preview {
+  width:64px; height:64px; flex-shrink:0; border-radius:8px;
+  background:var(--bg-card); border:1px solid var(--border-bright);
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+.tb-logo-preview img { width:100%; height:100%; object-fit:contain; }
+.tb-logo-preview #tb-logo-placeholder { font-size:9px; color:var(--text-lo); text-align:center; padding:4px; }
+.tb-color-input {
+  width:100%; height:36px; padding:2px; background:var(--bg-card);
+  border:1px solid var(--border-bright); border-radius:7px; cursor:pointer;
+}
+
 /* ─── PLAY SHEETS ────────────────────────────────────────────── */
 .ps-game-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
 .ps-game-tile {
@@ -773,7 +787,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <div class="dash-team-name-row">
         <input type="text" id="dash-team-name" class="dash-team-name-input" placeholder="Team Name" onblur="saveDashTeamName()" onkeydown="if(event.key==='Enter')this.blur()">
         <span id="dash-team-save-badge" class="dash-save-badge">SAVED</span>
-        <button class="hbtn" style="margin-left:auto;" onclick="openTeamCoachesModal()">👥 COACHES</button>
+        <button class="hbtn" style="margin-left:auto;" onclick="openTeamBrandingModal()">🎨 BRANDING</button>
+        <button class="hbtn" onclick="openTeamCoachesModal()">👥 COACHES</button>
       </div>
       <div class="dash-season-label" id="dash-season-label">SEASON</div>
     </div>
@@ -981,6 +996,47 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   </div>
 </div>
 
+<!-- ══ TEAM BRANDING (colors + logo, used on every printout) ══ -->
+<div class="modal-overlay" id="team-branding-modal" onclick="if(event.target===this)closeTeamBrandingModal()">
+  <div class="modal" style="max-width:440px;">
+    <h2>TEAM BRANDING</h2>
+    <div class="modal-subtitle">Shown on every printout — wristbands, key cards, call sheets, and install sheets.</div>
+
+    <div class="rp-group" style="margin:16px 0 12px;">
+      <label class="rp-label">Logo</label>
+      <div class="tb-logo-row">
+        <div class="tb-logo-preview" id="tb-logo-preview"><span id="tb-logo-placeholder">No logo</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label class="hbtn" id="tb-logo-upload-label" style="cursor:pointer;display:inline-flex;">
+            UPLOAD
+            <input type="file" id="tb-logo-input" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handleTeamLogoSelect(event)">
+          </label>
+          <button class="hbtn" id="tb-logo-remove-btn" style="display:none;" onclick="removeTeamLogo()">REMOVE</button>
+        </div>
+      </div>
+      <div class="modal-subtitle" style="margin:6px 0 0;">PNG, JPG, or WEBP — up to 2MB.</div>
+    </div>
+    <div id="tb-readonly-note" style="display:none;font-size:11px;color:var(--text-lo);margin-bottom:10px;">Only the team owner can change branding.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px;">
+      <div class="rp-group">
+        <label class="rp-label">Primary Color</label>
+        <input type="color" class="tb-color-input" id="tb-primary-color" value="#0B2545">
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">Secondary Color</label>
+        <input type="color" class="tb-color-input" id="tb-secondary-color" value="#F4B400">
+      </div>
+    </div>
+    <div id="tb-err" style="color:#ff6b75;font-size:11px;min-height:14px;margin-bottom:4px;"></div>
+
+    <div class="modal-actions">
+      <button class="mbtn cancel" onclick="closeTeamBrandingModal()">Close</button>
+      <button class="mbtn ok" id="tb-save-btn" onclick="saveTeamBrandingColors()">Save Colors</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ PRINT PREVIEW ══ -->
 <div class="modal-overlay" id="print-preview-modal" onclick="if(event.target===this)closePrintPreview()">
   <div class="modal wide pp-modal">
@@ -1123,6 +1179,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         <option value="defense">Defense</option>
       </select>
       <span id="lib-count"></span>
+      <button class="hbtn" style="margin-left:auto;" onclick="printTeamLibrary()" title="One play per page, big diagram — prints whatever your search/filter shows">🖶 PRINT PLAYBOOK</button>
     </div>
     <div id="lib-grid"></div>
   </div>
@@ -1215,6 +1272,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
         <div id="sig-key-preview"><div class="sig-preview-empty">Assign plays to grid cells to see the key card preview.</div></div>
       </div>
     </div>
+  </div>
   </div>
 
 </div>
@@ -3097,19 +3155,27 @@ function saveLib(l){
   localStorage.setItem(LIB_KEY,JSON.stringify(l));
 }
 
-function renderLibrary(){
-  const grid = document.getElementById('lib-grid');
+// Shared by renderLibrary() and printTeamLibrary() so "print what you
+// see" actually means what it says -- the printed playbook always
+// matches whatever search/filter is currently applied on-screen.
+function libGetFilteredPlays(){
   const q = (document.getElementById('lib-search')?.value||'').toLowerCase();
   const f = document.getElementById('lib-filter')?.value||'all';
-  const typeColor = {run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
   const myPlays = getLib();
-  const countEl = document.getElementById('lib-count');
-
-  const lib = myPlays.filter(p=>{
+  return myPlays.filter(p=>{
     const ms = !q || p.name.toLowerCase().includes(q) || (p.formation||'').toLowerCase().includes(q);
     const mf = f==='all' || p.mode===f;
     return ms && mf;
   });
+}
+
+function renderLibrary(){
+  const grid = document.getElementById('lib-grid');
+  const typeColor = {run:'ptag-r',pass:'ptag-p',defense:'ptag-d',screen:'ptag-s',trick:'ptag-s',redzone:'ptag-o',special:'ptag-s',default:'ptag-o'};
+  const myPlays = getLib();
+  const countEl = document.getElementById('lib-count');
+
+  const lib = libGetFilteredPlays();
   if(countEl) countEl.textContent = lib.length+' play'+(lib.length!==1?'s':'');
   if(!lib.length){
     const msg = myPlays.length
@@ -3141,6 +3207,23 @@ function renderLibrary(){
     d.addEventListener('click', ()=>openPlayModal(pl.id));
     grid.appendChild(d);
   });
+}
+
+// "Playbook" print for the Team Library -- one play per page, big
+// diagram, same visual language as the Play Sheets install packet
+// (psInstallSheetStyles/psInstallSheetPageHtml in js/playSheets.js),
+// reused here rather than duplicated since a play object from the
+// library and a play object attached to a sheet have the same shape.
+// Prints whatever the current search/filter shows, not the whole
+// library unconditionally -- see libGetFilteredPlays().
+async function printTeamLibrary(){
+  const plays = libGetFilteredPlays();
+  if (!plays.length) { alert('No plays to print — clear your search/filter or save a play first.'); return; }
+  const branding = await getTeamBranding();
+  showPrintPreview(() => `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${sigEsc(branding.name)} — Playbook</title>
+<style>${psInstallSheetStyles()}</style></head><body>${plays.map(p => psInstallSheetPageHtml(p, branding)).join('')}</body></html>`,
+    { title: branding.name + ' — Playbook' });
 }
 
 function resetPlayDbFilters(){

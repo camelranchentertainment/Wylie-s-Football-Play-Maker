@@ -1,16 +1,20 @@
 'use strict';
 
-function printSigWristband() {
+async function printSigWristband() {
   const real = sigAssignments.filter(a => !a.is_dummy && a.play_id);
   if (!real.length) { alert('Add plays to the signal grid first.'); return; }
 
   const page = sigActivePage();
-  showPrintPreview(() => buildSigWristbandHtml(), { title: (page?.label || 'WRISTBAND') + ' — QB Insert' });
+  const branding = await getTeamBranding();
+  showPrintPreview(() => buildSigWristbandHtml(branding), { title: (page?.label || 'WRISTBAND') + ' — QB Insert' });
 }
 
 // Fixed physical insert size (4.25in x 2.75in landscape) -- no paper-size
-// picker for this one, it's a wristband card, not a page.
-function buildSigWristbandHtml() {
+// picker for this one, it's a wristband card, not a page. There's no
+// room on a card this small for a logo header, but the footer used to
+// hardcode "Wylie's Play Maker" (the app's own name) regardless of whose
+// team it was -- swapped for the team's actual name instead.
+function buildSigWristbandHtml(branding) {
   const page    = sigActivePage();
   const real    = sigAssignments.filter(a => !a.is_dummy && a.play_id);
   const caller  = real[0]?.live_caller || 'OC';
@@ -70,7 +74,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;width:4.0
     <span>${sigEsc(page?.label || 'WRISTBAND')} — QB INSERT</span>
   </div>
   <div class="ww-grid">${cells}</div>
-  <div class="ww-bot"><span>${serLbl}</span><span>Wylie's Play Maker</span></div>
+  <div class="ww-bot"><span>${serLbl}</span><span>${sigEsc(branding.name)}</span></div>
 </div>
 </body></html>`;
 

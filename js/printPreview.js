@@ -72,3 +72,44 @@ function doPrintPreview() {
     setStatus('Could not open the print dialog — try again.');
   }
 }
+
+// ── Team branding for print headers ─────────────────────────────
+// Fetched fresh (not cached) every time a print is triggered, so a
+// change made in the Team Branding modal shows up on the very next
+// printout without needing a page reload.
+async function getTeamBranding() {
+  const fallback = { name: 'My Team', primary_color: '#0B2545', secondary_color: '#F4B400', logo_url: null };
+  if (!currentTeamId) return fallback;
+  try {
+    const { data, error } = await supa
+      .from('teams')
+      .select('name, primary_color, secondary_color, logo_url')
+      .eq('id', currentTeamId)
+      .single();
+    if (error) throw error;
+    return {
+      name: data?.name || fallback.name,
+      primary_color: data?.primary_color || fallback.primary_color,
+      secondary_color: data?.secondary_color || fallback.secondary_color,
+      logo_url: data?.logo_url || null,
+    };
+  } catch (e) {
+    console.error('[getTeamBranding] failed:', e.message || e);
+    return fallback;
+  }
+}
+
+// Small reusable header block -- logo (if one's been uploaded) plus team
+// name -- meant to sit above a print document's own title so a printed
+// page never looks anonymous or (worse) branded as "Wylie's Play Maker"
+// instead of the coach's own team.
+function buildPrintBrandingHeader(branding) {
+  if (!branding) return '';
+  const logo = branding.logo_url
+    ? `<img src="${branding.logo_url}" alt="" style="height:30px;width:auto;object-fit:contain;">`
+    : '';
+  return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    ${logo}
+    <span style="font-family:Arial,Helvetica,sans-serif;font-size:9.5pt;font-weight:700;letter-spacing:.5px;color:${sigEsc(branding.primary_color || '#333')};">${sigEsc(branding.name)}</span>
+  </div>`;
+}

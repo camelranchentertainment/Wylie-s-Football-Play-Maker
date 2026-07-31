@@ -386,12 +386,13 @@ async function psMovePlay(section, playId, delta) {
 
 
 // ── Print ────────────────────────────────────────────────────
-function psPrintSheet() {
+async function psPrintSheet() {
   if (!psActiveSheetPlays.length) { alert('Add plays to this sheet first.'); return; }
-  showPrintPreview((size) => buildPsSheetHtml(size), { title: psActiveSheetName + ' — Play Sheet', paperSize: true });
+  const branding = await getTeamBranding();
+  showPrintPreview((size) => buildPsSheetHtml(size, branding), { title: psActiveSheetName + ' — Play Sheet', paperSize: true });
 }
 
-function buildPsSheetHtml(paperSize) {
+function buildPsSheetHtml(paperSize, branding) {
   const landscape = paperSize === 'letter-landscape';
   const pageSize = landscape ? '11in 8.5in' : '8.5in 11in';
   const opponent = psOpponentsCache.find(o => String(o.id) === (document.getElementById('ps-sheet-opponent')?.value || ''));
@@ -434,6 +435,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;font-size
 .pshs-meta{color:#555;width:100%;}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 </style></head><body>
+${buildPrintBrandingHeader(branding)}
 <div class="psh-hdr">
   <span class="psh-title">${sigEsc(psActiveSheetName)}</span>
   <span class="psh-opp">${opponent ? 'vs ' + sigEsc(opponent.name) + (opponent.game_date ? ' · ' + opponent.game_date : '') : ''}</span>
@@ -472,9 +474,10 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000;}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}`;
 }
 
-function psInstallSheetPageHtml(play) {
+function psInstallSheetPageHtml(play, branding) {
   const dataUrl = psPlayDiagramDataUrl(play);
   return `<div class="pis-page">
+    ${buildPrintBrandingHeader(branding)}
     <div class="pis-hdr">
       <span class="pis-name">${sigEsc(play.name)}</span>
       <span class="pis-meta">${sigEsc([play.formation, play.type].filter(Boolean).join(' · '))}</span>
@@ -486,24 +489,26 @@ function psInstallSheetPageHtml(play) {
 
 // One play, printed on its own -- the print icon on each play row in the
 // editor.
-function psPrintSinglePlay(playId) {
+async function psPrintSinglePlay(playId) {
   const row = psActiveSheetPlays.find(p => p.play_id === playId);
   if (!row) return;
+  const branding = await getTeamBranding();
   showPrintPreview(() => `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>${sigEsc(row.play.name)} — Install Sheet</title>
-<style>${psInstallSheetStyles()}</style></head><body>${psInstallSheetPageHtml(row.play)}</body></html>`,
+<style>${psInstallSheetStyles()}</style></head><body>${psInstallSheetPageHtml(row.play, branding)}</body></html>`,
     { title: row.play.name + ' — Install Sheet' });
 }
 
 // Every play on the current sheet, in its current sorted order, as a
 // multi-page packet -- one page per play -- so a coach can hand a kid
 // exactly the plays they need to learn for this game in one print job.
-function psPrintInstallPacket() {
+async function psPrintInstallPacket() {
   if (!psActiveSheetPlays.length) { alert('Add plays to this sheet first.'); return; }
   const ordered = PS_SECTIONS
     .flatMap(section => psActiveSheetPlays.filter(p => p.section === section).sort((a, b) => a.sort_order - b.sort_order));
+  const branding = await getTeamBranding();
   showPrintPreview(() => `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>${sigEsc(psActiveSheetName)} — Install Packet</title>
-<style>${psInstallSheetStyles()}</style></head><body>${ordered.map(p => psInstallSheetPageHtml(p.play)).join('')}</body></html>`,
+<style>${psInstallSheetStyles()}</style></head><body>${ordered.map(p => psInstallSheetPageHtml(p.play, branding)).join('')}</body></html>`,
     { title: psActiveSheetName + ' — Install Packet' });
 }
