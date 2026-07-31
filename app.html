@@ -649,6 +649,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     <button class="npbtn" data-page="signals" onclick="switchPage('signals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>WRISTBAND</button>
     <button class="npbtn" data-page="playsheets" onclick="switchPage('playsheets')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg>PLAY SHEETS</button>
     <button class="npbtn" data-page="designer" onclick="switchPage('designer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>PLAY BUILDER</button>
+    <button class="npbtn" data-page="timer" onclick="switchPage('timer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6"/></svg>PRACTICE TIMER</button>
   </nav>
   <div class="hdr-right">
   <div class="hdiv"></div>
@@ -1108,6 +1109,558 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
     </div>
   </div>
 </div>
+
+<!-- ══ PRACTICE TIMER (standalone tool, fully scoped under #page-timer so
+     its CSS/JS can't leak into or collide with the rest of the app) ══ -->
+<style>
+
+  #page-timer {
+    --turf-dark:#0f2e1f;
+    --turf:#16442d;
+    --turf-light:#255c3c;
+    --chalk:#f5f7f2;
+    --chalk-dim:#b9c9bd;
+    --gold:#ffb703;
+    --gold-dim:#7a5c14;
+    --water:#4cc9f0;
+    --danger:#ef5350;
+    --line: rgba(245,247,242,0.18);
+    --radius: 14px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+  }
+  #page-timer * {box-sizing:border-box;}
+  
+  #page-timer {
+    flex-direction:column; overflow-y:auto;
+    background:
+      repeating-linear-gradient(0deg, var(--turf) 0px, var(--turf) 78px, var(--turf-light) 78px, var(--turf-light) 80px),
+      var(--turf-dark);
+    color:var(--chalk);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    padding-bottom:60px;
+  }
+  #page-timer .wrap {max-width:640px;margin:0 auto;padding:var(--space-4) var(--space-4) var(--space-6);}
+  #page-timer header {padding-top:var(--space-3);margin-bottom:var(--space-4);}
+  #page-timer .eyebrow {
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    font-size:12px;
+    color:var(--gold);
+    font-weight:600;
+  }
+  #page-timer h1 {
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:clamp(22px,6vw,30px);
+    margin:2px 0 0;
+    letter-spacing:0.01em;
+  }
+  #page-timer .clock-badge {
+    font-family:'Inter';
+    font-size:13px;
+    color:var(--chalk-dim);
+    margin-top:2px;
+  }
+  #page-timer .field {
+    position:relative;
+    background:var(--turf-dark);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 10px 22px;
+    margin-bottom:var(--space-5);
+    overflow:hidden;
+  }
+  #page-timer .yardline-track {
+    position:relative;
+    height:10px;
+    background:rgba(245,247,242,0.10);
+    border-radius:5px;
+    margin:8px 2px 6px;
+  }
+  #page-timer .yardline-fill {
+    position:absolute;left:0;top:0;bottom:0;
+    background:linear-gradient(90deg, var(--gold-dim), var(--gold));
+    border-radius:5px;
+    width:0%;
+    transition:width 0.4s linear;
+  }
+  #page-timer .yardline-ticks {
+    position:absolute; inset:0;
+  }
+  #page-timer .tick {
+    position:absolute;
+    top:-4px; bottom:-4px;
+    width:1px;
+    background:var(--turf-dark);
+  }
+  #page-timer .ball {
+    position:absolute;
+    top:50%;
+    width:16px;height:16px;
+    transform:translate(-50%,-50%);
+    transition:left 0.4s linear;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+  }
+  #page-timer .field-labels {
+    display:flex;justify-content:space-between;
+    font-family:'Oswald';
+    font-size:11px;
+    letter-spacing:0.06em;
+    color:var(--chalk-dim);
+    text-transform:uppercase;
+    padding:0 2px;
+  }
+  #page-timer .now-label {
+    font-family:'Oswald';
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    font-size:12px;
+    color:var(--chalk-dim);
+    margin-bottom:6px;
+  }
+  #page-timer .now-card {
+    background:var(--turf-light);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:var(--space-5) var(--space-4);
+    margin-bottom:var(--space-4);
+    position:relative;
+  }
+  #page-timer .now-card.water {background:linear-gradient(135deg,#0d3b4a,#12556a);}
+  #page-timer .segment-name {
+    font-family:'Oswald';
+    font-weight:700;
+    font-size:clamp(24px,7vw,32px);
+    margin:0 0 2px;
+  }
+  #page-timer .segment-groups {
+    font-size:14px;
+    color:var(--gold);
+    font-weight:600;
+    margin-bottom:14px;
+  }
+  #page-timer .countdown {
+    font-family:'Oswald';
+    font-weight:700;
+    font-size:clamp(64px,22vw,96px);
+    line-height:1;
+    letter-spacing:0.01em;
+    font-variant-numeric:tabular-nums;
+    text-align:center;
+    margin:6px 0 10px;
+  }
+  #page-timer .countdown.warn {color:var(--gold);}
+  #page-timer .countdown.danger {color:var(--danger);}
+  #page-timer .segment-notes {
+    font-size:14.5px;
+    line-height:1.55;
+    color:var(--chalk);
+    background:rgba(0,0,0,0.18);
+    border-radius:10px;
+    padding:12px 14px;
+    white-space:pre-line;
+  }
+  #page-timer .next-up {
+    font-size:13.5px;
+    color:var(--chalk-dim);
+    margin:0 0 var(--space-4) 2px;
+  }
+  #page-timer .next-up b {color:var(--chalk);}
+  #page-timer .controls {
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:var(--space-2);
+    margin-bottom:var(--space-3);
+  }
+  #page-timer button {
+    font-family:'Oswald';
+    font-weight:600;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    font-size:14px;
+    border:1px solid var(--line);
+    background:rgba(245,247,242,0.06);
+    color:var(--chalk);
+    border-radius:10px;
+    padding:14px 8px;
+    min-height:48px;
+    cursor:pointer;
+    transition:background 0.15s, transform 0.1s;
+  }
+  #page-timer button:active {transform:scale(0.97);}
+  #page-timer button:hover {background:rgba(245,247,242,0.12);}
+  #page-timer button:focus-visible {outline:3px solid var(--gold);outline-offset:2px;}
+  #page-timer .btn-play {
+    grid-column:1 / -1;
+    background:var(--gold);
+    color:#2a1c00;
+    font-size:17px;
+    min-height:56px;
+  }
+  #page-timer .btn-play:hover {background:#ffc23a;}
+  #page-timer .row-secondary {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:var(--space-2);
+    margin-bottom:var(--space-5);
+  }
+  #page-timer .adjust {font-size:13px;color:var(--chalk-dim);background:transparent;}
+  #page-timer details {
+    background:rgba(245,247,242,0.05);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:var(--space-3) var(--space-4);
+  }
+  #page-timer summary {
+    font-family:'Oswald';
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    font-size:13px;
+    cursor:pointer;
+    color:var(--chalk-dim);
+    padding:4px 0;
+  }
+  #page-timer .sched-list {margin-top:var(--space-3);display:flex;flex-direction:column;gap:2px;}
+  #page-timer .sched-item {
+    display:flex;
+    gap:12px;
+    align-items:baseline;
+    padding:10px 8px;
+    border-radius:8px;
+    cursor:pointer;
+    border:1px solid transparent;
+  }
+  #page-timer .sched-item:hover {background:rgba(245,247,242,0.06);}
+  #page-timer .sched-item.active {
+    background:rgba(255,183,3,0.12);
+    border-color:var(--gold-dim);
+  }
+  #page-timer .sched-item.done {opacity:0.45;}
+  #page-timer .sched-dur {
+    font-family:'Oswald';
+    font-variant-numeric:tabular-nums;
+    font-size:13px;
+    color:var(--chalk-dim);
+    min-width:38px;
+  }
+  #page-timer .sched-item.active .sched-dur {color:var(--gold);}
+  #page-timer .sched-title {font-size:14.5px;font-weight:600;}
+  #page-timer .sched-groups {font-size:12.5px;color:var(--chalk-dim);}
+  #page-timer .foot-note {
+    text-align:center;
+    font-size:12px;
+    color:var(--chalk-dim);
+    margin-top:var(--space-5);
+    line-height:1.6;
+  }
+  @media (prefers-reduced-motion: reduce){
+    #page-timer * {transition:none !important;}
+  }
+
+</style>
+<div id="page-timer" class="page">
+<div class="wrap">
+  <header>
+    <div class="eyebrow">6th Grade Football — Practice #2</div>
+    <h1>Practice Timer</h1>
+    <div class="clock-badge">Field time <span id="clockOfDay">6:00</span> · <span id="totalRemaining">2:00:00</span> left</div>
+  </header>
+  <div class="field">
+    <div class="yardline-track">
+      <div class="yardline-fill" id="fillBar"></div>
+      <div class="yardline-ticks" id="ticks"></div>
+      <svg class="ball" id="ballMarker" viewBox="0 0 24 16" style="left:0%">
+        <ellipse cx="12" cy="8" rx="11" ry="7" fill="#7a4a2b" stroke="#f5f7f2" stroke-width="1"/>
+        <line x1="4" y1="8" x2="20" y2="8" stroke="#f5f7f2" stroke-width="1"/>
+        <line x1="9" y1="5.5" x2="9" y2="10.5" stroke="#f5f7f2" stroke-width="0.8"/>
+        <line x1="12" y1="4.5" x2="12" y2="11.5" stroke="#f5f7f2" stroke-width="0.8"/>
+        <line x1="15" y1="5.5" x2="15" y2="10.5" stroke="#f5f7f2" stroke-width="0.8"/>
+      </svg>
+    </div>
+    <div class="field-labels"><span>Kickoff · 6:00</span><span id="fieldPct">0%</span><span>Wrap · 8:05</span></div>
+  </div>
+  <div class="now-label" id="statusLabel">Up now</div>
+  <div class="now-card" id="nowCard">
+    <div class="segment-name" id="segName">—</div>
+    <div class="segment-groups" id="segGroups">—</div>
+    <div class="countdown" id="countdown" aria-live="polite">00:00</div>
+    <div class="segment-notes" id="segNotes">—</div>
+  </div>
+  <div class="next-up" id="nextUp">Next: —</div>
+  <div class="controls">
+    <button id="btnPrev" aria-label="Previous segment">⟵ Prev</button>
+    <button id="btnReset" aria-label="Reset current segment">Reset</button>
+    <button id="btnNext" aria-label="Next segment">Next ⟶</button>
+  </div>
+  <button class="btn-play" id="btnPlay">Start</button>
+  <div class="row-secondary">
+    <button class="adjust" id="btnMinus30">−30 sec</button>
+    <button class="adjust" id="btnPlus30">+30 sec</button>
+  </div>
+  <details open>
+    <summary>Full schedule (tap any drill to jump there)</summary>
+    <div class="sched-list" id="schedList"></div>
+  </details>
+  <div class="foot-note">Beeps + vibrates 5 sec before each transition and at the switch.<br>Built from Practice Schedule #2 — verify times/coach initials against the printed sheet.</div>
+</div>
+</div>
+<script>
+(function(){
+const segments = [
+  {
+    name: "Dynamic Warmup",
+    groups: "All",
+    duration: 10*60,
+    notes: "High knees, high kick walk\n10-yd lunge → 10-yd run\n3-point stance, 10-yd run\nSideways shuffle (ball-side foot), 10–15 yd\n3-point stance, 10-yd run"
+  },
+  {
+    name: "Passing",
+    groups: "All",
+    duration: 10*60,
+    notes: "Pair up in 2s, 10 yards apart"
+  },
+  {
+    name: "Snap & Catch",
+    groups: "All",
+    duration: 5*60,
+    notes: "Switch from passing to snap-and-catch reps"
+  },
+  {
+    name: "40-Yard Speed Test",
+    groups: "Callen · Max · Brett · Jacon",
+    duration: 5*60,
+    notes: "Only these 4 run — 2 tries each\nEveryone else: water break"
+  },
+  {
+    name: "Tackling Stations",
+    groups: "Barrett/Hillhouse/McCumber ↔ Hill/Lewis/Smalling",
+    duration: 25*60,
+    notes: "Rotate halfway through (~12–13 min mark)\n\nStation 1 — Stand-up dummy: right shoulder (multiple reps) then add blocker; left shoulder (multiple reps) then add blocker\n\nStation 2 — Tackle wheel: 2 players per drill, each attacks one side of dummy; move to angle pursuit, run with tall dummy"
+  },
+  {
+    name: "Blocking Stations",
+    groups: "3 rotating groups",
+    duration: 20*60,
+    notes: "Rotate through all 3:\n1) Dummies — hand placement & explosion (Hillhouse/Hill)\n2) Tall dummy, blocker picks left or right (Smalling/McCumber)\n3) Open-field blocking, 5–7 yd apart (Barrett/Lewis)"
+  },
+  {
+    name: "Water Break",
+    groups: "All",
+    duration: 5*60,
+    notes: "Water break"
+  },
+  {
+    name: "Ball Handling / Blocking",
+    groups: "Barrett/Lewis/Smalling ↔ Hillhouse/Hill/McCumber",
+    duration: 10*60,
+    notes: "Running the ball (QBs, Center, Backs): handoff, run through cone setup\n\nPass & run blocking (OL/TE): steps, hand placement, drive the defense"
+  },
+  {
+    name: "Throwing & Receiving",
+    groups: "All",
+    duration: 15*60,
+    notes: "Rotate players through both stations as needed to assess skill sets\nAlso rotate kids through snapping & blocking with dummy pads"
+  },
+  {
+    name: "Conditioning",
+    groups: "All",
+    duration: 5*60,
+    notes: "Conditioning"
+  },
+  {
+    name: "Parent & Player Review",
+    groups: "All",
+    duration: 5*60,
+    notes: "Information review with parents and kids"
+  }
+];
+const totalDuration = segments.reduce((s,x)=>s+x.duration,0);
+let cumulative = [0];
+segments.forEach((s,i)=>cumulative.push(cumulative[i]+s.duration));
+let current = 0;
+let remaining = segments[0].duration;
+let running = false;
+let timerId = null;
+let warned5 = false;
+const el = id => document.getElementById(id);
+const countdownEl = el('countdown');
+const segNameEl = el('segName');
+const segGroupsEl = el('segGroups');
+const segNotesEl = el('segNotes');
+const nowCardEl = el('nowCard');
+const nextUpEl = el('nextUp');
+const statusLabelEl = el('statusLabel');
+const fillBar = el('fillBar');
+const ballMarker = el('ballMarker');
+const fieldPct = el('fieldPct');
+const clockOfDayEl = el('clockOfDay');
+const totalRemainingEl = el('totalRemaining');
+const schedListEl = el('schedList');
+const ticksEl = el('ticks');
+function fmt(sec){
+  sec = Math.max(0, Math.round(sec));
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+function clockAt(elapsedSec){
+  const startMinutes = 6*60;
+  const total = startMinutes + Math.floor(elapsedSec/60);
+  let h = Math.floor(total/60);
+  const m = total%60;
+  const period = h>=12 ? 'PM' : 'AM';
+  let h12 = h%12; if(h12===0) h12=12;
+  return `${h12}:${m.toString().padStart(2,'0')} ${period}`;
+}
+function buildTicks(){
+  ticksEl.innerHTML = '';
+  cumulative.forEach((c,i)=>{
+    if(i===0 || i===cumulative.length-1) return;
+    const pct = (c/totalDuration)*100;
+    const t = document.createElement('div');
+    t.className='tick';
+    t.style.left = pct+'%';
+    ticksEl.appendChild(t);
+  });
+}
+function buildScheduleList(){
+  schedListEl.innerHTML = '';
+  segments.forEach((s,i)=>{
+    const row = document.createElement('div');
+    row.className = 'sched-item';
+    row.dataset.index = i;
+    row.innerHTML = `<div class="sched-dur">${Math.round(s.duration/60)}m</div>
+      <div>
+        <div class="sched-title">${s.name}</div>
+        <div class="sched-groups">${s.groups}</div>
+      </div>`;
+    row.addEventListener('click', ()=>{ jumpTo(i); });
+    schedListEl.appendChild(row);
+  });
+  refreshScheduleHighlight();
+}
+function refreshScheduleHighlight(){
+  [...schedListEl.children].forEach((row,i)=>{
+    row.classList.toggle('active', i===current);
+    row.classList.toggle('done', i<current);
+  });
+}
+function renderTimer(){
+  const s = segments[current];
+  segNameEl.textContent = s.name;
+  segGroupsEl.textContent = s.groups;
+  segNotesEl.textContent = s.notes;
+  countdownEl.textContent = fmt(remaining);
+  countdownEl.classList.toggle('warn', remaining<=30 && remaining>10);
+  countdownEl.classList.toggle('danger', remaining<=10);
+  const isWater = /water/i.test(s.name);
+  nowCardEl.classList.toggle('water', isWater);
+  statusLabelEl.textContent = isWater ? 'Water break' : 'Up now';
+  const next = segments[current+1];
+  nextUpEl.innerHTML = next ? `Next: <b>${next.name}</b> — ${next.groups}` : `<b>Last segment of practice</b>`;
+  const elapsedTotal = cumulative[current] + (s.duration - remaining);
+  const pct = Math.min(100, (elapsedTotal/totalDuration)*100);
+  fillBar.style.width = pct+'%';
+  ballMarker.style.left = pct+'%';
+  fieldPct.textContent = Math.round(pct)+'%';
+  clockOfDayEl.textContent = clockAt(elapsedTotal);
+  totalRemainingEl.textContent = fmt(totalDuration - elapsedTotal) + ' left';
+  refreshScheduleHighlight();
+}
+function beep(freq=880, dur=0.15){
+  try{
+    const ctx = beep.ctx || (beep.ctx = new (window.AudioContext||window.webkitAudioContext)());
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.frequency.value = freq;
+    o.type = 'sine';
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime+dur+0.02);
+  }catch(e){}
+}
+function vibrate(pattern){
+  if(navigator.vibrate) navigator.vibrate(pattern);
+}
+function tick(){
+  remaining -= 1;
+  if(remaining===5 && !warned5){
+    warned5 = true;
+    beep(1100,0.1);
+    vibrate(80);
+  }
+  if(remaining<=0){
+    advance(true);
+    return;
+  }
+  renderTimer();
+}
+function advance(auto){
+  if(current < segments.length-1){
+    current += 1;
+    remaining = segments[current].duration;
+    warned5 = false;
+    if(auto){ beep(660,0.28); vibrate([120,60,120]); }
+  } else {
+    pauseTimer();
+    remaining = 0;
+    if(auto){ beep(440,0.4); vibrate([200,100,200,100,200]); }
+  }
+  renderTimer();
+}
+function back(){
+  if(remaining < segments[current].duration - 2 ){
+    remaining = segments[current].duration;
+  } else if(current>0){
+    current -= 1;
+    remaining = segments[current].duration;
+  }
+  warned5 = false;
+  renderTimer();
+}
+function jumpTo(i){
+  current = i;
+  remaining = segments[i].duration;
+  warned5 = false;
+  renderTimer();
+}
+function resetSegment(){
+  remaining = segments[current].duration;
+  warned5 = false;
+  renderTimer();
+}
+function playTimer(){
+  running = true;
+  el('btnPlay').textContent = 'Pause';
+  timerId = setInterval(tick, 1000);
+}
+function pauseTimer(){
+  running = false;
+  el('btnPlay').textContent = 'Resume';
+  clearInterval(timerId);
+}
+el('btnPlay').addEventListener('click', ()=>{
+  if(running) pauseTimer(); else playTimer();
+});
+el('btnNext').addEventListener('click', ()=>advance(false));
+el('btnPrev').addEventListener('click', back);
+el('btnReset').addEventListener('click', resetSegment);
+el('btnPlus30').addEventListener('click', ()=>{ remaining += 30; renderTimer(); });
+el('btnMinus30').addEventListener('click', ()=>{ remaining = Math.max(0, remaining-30); renderTimer(); });
+buildTicks();
+buildScheduleList();
+renderTimer();
+})();
+</script>
 
 <!-- ═══ SIGNAL CELL MODAL ═══ -->
 <div class="modal-overlay" id="sig-cell-modal" onclick="if(event.target===this)closeSigModal()">
@@ -1593,9 +2146,24 @@ async function authSubmit() {
   if (password.length < 6) { showAuthMsg('Password must be at least 6 characters.', 'err'); return; }
   btn.disabled = true; btn.textContent = authMode === 'signin' ? 'SIGNING IN…' : 'CREATING…';
   if (authMode === 'signin') {
-    const { error } = await supa.auth.signInWithPassword({ email, password });
+    const { data: signInData, error } = await supa.auth.signInWithPassword({ email, password });
     if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; btn.textContent = 'SIGN IN'; return; }
+    // Drive the post-login UI refresh directly instead of relying solely on
+    // the onAuthStateChange listener to do it -- the listener is a useful
+    // backstop for auth events from other tabs, but the header button and
+    // dashboard should update the instant *this* sign-in succeeds, not
+    // whenever/if a separate async event callback happens to fire.
+    currentUser = signInData?.user || (await supa.auth.getUser()).data.user;
     closeAuthModal();
+    try {
+      await ensureTeamContext();
+      await loadCloudLib();
+    } catch (e) {
+      console.error('[authSubmit] post-login setup failed:', e);
+    }
+    updateAuthUI();
+    renderLibrary();
+    if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
   } else {
     const { error } = await supa.auth.signUp({ email, password });
     if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; btn.textContent = 'CREATE ACCOUNT'; return; }
