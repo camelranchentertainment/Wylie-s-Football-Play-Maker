@@ -10,7 +10,6 @@ function printSigKeyCard() {
 // Fixed physical card size (5.5in x 4.25in) -- no paper-size picker.
 function buildSigKeyCardHtml() {
   const page   = sigActivePage();
-  const plays  = sigGetPlayLib();
   const real   = sigAssignments.filter(a => !a.is_dummy && a.play_id)
     .sort((a,b) => SIG_ROWS.indexOf(a.wristband_row)*4+(a.wristband_col-1)
                  - SIG_ROWS.indexOf(b.wristband_row)*4-(b.wristband_col-1));
@@ -21,8 +20,11 @@ function buildSigKeyCardHtml() {
 
   let rows = '';
   real.forEach(a => {
-    const play  = plays.find(p => String(p.id) === String(a.play_id));
-    const name  = play ? play.name : '???';
+    // a.play_name is joined straight from the plays table (sigLoadCalls) --
+    // matching against the client-side Team Library array here used to
+    // always fail since a.play_id is the materialized cloud play's real
+    // id, not a client-side id, rendering every play as "???".
+    const name  = a.play_name || '???';
     const rowColor = sigColorForRow(page, a.wristband_row);
     const cf    = SIG_COLORS[rowColor]?.hex || '#888';
     const dZone = sigRotateZone(a.signal_body_zone, sigRotation);

@@ -6,7 +6,12 @@ const SIG_COLS  = [1,2,3,4];
 
 const ZONE_TO_COL = { head:1, shoulder:2, chest:3, waist:4 };
 const COL_TO_ZONE = { 1:'head', 2:'shoulder', 3:'chest', 4:'waist' };
-const ROW_TO_FINGER = { A:1, B:2, C:3, D:4 };
+// Finger count is the box's column position, 1-4, and repeats identically
+// on every row (Box 1 = 1 finger, Box 2 = 2 fingers, ... on rows A, B, C,
+// and D alike) -- it used to be fixed per-row instead (A=1f, B=2f, ...),
+// which meant every cell in a row defaulted to the same finger count
+// regardless of which box a coach tapped.
+const COL_TO_FINGER = { 1:1, 2:2, 3:3, 4:4 };
 
 const SIG_ZONE_LABELS = { head:'Head', shoulder:'Shoulder', chest:'Chest', waist:'Waist' };
 const SIG_ZONE_ABBR   = { head:'HD',  shoulder:'SH',        chest:'CH',   waist:'WA'  };
@@ -21,9 +26,9 @@ const SIG_COLORS = {
 // Unique cell identifier e.g. 'B3'
 function sigCellId(row, col) { return row + col; }
 
-// Default zone for a column position (no rotation)
+// Default zone / finger count for a column position (no rotation)
 function sigDefaultZone(col)    { return COL_TO_ZONE[col]; }
-function sigDefaultFingers(row) { return ROW_TO_FINGER[row]; }
+function sigDefaultFingers(col) { return COL_TO_FINGER[col]; }
 
 // Apply display rotation to a body zone.
 // rotation=1 → head now maps to col 2, so col 1 header shows shoulder, etc.

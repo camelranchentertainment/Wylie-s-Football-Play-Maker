@@ -84,7 +84,14 @@ async function sigUpdatePage(pageId, patch) {
 async function sigLoadCalls(pageId) {
   const { data, error } = await supa
     .from('wristband_calls')
-    .select('*, signal_assignments(*)')
+    // play_id points at a real plays.id (a Team Library play materialized
+    // into the cloud the first time it was assigned -- see
+    // psEnsureCloudPlay/saveSigCell), which almost never matches anything
+    // in the client-side Team Library array (that's keyed on its own
+    // throwaway client-side ids). Join the real name/formation straight
+    // from the DB instead of trying to re-match it against the client
+    // array, which is what was rendering every assigned cell as "?".
+    .select('*, signal_assignments(*), plays(name, formation, mode)')
     .eq('wristband_page_id', pageId);
   if (error) throw error;
   // Flatten: row -> col are derived from call_number (e.g. "B3"), the
@@ -98,6 +105,8 @@ async function sigLoadCalls(pageId) {
       wristband_row: cellId.slice(0, 1),
       wristband_col: Number(cellId.slice(1)),
       play_id: row.play_id,
+      play_name: row.plays?.name || null,
+      play_formation: row.plays?.formation || null,
       signal_id: row.signal_id,
       is_dummy: sig.signal_type === 'dummy',
       signal_body_zone: sd.body_zone,

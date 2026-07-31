@@ -669,6 +669,14 @@
   background: var(--border);
   margin: 4px 0;
 }
+.sig-encode-note {
+  grid-column: span 2;
+  font-size: 9px;
+  color: var(--text-lo);
+  font-style: italic;
+  margin-top: 2px;
+  line-height: 1.4;
+}
 
 /* ─── Modal layout helpers ────────────────────────────────────── */
 .sig-modal-row {

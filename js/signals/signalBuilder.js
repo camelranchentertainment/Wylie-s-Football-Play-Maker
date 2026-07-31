@@ -204,14 +204,15 @@ function renderSigGrid() {
     const zone = sigColHeader(c, sigRotation);
     html += `<div class="sig-col-hdr">
       <span class="sig-col-zone">${SIG_ZONE_LABELS[zone]}</span>
-      <span class="sig-col-num">${SIG_ZONE_ABBR[zone]}</span>
+      <span class="sig-col-num">${SIG_ZONE_ABBR[zone]} · ${sigDefaultFingers(c)}f</span>
     </div>`;
   }
 
-  // Data rows
+  // Data rows -- finger count is a column property now (see
+  // signalEncoder.js), so the row header no longer implies a fixed
+  // per-row finger count; it's just the row letter / color-family label.
   SIG_ROWS.forEach(row => {
-    const fingers = ROW_TO_FINGER[row];
-    html += `<div class="sig-row-hdr"><span class="sig-row-letter">${row}</span><span class="sig-row-f">${fingers}f</span></div>`;
+    html += `<div class="sig-row-hdr"><span class="sig-row-letter">${row}</span></div>`;
     SIG_COLS.forEach(col => {
       const a = sigAssignments.find(x => x.wristband_row === row && x.wristband_col === col);
       const cf = SIG_COLORS[sigColorForRow(page, row)] || SIG_COLORS.green;
@@ -222,8 +223,13 @@ function renderSigGrid() {
         </div>`;
         return;
       }
-      const play   = plays.find(p => String(p.id) === String(a.play_id));
-      const name   = a.is_dummy ? '—' : (play ? play.name : '?');
+      // a.play_name comes straight from the plays table join in
+      // sigLoadCalls() -- do not try to re-match a.play_id against the
+      // client-side Team Library array (`plays` here), since play_id is
+      // the materialized cloud play's real id, not the client-side id
+      // that array is keyed on. That mismatch used to render every
+      // assigned cell as "?".
+      const name   = a.is_dummy ? '—' : (a.play_name || '?');
       const dZone  = sigRotateZone(a.signal_body_zone, sigRotation);
       const dClass = a.is_dummy ? ' sig-cell-dummy' : ' sig-cell-assigned';
       const ser    = a.series_rotation > 0 ? `<span class="sig-cell-series">Q${a.series_rotation}</span>` : '';
@@ -254,7 +260,6 @@ function renderSigPreviews() {
 function _renderWbPreview() {
   const wrap = document.getElementById('sig-wb-preview');
   if (!wrap) return;
-  const plays   = sigGetPlayLib();
   const page    = sigActivePage();
   const real    = sigAssignments.filter(a => !a.is_dummy && a.play_id);
   if (!real.length) {
@@ -282,8 +287,10 @@ function _renderWbPreview() {
       const a = sigAssignments.find(x => x.wristband_row === row && x.wristband_col === col);
       const cf = SIG_COLORS[sigColorForRow(page, row)] || SIG_COLORS.green;
       if (!a) { g += '<div class="sig-wb-cell sig-wb-empty"></div>'; return; }
-      const play = plays.find(p => String(p.id) === String(a.play_id));
-      const name = a.is_dummy ? '—' : (play ? play.name : '???');
+      // a.play_name is joined from the plays table (sigLoadCalls) --
+      // see the note in renderSigGrid() for why matching against the
+      // client-side library here always failed.
+      const name = a.is_dummy ? '—' : (a.play_name || '???');
       g += `<div class="sig-wb-cell${a.is_dummy?' sig-wb-dummy':''}" style="border-left-color:${cf.hex};">
         <div class="sig-wb-cell-name">${sigEsc(name)}</div>
       </div>`;
@@ -296,7 +303,6 @@ function _renderWbPreview() {
 function _renderKeyPreview() {
   const wrap = document.getElementById('sig-key-preview');
   if (!wrap) return;
-  const plays  = sigGetPlayLib();
   const page   = sigActivePage();
   const real   = sigAssignments.filter(a => !a.is_dummy && a.play_id)
     .sort((a,b) => SIG_ROWS.indexOf(a.wristband_row)*4+(a.wristband_col-1)
@@ -310,8 +316,7 @@ function _renderKeyPreview() {
 
   let rows = '';
   real.forEach(a => {
-    const play  = plays.find(p => String(p.id) === String(a.play_id));
-    const name  = play ? play.name : '???';
+    const name  = a.play_name || '???';
     const cf    = SIG_COLORS[sigColorForRow(page, a.wristband_row)] || SIG_COLORS.green;
     const dZone = sigRotateZone(a.signal_body_zone, sigRotation);
     const ser   = a.series_rotation === 0 ? 'All' : `Q${a.series_rotation}`;
@@ -356,11 +361,11 @@ function openSigModal(row, col) {
 
   document.getElementById('sig-modal-title').textContent = `${page ? page.label + ' — ' : ''}CELL ${sigCellId(row, col)}`;
   document.getElementById('sig-modal-sub').textContent =
-    `Grid position ${row}${col} · Default signal: ${SIG_ZONE_LABELS[sigDefaultZone(col)]} + ${sigDefaultFingers(row)} finger(s)`;
+    `Grid position ${row}${col} · Default signal: ${SIG_ZONE_LABELS[sigDefaultZone(col)]} + ${sigDefaultFingers(col)} finger(s)`;
 
   sigPopulatePlayDrop(existing?.play_id || '');
   document.getElementById('sig-modal-zone').value    = existing?.signal_body_zone || sigDefaultZone(col);
-  document.getElementById('sig-modal-fingers').value = existing?.signal_fingers   || sigDefaultFingers(row);
+  document.getElementById('sig-modal-fingers').value = existing?.signal_fingers   || sigDefaultFingers(col);
   document.getElementById('sig-modal-caller').value  = existing?.live_caller       || 'OC';
   document.getElementById('sig-modal-series').value  = String(existing?.series_rotation ?? 0);
   document.getElementById('sig-modal-dummy').checked = existing?.is_dummy || false;

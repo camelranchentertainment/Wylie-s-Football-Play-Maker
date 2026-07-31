@@ -12,7 +12,6 @@ function printSigWristband() {
 // picker for this one, it's a wristband card, not a page.
 function buildSigWristbandHtml() {
   const page    = sigActivePage();
-  const plays   = sigGetPlayLib();
   const real    = sigAssignments.filter(a => !a.is_dummy && a.play_id);
   const caller  = real[0]?.live_caller || 'OC';
   const serSet  = [...new Set(sigAssignments.map(a => a.series_rotation))];
@@ -36,8 +35,8 @@ function buildSigWristbandHtml() {
       const a = sigAssignments.find(x => x.wristband_row === row && x.wristband_col === col);
       if (!a) { cells += '<div class="ww-cell ww-empty"></div>'; return; }
       const cf   = SIG_COLORS[sigColorForRow(page, row)]?.hex || '#888';
-      const play = plays.find(p => String(p.id) === String(a.play_id));
-      const name = a.is_dummy ? '—' : (play ? play.name : '???');
+      // a.play_name is joined from the plays table (sigLoadCalls).
+      const name = a.is_dummy ? '—' : (a.play_name || '???');
       const abbr = name.length > 14 ? name.slice(0,13)+'…' : name;
       cells += `<div class="ww-cell" style="border-left:3px solid ${cf};${a.is_dummy?'opacity:.45;':''}">
         <span class="ww-id">${sigCellId(row,col)}</span>
