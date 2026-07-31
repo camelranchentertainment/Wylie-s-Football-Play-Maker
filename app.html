@@ -113,7 +113,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 #zoom-ctrl button { width:26px; height:26px; background:var(--bg-card); border:1px solid var(--border); border-radius:5px; color:var(--text-mid); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; transition:all .15s; flex-shrink:0; }
 #zoom-ctrl button:hover { color:var(--accent); border-color:var(--accent); background:var(--accent-glow); }
 #zoom-lbl { font-family:'Oswald',sans-serif; font-size:11px; font-weight:600; color:var(--text-hi); min-width:40px; text-align:center; letter-spacing:.5px; }
-#field { display:block; cursor:crosshair; }
+#field { display:block; cursor:crosshair; touch-action:none; }
 #player-tip { position:absolute; pointer-events:none; background:rgba(4,6,12,.97); border:1px solid var(--accent); border-radius:7px; padding:5px 11px; font-size:12px; font-weight:600; color:var(--text-hi); display:none; z-index:15; white-space:nowrap; box-shadow:0 6px 24px rgba(0,0,0,.6); }
 
 /* ─── LIBRARY PAGE ─────────────────────────────────────────── */
@@ -583,21 +583,23 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
   #logo { font-size:14px; gap:6px; }
   .hdiv { display:none; }
 
-  /* Designer controls row */
+  /* Designer controls row -- heights kept at 36px+ even in this dense
+     layout so every tap target still clears the ~40px comfortable-tap
+     minimum on a real phone (28px was mouse-cursor-precision sizing). */
   #designer-ctrls { flex-wrap:wrap; gap:6px; padding:6px 10px; }
-  #play-name { min-width:0; flex:1; font-size:13px; }
+  #play-name { min-width:0; flex:1; font-size:13px; height:36px; }
   .mode-toggle { flex-shrink:0; }
-  .mode-btn { padding:4px 10px; font-size:10px; }
-  .hbtn { padding:4px 10px; font-size:10px; height:28px; }
+  .mode-btn { padding:8px 12px; font-size:10px; min-height:36px; }
+  .hbtn { padding:8px 12px; font-size:10px; height:36px; }
 
   /* Nav: scrollable row */
   .nav-pages { order:2; width:100%; overflow-x:auto; gap:4px; padding-bottom:2px; }
   .nav-pages::-webkit-scrollbar { display:none; }
-  .npbtn { font-size:9px; padding:4px 9px; height:28px; }
+  .npbtn { font-size:9px; padding:8px 12px; height:36px; }
   .npbtn svg { display:none; }
 
   /* Auth button */
-  .auth-btn { order:1; margin-left:auto; padding:4px 10px; font-size:10px; }
+  .auth-btn { order:1; margin-left:auto; padding:8px 12px; font-size:10px; min-height:36px; }
 
   /* Pages fill available height */
   #pages { position:static; overflow:visible; flex:none; }
@@ -606,7 +608,9 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 
   /* Designer: sidebar above canvas */
   #page-designer { flex-direction:column; }
-  #sidebar { width:100%; min-width:0; border-right:none; border-bottom:1px solid var(--border); max-height:220px; }
+  #sidebar { width:100%; min-width:0; border-right:none; border-bottom:1px solid var(--border); max-height:260px; }
+  .tool-grid, .rs-grid { grid-template-columns:1fr 1fr 1fr; }
+  .tool-grid button, .rs-grid button { min-height:38px; }
 
   /* AI play card: stack canvas and info */
 
@@ -2514,10 +2518,16 @@ function render(){
 function snapGrid(mx,my){ const yd=c2yd(mx,my); return yd2c(Math.round(yd.x*2)/2,Math.round(yd.y*2)/2); }
 function playerAt(mx,my){ let best=null,bestD=PR+5; S.players.forEach(p=>{ const d=Math.hypot(mx-p.x,my-p.y); if(d<bestD){bestD=d;best=p;} }); return best; }
 
-// ─── MOUSE EVENTS ─────────────────────────────────────────────
+// ─── POINTER EVENTS (mouse + touch) ────────────────────────────
+// Named functions instead of inline arrow listeners so the touch handlers
+// below can call the exact same logic instead of duplicating it -- the
+// canvas previously only listened for mouse events, which meant dragging
+// players, drawing routes, and placing pieces silently did nothing on a
+// real phone/tablet (mobile browsers don't synthesize mousemove during a
+// touch-drag, only a single click-like mousedown/mouseup pair).
 let mdX=0,mdY=0,mIsDown=false;
 
-canvas.addEventListener('mousedown',e=>{
+function handleCanvasDown(e){
   const r=canvas.getBoundingClientRect(), mx=(e.clientX-r.left)/S.zoom, my=(e.clientY-r.top)/S.zoom;
   mdX=mx; mdY=my; mIsDown=true;
   if(S.tool==='select'){
@@ -2532,7 +2542,7 @@ canvas.addEventListener('mousedown',e=>{
       // click from also adding a waypoint -- without it, the first click
       // on a player both starts the route AND immediately pushes a second,
       // near-duplicate waypoint at the same spot on its own mouseup.
-      if(p){ S.drawingRoute=true; S.routeForId=p.id; S.routeWpts=[{x:p.x,y:p.y}]; S.selectedId=p.id; S.justStartedRoute=true; setStatus('Click to add waypoints · Double-click, Enter, or ✓ FINISH to complete'); }
+      if(p){ S.drawingRoute=true; S.routeForId=p.id; S.routeWpts=[{x:p.x,y:p.y}]; S.selectedId=p.id; S.justStartedRoute=true; setStatus('Tap to add waypoints · Double-tap or ✓ FINISH to complete'); }
     }
     render();
   } else if(S.tool==='delete'){
@@ -2541,9 +2551,9 @@ canvas.addEventListener('mousedown',e=>{
   } else if(S.tool==='label'){
     S.pendingLabelX=mx; S.pendingLabelY=my; openLabelModal();
   }
-});
+}
 
-canvas.addEventListener('mousemove',e=>{
+function handleCanvasMove(e){
   const r=canvas.getBoundingClientRect(), mx=(e.clientX-r.left)/S.zoom, my=(e.clientY-r.top)/S.zoom;
   S.mouseX=mx; S.mouseY=my;
   const tip=document.getElementById('player-tip');
@@ -2561,9 +2571,9 @@ canvas.addEventListener('mousemove',e=>{
   } else if(S.tool==='delete'){
     const p=playerAt(mx,my); canvas.style.cursor=p?'not-allowed':'crosshair'; tip.style.display='none';
   }
-});
+}
 
-canvas.addEventListener('mouseup',e=>{
+function handleCanvasUp(e){
   const r=canvas.getBoundingClientRect(), mx=(e.clientX-r.left)/S.zoom, my=(e.clientY-r.top)/S.zoom;
   if(S.dragging){ S.dragging=false; mIsDown=false; render(); return; }
   mIsDown=false;
@@ -2579,7 +2589,11 @@ canvas.addEventListener('mouseup',e=>{
     if(S.justStartedRoute){ S.justStartedRoute=false; }
     else { S.routeWpts.push({x:mx,y:my}); render(); }
   }
-});
+}
+
+canvas.addEventListener('mousedown', handleCanvasDown);
+canvas.addEventListener('mousemove', handleCanvasMove);
+canvas.addEventListener('mouseup', handleCanvasUp);
 
 canvas.addEventListener('dblclick',e=>{
   const r=canvas.getBoundingClientRect(), mx=(e.clientX-r.left)/S.zoom, my=(e.clientY-r.top)/S.zoom;
@@ -2591,6 +2605,48 @@ canvas.addEventListener('dblclick',e=>{
 });
 
 canvas.addEventListener('mouseleave',()=>{ mIsDown=false; S.dragging=false; document.getElementById('player-tip').style.display='none'; render(); });
+
+// ─── TOUCH EVENTS (phones/tablets) ──────────────────────────────
+// Translate the touch point into the same {clientX, clientY} shape the
+// mouse handlers already expect and delegate straight into them, so
+// touch and mouse can never drift out of sync with each other. Second-tap
+// detection gives touch users a way to finish a route or delete a player
+// without a real dblclick, which mobile browsers don't reliably fire.
+let _lastTapTime = 0, _lastTapId = null;
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  if (!t) return;
+  const now = Date.now();
+  const r = canvas.getBoundingClientRect();
+  const mx = (t.clientX - r.left) / S.zoom, my = (t.clientY - r.top) / S.zoom;
+  const p = playerAt(mx, my);
+  const isDoubleTap = (now - _lastTapTime) < 350 && _lastTapId === (p ? p.id : null) && p;
+  _lastTapTime = now; _lastTapId = p ? p.id : null;
+  if (isDoubleTap) {
+    if (S.tool === 'route' && S.drawingRoute) { finishRoute(); return; }
+    if (S.tool === 'select' && p) { pushH(); S.players = S.players.filter(q => q.id !== p.id); S.routes = S.routes.filter(r2 => r2.pid !== p.id); S.selectedId = null; render(); return; }
+  }
+  handleCanvasDown({ clientX: t.clientX, clientY: t.clientY });
+}, { passive: false });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  if (t) handleCanvasMove({ clientX: t.clientX, clientY: t.clientY });
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  if (t) handleCanvasUp({ clientX: t.clientX, clientY: t.clientY });
+}, { passive: false });
+
+canvas.addEventListener('touchcancel', () => {
+  mIsDown = false; S.dragging = false;
+  document.getElementById('player-tip').style.display = 'none';
+  render();
+});
 
 document.addEventListener('keydown',e=>{
   const tag=document.activeElement.tagName;
