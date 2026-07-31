@@ -378,13 +378,32 @@ function closeSigModal() {
 async function saveSigCell() {
   if (!_sigModalCell) return;
   const { row, col } = _sigModalCell;
-  const isDummy  = document.getElementById('sig-modal-dummy').checked;
-  const playId   = document.getElementById('sig-modal-play').value || null;
-  const errEl    = document.getElementById('sig-modal-err');
+  const isDummy   = document.getElementById('sig-modal-dummy').checked;
+  const selPlayId = document.getElementById('sig-modal-play').value || null;
+  const errEl     = document.getElementById('sig-modal-err');
 
-  if (!isDummy && !playId) {
+  if (!isDummy && !selPlayId) {
     errEl.textContent = 'Select a play — or check "Mark as Decoy" for a dummy signal.';
     return;
+  }
+
+  // sig-modal-play's <option value> is a Team Library play's client-side id
+  // (see sigGetPlayLib/sigPopulatePlayDrop) -- signal_assignments.play_id
+  // and wristband_calls.play_id are real uuid FKs into plays.id, so the
+  // client id has to be resolved/materialized to a real cloud play row
+  // first (same lazy-materialization pattern Play Sheets uses via
+  // psEnsureCloudPlay). Passing the raw client id straight through used to
+  // fail with "invalid input syntax for type uuid".
+  let resolvedPlayId = null;
+  if (!isDummy) {
+    const clientPlay = sigGetPlayLib().find(p => String(p.id) === String(selPlayId));
+    if (!clientPlay) { errEl.textContent = 'That play could not be found in your Team Library — try reselecting it.'; return; }
+    try {
+      resolvedPlayId = await psEnsureCloudPlay(clientPlay);
+    } catch (e) {
+      errEl.textContent = 'Could not save this play to your cloud library — ' + (e.message || 'unknown error');
+      return;
+    }
   }
 
   const existing = sigAssignments.find(a => a.wristband_row === row && a.wristband_col === col);
@@ -393,7 +412,7 @@ async function saveSigCell() {
     id:               existing?.id || null,
     wristband_row:    row,
     wristband_col:    col,
-    play_id:          isDummy ? null : playId,
+    play_id:          isDummy ? null : resolvedPlayId,
     signal_body_zone: document.getElementById('sig-modal-zone').value,
     signal_fingers:   parseInt(document.getElementById('sig-modal-fingers').value),
     live_caller:      document.getElementById('sig-modal-caller').value  || 'OC',
