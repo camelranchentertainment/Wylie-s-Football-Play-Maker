@@ -716,6 +716,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <span class="dash-error-icon">⚠</span>
       <span class="dash-error-msg">Setting up your team…</span>
       <button class="hbtn" onclick="retryTeamContext()">↻ RETRY</button>
+      <button class="hbtn" onclick="openTeamSetupModal()">+ SET UP TEAM</button>
     </div>
 
     <div class="dash-section">
@@ -832,6 +833,33 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
       <button class="mbtn cancel" onclick="closeGameModal()">Cancel</button>
       <button class="mbtn" id="game-delete-btn" style="flex:0 0 auto;background:rgba(255,68,85,.15);color:#ff7788;border:1px solid rgba(255,68,85,.3);display:none;" onclick="deleteGameFromModal()">Delete</button>
       <button class="mbtn ok" onclick="saveGameFromModal()">Save Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TEAM SETUP (manual fallback when auto-provisioning fails) ══ -->
+<div class="modal-overlay" id="team-setup-modal" onclick="if(event.target===this)closeTeamSetupModal()">
+  <div class="modal">
+    <h2>SET UP YOUR TEAM</h2>
+    <div class="modal-subtitle">Every coach account needs one team to hang games, plays, and wristbands off of. Name yours to get started.</div>
+    <div class="rp-group" style="margin-bottom:10px;">
+      <label class="rp-label">Team Name<span style="color:#ff6b75;">*</span></label>
+      <input type="text" class="rp-input" id="ts-team-name" placeholder="e.g. Wylie Bulldogs" style="width:100%;" maxlength="80">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;">
+      <div class="rp-group">
+        <label class="rp-label">Mascot</label>
+        <input type="text" class="rp-input" id="ts-mascot" placeholder="Optional" style="width:100%;" maxlength="60">
+      </div>
+      <div class="rp-group">
+        <label class="rp-label">Age Group</label>
+        <input type="text" class="rp-input" id="ts-age-group" placeholder="Optional" style="width:100%;" maxlength="60">
+      </div>
+    </div>
+    <div id="team-setup-err" style="color:#ff6b75;font-size:11px;min-height:14px;margin-bottom:4px;"></div>
+    <div class="modal-actions">
+      <button class="mbtn cancel" onclick="closeTeamSetupModal()">Cancel</button>
+      <button class="mbtn ok" id="ts-create-btn" onclick="createTeamFromModal()">Create Team</button>
     </div>
   </div>
 </div>
@@ -1355,9 +1383,7 @@ async function ensureTeamContext() {
     } else {
       const defaultName = (currentUser.email || 'Coach').split('@')[0] + "'s Team";
       const { data: newTeam, error: teamErr } = await supa
-        .from('teams')
-        .insert({ name: defaultName, owner_id: currentUser.id })
-        .select('id')
+        .rpc('create_my_team', { p_name: defaultName })
         .single();
       if (teamErr) throw teamErr;
       currentTeamId = newTeam.id;
@@ -1413,10 +1439,69 @@ async function retryTeamContext() {
   if (document.getElementById('page-playsheets')?.classList.contains('act')) psInit();
 }
 
+// Manual fallback for when automatic team provisioning fails (or just to
+// let a coach pick their own team name/mascot instead of the auto-generated
+// default). Always available from the dashboard's error banner.
+function openTeamSetupModal() {
+  document.getElementById('ts-team-name').value = '';
+  document.getElementById('ts-mascot').value = '';
+  document.getElementById('ts-age-group').value = '';
+  document.getElementById('team-setup-err').textContent = '';
+  document.getElementById('team-setup-modal').classList.add('show');
+  setTimeout(() => document.getElementById('ts-team-name')?.focus(), 50);
+}
+
+function closeTeamSetupModal() {
+  document.getElementById('team-setup-modal').classList.remove('show');
+}
+
+async function createTeamFromModal() {
+  const errEl = document.getElementById('team-setup-err');
+  const btn = document.getElementById('ts-create-btn');
+  const name = (document.getElementById('ts-team-name').value || '').trim();
+  const mascot = (document.getElementById('ts-mascot').value || '').trim();
+  const ageGroup = (document.getElementById('ts-age-group').value || '').trim();
+  errEl.textContent = '';
+  if (!name) { errEl.textContent = 'Team name is required.'; return; }
+  if (!currentUser) { errEl.textContent = "You're not signed in — please sign in and try again."; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+  try {
+    // create_my_team() is a SECURITY DEFINER RPC that always sets
+    // owner_id to the caller's own auth.uid() server-side -- it can't be
+    // used to create a team owned by anyone else, so this is safe even
+    // though it bypasses the (currently unreliable) client-side INSERT
+    // path into teams.
+    const { data: newTeam, error: rpcErr } = await supa
+      .rpc('create_my_team', { p_name: name, p_mascot: mascot || null, p_age_group: ageGroup || null })
+      .single();
+    if (rpcErr) throw rpcErr;
+    currentTeamId = newTeam.id;
+    teamContextError = null;
+    // Reuses the existing bootstrap logic to create/attach an active
+    // season now that team membership exists.
+    await ensureTeamContext();
+    closeTeamSetupModal();
+    setStatus('Team created — welcome in!', 'ok');
+    if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
+    window._sigInitDone = false;
+    if (document.getElementById('page-signals')?.classList.contains('act')) ensureSignalsInit();
+    if (document.getElementById('page-playsheets')?.classList.contains('act')) psInit();
+  } catch (e) {
+    const detail = [e?.message, e?.details, e?.hint].filter(Boolean).join(' — ') || String(e);
+    errEl.textContent = 'Could not create your team — ' + detail;
+    console.error('[createTeamFromModal] failed:', e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Team';
+  }
+}
+
 // ─── CLOUD LIBRARY ────────────────────────────────────────────
 async function loadCloudLib() {
   if (!currentUser) return;
-  const { data, error } = await supa.from('plays').select('*').eq('user_id', currentUser.id).order('ts', { ascending: false });
+  const { data, error } = await supa.from('plays').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
   if (error) { console.error('Cloud load error:', error); return; }
   cloudLib = (data || []).map(row => ({
     id: row.play_id,
