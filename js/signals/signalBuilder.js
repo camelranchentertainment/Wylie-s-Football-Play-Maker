@@ -1,25 +1,184 @@
 'use strict';
 
 // ── Module state ──────────────────────────────────────────────
-let sigWristbandId = null;
-let sigPages       = [];     // all pages for this wristband
+let sigWristbands   = [];    // this team's wristbands (one per game, plus any general ones)
+let sigGames        = [];    // this team's scheduled opponents, for the game-tile landing view
+let sigWristbandId   = null;
+let sigWristbandName = '';
+let sigPages       = [];     // all pages for the ACTIVE wristband
 let sigActivePageId = null;
 let sigAssignments = [];     // calls for the ACTIVE page only
 let sigRotation    = 0;      // 0–3 display rotation offset (resets per page)
 let _sigModalCell  = null;   // { row, col } currently in edit
 
 // ── Bootstrap ─────────────────────────────────────────────────
+// Mirrors psInit() in playSheets.js: called unconditionally every time
+// the Signals tab is opened (not gated to "once ever"), so a game added
+// on the Home tab while this module was already loaded still shows up
+// as a tile without needing a full page reload.
 async function initSignals() {
+  if (!currentTeamId) {
+    console.warn('[initSignals] no team context yet');
+    setStatus(teamContextError ? "Wristbands aren't available yet — " + teamContextError : 'Setting up your team — try Wristbands again in a moment.', 'err');
+    return;
+  }
+  await sigShowList();
+}
+
+// ── List view (one tile per game, mirrors psShowList/renderPsLanding
+// in playSheets.js) ──────────────────────────────────────────────
+async function sigShowList() {
+  document.getElementById('sig-list-view').style.display = 'block';
+  document.getElementById('sig-editor-view').style.display = 'none';
+  sigWristbandId = null;
   try {
-    console.log('[initSignals] resolving wristband…');
-    sigWristbandId = await sigEnsureWristband();
+    const [gamesRes, wristbands] = await Promise.all([
+      supa.from('opponents').select('id, name, game_date, location')
+        .eq('team_id', currentTeamId)
+        .eq('season_id', currentSeasonId)
+        .order('game_date', { ascending: true, nullsFirst: false }),
+      sigLoadWristbandList(),
+    ]);
+    if (gamesRes.error) throw gamesRes.error;
+    sigGames = gamesRes.data || [];
+    sigWristbands = wristbands;
+    renderSigLanding();
+  } catch (e) {
+    console.error('[sigShowList] failed:', e.message || e);
+    setStatus('Could not load your wristbands — ' + (e.message || 'unknown error'));
+  }
+}
+
+function renderSigLanding() {
+  renderSigGameTiles();
+  renderSigGeneralWristbands();
+}
+
+// psFormatGameDate is defined in playSheets.js, which loads before this
+// file (see the <script src> order in app.html) -- reused as-is rather
+// than duplicated so the two game-tile views can never drift apart on
+// date formatting.
+function renderSigGameTiles() {
+  const wrap = document.getElementById('sig-game-tiles');
+  if (!wrap) return;
+  if (!sigGames.length) {
+    wrap.innerHTML = '<div class="dash-games-empty">No games on your schedule yet — add one from the Home tab, then its wristband will show up here.</div>';
+    return;
+  }
+  wrap.innerHTML = '';
+  sigGames.forEach(g => {
+    const wb = sigWristbands.find(w => w.opponent_id === g.id);
+    const tile = document.createElement('div');
+    tile.className = 'ps-game-tile';
+    tile.onclick = () => sigOpenOrCreateForGame(g);
+    tile.innerHTML = `
+      <div class="ps-game-tile-top">
+        <span class="ps-game-tile-date">${psFormatGameDate(g.game_date)}</span>
+        <span class="ps-game-tile-loc ${g.location || 'home'}">${(g.location || 'home').toUpperCase()}</span>
+      </div>
+      <div class="ps-game-tile-name"></div>
+      <span class="ps-game-tile-badge ${wb ? 'has-sheet' : 'none'}">${wb ? 'Wristband ready' : 'no wristband yet'}</span>
+    `;
+    tile.querySelector('.ps-game-tile-name').textContent = g.name || 'Opponent TBD';
+    wrap.appendChild(tile);
+  });
+}
+
+function renderSigGeneralWristbands() {
+  const wrap = document.getElementById('sig-general-wb-list');
+  const section = document.getElementById('sig-general-wb-section');
+  if (!wrap || !section) return;
+  const general = sigWristbands.filter(w => !w.opponent_id);
+  section.style.display = general.length ? 'block' : 'none';
+  wrap.innerHTML = '';
+  general.forEach(w => {
+    const card = document.createElement('div');
+    card.className = 'ps-sheet-card';
+    card.onclick = () => sigShowEditor(w.id);
+    card.innerHTML = `
+      <div class="ps-sheet-card-main">
+        <div class="ps-sheet-card-name"></div>
+        <div class="ps-sheet-card-meta">General wristband</div>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text-lo);flex-shrink:0;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    `;
+    card.querySelector('.ps-sheet-card-name').textContent = w.name;
+    wrap.appendChild(card);
+  });
+}
+
+async function sigOpenOrCreateForGame(game) {
+  const existing = sigWristbands.find(w => w.opponent_id === game.id);
+  if (existing) { await sigShowEditor(existing.id); return; }
+  try {
+    const created = await sigCreateWristband(`vs ${game.name || 'Opponent'}`, game.id);
+    sigWristbands.push(created);
+    await sigShowEditor(created.id);
+  } catch (e) {
+    setStatus('Could not create wristband — ' + (e.message || 'unknown error'));
+  }
+}
+
+async function sigCreateGeneralWristband() {
+  try {
+    const created = await sigCreateWristband('General Wristband', null);
+    sigWristbands.push(created);
+    await sigShowEditor(created.id);
+    const nameInput = document.getElementById('sig-wristband-name');
+    if (nameInput) { nameInput.focus(); nameInput.select(); }
+  } catch (e) {
+    setStatus('Could not create wristband — ' + (e.message || 'unknown error'));
+  }
+}
+
+// ── Editor view ───────────────────────────────────────────────
+async function sigShowEditor(wristbandId) {
+  const wb = sigWristbands.find(w => w.id === wristbandId);
+  sigWristbandId = wristbandId;
+  sigWristbandName = wb?.name || 'Wristband';
+  // Remembered so wbAddById() (the Team Library "+ WB" quick-add) knows
+  // which wristband to drop a play into when a coach hasn't explicitly
+  // opened one during this visit to the tab -- there's no longer a
+  // single implicit "the" wristband now that a team can have several.
+  try { localStorage.setItem('wfpm_last_wristband_id', wristbandId); } catch {}
+  document.getElementById('sig-list-view').style.display = 'none';
+  document.getElementById('sig-editor-view').style.display = 'flex';
+  const nameInput = document.getElementById('sig-wristband-name');
+  if (nameInput) nameInput.value = sigWristbandName;
+  try {
     sigPages = await sigLoadPages(sigWristbandId);
     sigActivePageId = sigPages[0]?.id || null;
     await sigLoadActivePage();
     renderSigPageTabs();
   } catch (e) {
-    console.error('[initSignals] failed:', e.message || e);
-    setStatus('Could not load your wristband — ' + (e.message || 'unknown error'));
+    console.error('[sigShowEditor] failed:', e.message || e);
+    setStatus('Could not load this wristband — ' + (e.message || 'unknown error'));
+  }
+}
+
+async function sigRenameWristbandFromInput() {
+  const input = document.getElementById('sig-wristband-name');
+  const name = (input.value || '').trim();
+  if (!name) { input.value = sigWristbandName; return; }
+  if (name === sigWristbandName) return;
+  try {
+    await sigRenameWristband(sigWristbandId, name);
+    sigWristbandName = name;
+    const cached = sigWristbands.find(w => w.id === sigWristbandId);
+    if (cached) cached.name = name;
+  } catch (e) {
+    setStatus('Could not rename — ' + (e.message || 'unknown error'));
+  }
+}
+
+async function sigDeleteWristbandFromEditor() {
+  if (!sigWristbandId) return;
+  if (!confirm('Delete this wristband? This removes every page and cell assignment on it.')) return;
+  try {
+    await sigDeleteWristband(sigWristbandId);
+    await sigShowList();
+  } catch (e) {
+    setStatus('Could not delete — ' + (e.message || 'unknown error'));
   }
 }
 

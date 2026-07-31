@@ -1129,14 +1129,38 @@ body { font-family:'Inter',sans-serif; background:var(--bg-deep); color:var(--te
 
   <!-- ══ SIGNALS ══ -->
   <div id="page-signals" class="page">
+  <div id="sig-list-view" style="flex:1;overflow-y:auto;padding:22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;color:var(--text-hi);margin:0 0 4px;">Wristbands</h2>
+        <div style="font-size:11px;color:var(--text-lo);">Tap a game to build or edit its wristband — past ones stay exactly as you left them.</div>
+      </div>
+      <button class="hbtn" onclick="sigCreateGeneralWristband()">+ GENERAL WRISTBAND</button>
+    </div>
+    <div id="sig-game-tiles" class="ps-game-grid"></div>
+
+    <div id="sig-general-wb-section" style="display:none;margin-top:24px;">
+      <div class="ps-general-hdr">General Wristbands <span style="font-weight:400;color:var(--text-lo);">— not tied to a specific game (practice, scrimmages, etc.)</span></div>
+      <div id="sig-general-wb-list"></div>
+    </div>
+  </div>
+
+  <div id="sig-editor-view" style="display:none; flex:1; overflow:hidden; flex-direction:row;">
     <div id="sig-grid-col">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-        <h2 style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;color:var(--text-hi);margin:0;">Signal Grid</h2>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button class="sig-rot-btn" onclick="sigRotate(-1)" title="Rotate back">◀</button>
-          <span id="sig-rot-label" class="sig-rot-label">ORIGINAL</span>
-          <button class="sig-rot-btn" onclick="sigRotate(1)" title="Rotate forward">▶</button>
-          <button class="sig-rot-btn sig-rot-reset" onclick="sigRotation=0;document.getElementById('sig-rot-label').textContent='ORIGINAL';renderSigGrid();renderSigPreviews();" title="Reset">↺</button>
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <button class="npbtn" onclick="sigShowList()">← ALL WRISTBANDS</button>
+          <button class="mbtn" style="flex:0 0 auto;padding:5px 10px;background:rgba(255,68,85,.15);color:#ff7788;border:1px solid rgba(255,68,85,.3);border-radius:6px;font-size:10px;" onclick="sigDeleteWristbandFromEditor()">DELETE</button>
+        </div>
+        <input type="text" id="sig-wristband-name" class="dash-team-name-input" style="font-size:16px;" onblur="sigRenameWristbandFromInput()" onkeydown="if(event.key==='Enter')this.blur()">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+          <span style="font-size:10px;color:var(--text-lo);letter-spacing:1px;text-transform:uppercase;">Signal Grid</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="sig-rot-btn" onclick="sigRotate(-1)" title="Rotate back">◀</button>
+            <span id="sig-rot-label" class="sig-rot-label">ORIGINAL</span>
+            <button class="sig-rot-btn" onclick="sigRotate(1)" title="Rotate forward">▶</button>
+            <button class="sig-rot-btn sig-rot-reset" onclick="sigRotation=0;document.getElementById('sig-rot-label').textContent='ORIGINAL';renderSigGrid();renderSigPreviews();" title="Reset">↺</button>
+          </div>
         </div>
       </div>
       <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;">
@@ -2101,8 +2125,7 @@ async function retryTeamContext() {
   if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
   // Team-scoped modules that lazily init once (Signals/Wristband) need to
   // be told it's safe to try again now that currentTeamId is real.
-  window._sigInitDone = false;
-  if (document.getElementById('page-signals')?.classList.contains('act')) ensureSignalsInit();
+  if (document.getElementById('page-signals')?.classList.contains('act')) initSignals();
   if (document.getElementById('page-playsheets')?.classList.contains('act')) psInit();
 }
 
@@ -2159,8 +2182,7 @@ async function joinTeamFromModal() {
     closeTeamSetupModal();
     setStatus(`Joined ${team.name || 'the team'} — welcome in!`, 'ok');
     if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
-    window._sigInitDone = false;
-    if (document.getElementById('page-signals')?.classList.contains('act')) ensureSignalsInit();
+    if (document.getElementById('page-signals')?.classList.contains('act')) initSignals();
     if (document.getElementById('page-playsheets')?.classList.contains('act')) psInit();
   } catch (e) {
     const detail = [e?.message, e?.details, e?.hint].filter(Boolean).join(' — ') || String(e);
@@ -2202,8 +2224,7 @@ async function createTeamFromModal() {
     closeTeamSetupModal();
     setStatus('Team created — welcome in!', 'ok');
     if (document.getElementById('page-home')?.classList.contains('act')) renderTeamDashboard();
-    window._sigInitDone = false;
-    if (document.getElementById('page-signals')?.classList.contains('act')) ensureSignalsInit();
+    if (document.getElementById('page-signals')?.classList.contains('act')) initSignals();
     if (document.getElementById('page-playsheets')?.classList.contains('act')) psInit();
   } catch (e) {
     const detail = [e?.message, e?.details, e?.hint].filter(Boolean).join(' — ') || String(e);
@@ -3353,7 +3374,23 @@ async function wbAddById(id){
   const p = getLib().find(x=>x.id===id);
   if(!p){ setStatus('Play not found'); return; }
   switchPage('signals');
-  await ensureSignalsInit();
+  await initSignals();
+  // A team can have several wristbands now (one per game) -- there's no
+  // longer a single implicit "the" wristband to drop this play into.
+  // Reuse whichever one was last opened during this browser session if
+  // it still exists; otherwise send the coach to pick/create one first
+  // rather than guessing.
+  if (!sigWristbandId) {
+    let lastId = null;
+    try { lastId = localStorage.getItem('wfpm_last_wristband_id'); } catch {}
+    const target = lastId && sigWristbands.find(w => w.id === lastId);
+    if (target) {
+      await sigShowEditor(target.id);
+    } else {
+      setStatus('Open (or create) a wristband on the Wristband tab first, then add "'+p.name+'" to a cell from there.');
+      return;
+    }
+  }
   const cell = (typeof sigFindOpenCell==='function') ? sigFindOpenCell() : null;
   if(!cell){ setStatus('Wristband grid is full (16/16 cells assigned) — clear a cell first to add "'+p.name+'"'); return; }
   openSigModal(cell.row, cell.col);
@@ -3511,29 +3548,8 @@ function switchPage(id){
   if(id==='library') renderLibrary();
   if(id==='playdb') renderPlayDb();
   if(id==='designer') render();
-  if(id==='signals'){
-    console.log('[switchPage] ensuring Signals module is initialized');
-    ensureSignalsInit();
-  }
+  if(id==='signals') initSignals();
   if(id==='playsheets') psInit();
-}
-
-// Lazily initializes the Signals/Wristband module exactly once. Returns a
-// promise so callers that need sigAssignments already loaded (e.g. the
-// Team Library "+ WB" quick-add in wbAddById) can await it instead of
-// racing the async fetch that initSignals() kicks off.
-async function ensureSignalsInit(){
-  if (typeof initSignals !== 'function' || window._sigInitDone) return;
-  try {
-    await initSignals();
-    // Only latch "done" once currentTeamId actually resolved to something
-    // real -- if team context still isn't ready, leave the guard open so
-    // the next visit to this tab (or retryTeamContext()) tries again
-    // instead of being permanently stuck from one early failed attempt.
-    if (currentTeamId) window._sigInitDone = true;
-  } catch (e) {
-    console.error('[ensureSignalsInit] initSignals threw:', e);
-  }
 }
 
 // ─── INIT ─────────────────────────────────────────────────────

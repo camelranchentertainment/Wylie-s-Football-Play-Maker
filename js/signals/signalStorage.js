@@ -26,25 +26,45 @@ const SIG_DEFAULT_PAGES = [
   { page_number: 4, label: 'GOLD',  color_family: 'gold'  },
 ];
 
-// ── Wristband (one per team) ────────────────────────────────────
-async function sigEnsureWristband() {
+// ── Wristbands (one per game, mirroring gameday_playbooks) ──────
+// Used to be exactly one wristband per team (sigEnsureWristband(),
+// .limit(1), always reused) -- editing this week's grid silently
+// overwrote whatever was set up for last week's game, with no way to
+// look back. Replaced with a list: every wristband is its own row,
+// optionally linked to a game via opponent_id, so past ones stay intact.
+async function sigLoadWristbandList() {
   if (!currentTeamId) throw new Error('No team context yet — sign-in did not finish setting up your team.');
-
-  const { data: existing, error: findErr } = await supa
+  const { data, error } = await supa
     .from('wristbands')
-    .select('id')
+    .select('*')
     .eq('team_id', currentTeamId)
-    .limit(1);
-  if (findErr) throw findErr;
-  if (existing && existing.length) return existing[0].id;
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
 
-  const { data: created, error: createErr } = await supa
+async function sigCreateWristband(name, opponentId) {
+  if (!currentTeamId) throw new Error('No team context yet — sign-in did not finish setting up your team.');
+  const { data, error } = await supa
     .from('wristbands')
-    .insert({ team_id: currentTeamId, name: 'Wristband', columns: 4 })
-    .select('id')
+    .insert({ team_id: currentTeamId, name, columns: 4, opponent_id: opponentId || null })
+    .select('*')
     .single();
-  if (createErr) throw createErr;
-  return created.id;
+  if (error) throw error;
+  return data;
+}
+
+async function sigRenameWristband(wristbandId, name) {
+  const { error } = await supa.from('wristbands').update({ name }).eq('id', wristbandId);
+  if (error) throw error;
+}
+
+// wristband_pages (ON DELETE CASCADE) -> wristband_calls (ON DELETE
+// CASCADE) both cascade from wristbands, so this one delete is enough to
+// clean up everything that belonged to it.
+async function sigDeleteWristband(wristbandId) {
+  const { error } = await supa.from('wristbands').delete().eq('id', wristbandId);
+  if (error) throw error;
 }
 
 // ── Pages ────────────────────────────────────────────────────────
